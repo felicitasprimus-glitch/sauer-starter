@@ -38,7 +38,7 @@ const issues = [
     fix: [
       "Komplett wegwerfen, Glas heiß auswaschen",
       "Neu ansetzen mit frischem Mehl & sauberem Glas",
-      "Nicht riskieren, nicht „abschöpfen"",
+      "Nicht riskieren, nicht abschöpfen"",
     ],
   },
   {
