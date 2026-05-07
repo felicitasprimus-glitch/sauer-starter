@@ -10,7 +10,6 @@ export async function POST(request) {
   try {
     const supabase = await createClient();
 
-    // Auth-Check
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -18,7 +17,6 @@ export async function POST(request) {
       return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
     }
 
-    // Foto + optionale brot_id aus Request lesen
     const { photoBase64, mediaType, brotId } = await request.json();
 
     if (!photoBase64 || !mediaType) {
@@ -28,7 +26,6 @@ export async function POST(request) {
       );
     }
 
-    // Anfrage an Claude
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-5",
       max_tokens: 1500,
@@ -46,20 +43,7 @@ export async function POST(request) {
             },
             {
               type: "text",
-              text: `Du bist Felicitas' Sauerteig-Expertin. Analysiere dieses Foto vom Brot-Anschnitt (Krume) auf Deutsch, in einem warmen, freundlichen Ton.
-
-Antworte AUSSCHLIESSLICH mit gültigem JSON in diesem Format (ohne Markdown-Codeblock, ohne erklärenden Text drumherum):
-
-{
-  "score": <Zahl 1-10>,
-  "porung": "<fein|mittel|offen|wild_offen>",
-  "verteilung": "<gleichmäßig|unregelmäßig>",
-  "hydration_estimate": "<z.B. ~70%>",
-  "diagnose": "<2-3 Sätze: was du siehst, was gut/auffällig ist>",
-  "tipps": ["<Tipp 1>", "<Tipp 2>", "<Tipp 3>"]
-}
-
-Sei ehrlich aber motivierend. Wenn das Foto unscharf ist oder keine Krume zeigt, gib score: 0 und erkläre das in der diagnose.`,
+              text: "Du bist Felicitas Sauerteig-Expertin. Analysiere dieses Foto vom Brot-Anschnitt (Krume) auf Deutsch, in einem warmen, freundlichen Ton.\n\nAntworte AUSSCHLIESSLICH mit gueltigem JSON in diesem Format (ohne Markdown-Codeblock, ohne erklaerenden Text drumherum):\n\n{\n  \"score\": <Zahl 1-10>,\n  \"porung\": \"<fein|mittel|offen|wild_offen>\",\n  \"verteilung\": \"<gleichmaessig|unregelmaessig>\",\n  \"hydration_estimate\": \"<z.B. ~70%>\",\n  \"diagnose\": \"<2-3 Saetze: was du siehst, was gut/auffaellig ist>\",\n  \"tipps\": [\"<Tipp 1>\", \"<Tipp 2>\", \"<Tipp 3>\"]\n}\n\nSei ehrlich aber motivierend. Wenn das Foto unscharf ist oder keine Krume zeigt, gib score: 0 und erklaere das in der diagnose.",
             },
           ],
         },
@@ -68,7 +52,6 @@ Sei ehrlich aber motivierend. Wenn das Foto unscharf ist oder keine Krume zeigt,
 
     const responseText = message.content[0].text;
 
-    // JSON parsen
     let analysis;
     try {
       analysis = JSON.parse(responseText);
@@ -79,4 +62,12 @@ Sei ehrlich aber motivierend. Wenn das Foto unscharf ist oder keine Krume zeigt,
       );
     }
 
-    return NextResponse.json({ success: true, analysis }
+    return NextResponse.json({ success: true, analysis });
+  } catch (error) {
+    console.error("Krume-Analyse Fehler:", error);
+    return NextResponse.json(
+      { error: error.message || "Interner Fehler" },
+      { status: 500 }
+    );
+  }
+}
