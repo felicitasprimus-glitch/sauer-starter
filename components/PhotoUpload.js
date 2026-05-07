@@ -5,15 +5,14 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function PhotoUpload({ value, onChange, userId, folder = "feedings" }) {
   const supabase = createClient();
-  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(null);
 
-  // Hole Public-URL für bereits vorhandenes Foto
   const [existingUrl, setExistingUrl] = useState(null);
 
-  // Wenn `value` ein Storage-Pfad ist, signierte URL holen
   async function loadExistingUrl(path) {
     if (!path) {
       setExistingUrl(null);
@@ -25,7 +24,6 @@ export default function PhotoUpload({ value, onChange, userId, folder = "feeding
     setExistingUrl(data?.signedUrl ?? null);
   }
 
-  // Wenn value sich ändert (oder erstmals gesetzt wird), URL holen
   if (value && existingUrl === null && !preview) {
     loadExistingUrl(value);
   }
@@ -37,7 +35,6 @@ export default function PhotoUpload({ value, onChange, userId, folder = "feeding
     setError("");
     setUploading(true);
 
-    // Lokale Preview sofort anzeigen
     setPreview(URL.createObjectURL(file));
 
     try {
@@ -58,9 +55,8 @@ export default function PhotoUpload({ value, onChange, userId, folder = "feeding
         return;
       }
 
-      // Pfad nach oben geben
       onChange(path);
-      setExistingUrl(null); // wird neu geladen
+      setExistingUrl(null);
       setUploading(false);
     } catch (err) {
       setError(err.message || "Upload fehlgeschlagen");
@@ -71,13 +67,13 @@ export default function PhotoUpload({ value, onChange, userId, folder = "feeding
 
   async function handleRemove() {
     if (value) {
-      // Foto aus Storage löschen
       await supabase.storage.from("photos").remove([value]);
     }
     onChange(null);
     setPreview(null);
     setExistingUrl(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
+    if (galleryInputRef.current) galleryInputRef.current.value = "";
   }
 
   const showImage = preview || existingUrl;
@@ -85,10 +81,17 @@ export default function PhotoUpload({ value, onChange, userId, folder = "feeding
   return (
     <div>
       <input
-        ref={fileInputRef}
+        ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
         onChange={handleFileChange}
         className="hidden"
       />
@@ -117,35 +120,38 @@ export default function PhotoUpload({ value, onChange, userId, folder = "feeding
           </button>
           {uploading && (
             <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-cocoa-900/50">
-              <span className="text-sm font-semibold text-cream-50">
-                Lädt hoch …
-              </span>
+              <span className="text-sm font-semibold text-cream-50">Laedt hoch ...</span>
             </div>
           )}
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="flex h-32 w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-mauve-500/30 bg-cream-200/30 transition-all hover:border-terra-500/50 hover:bg-cream-200/60 disabled:opacity-50"
-        >
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-terra-600">
-            <path
-              d="M3 7 Q 3 5, 5 5 L 8 5 L 9.5 3 L 14.5 3 L 16 5 L 19 5 Q 21 5, 21 7 L 21 17 Q 21 19, 19 19 L 5 19 Q 3 19, 3 17 Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              fill="none"
-            />
-            <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
-          </svg>
-          <span className="text-sm font-semibold text-cocoa-800">
-            {uploading ? "Lädt hoch …" : "Foto hinzufügen"}
-          </span>
-          <span className="text-xs text-cocoa-700/60">
-            Kamera oder Galerie
-          </span>
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => cameraInputRef.current?.click()}
+            disabled={uploading}
+            className="flex h-32 w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-mauve-500/30 bg-cream-200/30 transition-all hover:border-terra-500/50 hover:bg-cream-200/60 disabled:opacity-50"
+          >
+            <span className="text-2xl">📸</span>
+            <span className="text-xs font-semibold text-cocoa-800">
+              {uploading ? "Laedt hoch ..." : "Foto aufnehmen"}
+            </span>
+            <span className="text-[10px] text-cocoa-700/60">Kamera</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => galleryInputRef.current?.click()}
+            disabled={uploading}
+            className="flex h-32 w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-mauve-500/30 bg-cream-200/30 transition-all hover:border-terra-500/50 hover:bg-cream-200/60 disabled:opacity-50"
+          >
+            <span className="text-2xl">🖼️</span>
+            <span className="text-xs font-semibold text-cocoa-800">
+              {uploading ? "Laedt hoch ..." : "Aus Galerie"}
+            </span>
+            <span className="text-[10px] text-cocoa-700/60">Vorhandenes Foto</span>
+          </button>
+        </div>
       )}
 
       {error && (
