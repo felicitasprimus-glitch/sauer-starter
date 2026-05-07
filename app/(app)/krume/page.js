@@ -5,6 +5,21 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+const BROT_ARTEN = [
+  { value: "weissbrot", label: "Weissbrot / Helles Sauerteigbrot", emoji: "🥖", desc: "Offene, glaenzende Porung erwartet" },
+  { value: "mischbrot", label: "Mischbrot", emoji: "🥨", desc: "Feine bis mittlere Porung erwartet" },
+  { value: "vollkorn", label: "Vollkornbrot", emoji: "🌾", desc: "Feine gleichmaessige Porung erwartet" },
+  { value: "roggen", label: "Roggenbrot", emoji: "🍞", desc: "Dichte feine Porung ist KORREKT" },
+  { value: "auto", label: "Lass die KI raten", emoji: "🤔", desc: "KI erkennt aus dem Foto" },
+];
+
+const BROT_ART_LABELS = {
+  weissbrot: "Weissbrot",
+  mischbrot: "Mischbrot",
+  vollkorn: "Vollkornbrot",
+  roggen: "Roggenbrot",
+};
+
 async function calculateFileHash(file) {
   try {
     const buffer = await file.arrayBuffer();
@@ -27,6 +42,7 @@ export default function KrumeAnalysePage() {
   const [reusedFromHistory, setReusedFromHistory] = useState(false);
   const [error, setError] = useState(null);
 
+  const [brotArt, setBrotArt] = useState("auto");
   const [brote, setBrote] = useState([]);
   const [selectedBrotId, setSelectedBrotId] = useState("");
   const [showBrotPicker, setShowBrotPicker] = useState(false);
@@ -41,7 +57,7 @@ export default function KrumeAnalysePage() {
       const supabase = createClient();
       const { data } = await supabase
         .from("brote")
-        .select("id, name, baked_at")
+        .select("id, name, baked_at, flour_types")
         .order("baked_at", { ascending: false })
         .limit(20);
       if (data) setBrote(data);
@@ -116,10 +132,17 @@ export default function KrumeAnalysePage() {
       const photoBase64 = await fileToBase64(photoFile);
       const mediaType = photoFile.type;
 
+      const apiBrotArt = brotArt === "auto" ? null : brotArt;
+
       const response = await fetch("/api/krume-analyse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ photoBase64, mediaType, brotId: selectedBrotId || null }),
+        body: JSON.stringify({
+          photoBase64,
+          mediaType,
+          brotId: selectedBrotId || null,
+          brotArt: apiBrotArt,
+        }),
       });
 
       const data = await response.json();
@@ -137,6 +160,8 @@ export default function KrumeAnalysePage() {
         .upload(path, photoFile);
 
       if (!upErr) {
+        const finalBrotArt = apiBrotArt || data.analysis.erkannte_brotart || data.brotArt;
+
         const { data: inserted } = await supabase
           .from("krumen_analysen")
           .insert({
@@ -144,6 +169,7 @@ export default function KrumeAnalysePage() {
             brot_id: selectedBrotId || null,
             photo_path: path,
             photo_hash: photoHash,
+            brot_art: finalBrotArt || null,
             analysis_text: JSON.stringify(data.analysis),
             porung: data.analysis.porung,
             hydration_estimate: data.analysis.hydration_estimate,
@@ -259,6 +285,7 @@ export default function KrumeAnalysePage() {
     setPostMessage(null);
     setNewBrotName("");
     setSelectedBrotId("");
+    setBrotArt("auto");
   }
 
   function scoreLabel(score) {
@@ -279,6 +306,7 @@ export default function KrumeAnalysePage() {
   }
 
   const selectedBrot = brote.find((b) => b.id === selectedBrotId);
+  const selectedBrotArt = BROT_ARTEN.find((a) => a.value === brotArt);
 
   return (
     <div className="px-4 py-6">
@@ -301,6 +329,34 @@ export default function KrumeAnalysePage() {
 
       {!result && (
         <>
+          <div className="mb-4 rounded-2xl bg-white p-4 shadow-sm">
+            <div className="text-sm font-medium text-cocoa-800 mb-2">
+              🍞 Welche Brot-Art ist das?
+            </div>
+            <div className="text-xs text-cocoa-500 mb-3">
+              Wichtig fuer die Bewertung - eine Krume wird je nach Brot-Art anders beurteilt.
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {BROT_ARTEN.map((art) => (
+                <button
+                  key={art.value}
+                  onClick={() => setBrotArt(art.value)}
+                  className={`flex items-start gap-3 rounded-xl border px-3 py-2.5 text-left text-sm transition ${
+                    brotArt === art.value
+                      ? "border-terra-400 bg-terra-50"
+                      : "border-mauve-200 bg-white hover:bg-cream-50"
+                  }`}
+                >
+                  <span className="text-xl">{art.emoji}</span>
+                  <span className="flex-1">
+                    <span className="block font-medium text-cocoa-800">{art.label}</span>
+                    <span className="block text-xs text-cocoa-500">{art.desc}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {brote.length > 0 && (
             <div className="mb-4 rounded-2xl bg-white p-4 shadow-sm">
               <button
@@ -431,7 +487,7 @@ export default function KrumeAnalysePage() {
         <div className="space-y-4">
           {reusedFromHistory && (
             <div className="rounded-2xl bg-honey-50 border border-honey-200 p-3 text-xs text-cocoa-700">
-              ✨ <strong className="font-medium">Bereits analysiert</strong> - Dieses Foto hattest du schon mal hochgeladen. Wir zeigen dir das gespeicherte Ergebnis. So bleibt es konsistent.
+              ✨ <strong className="font-medium">Bereits analysiert</strong> - Dieses Foto hattest du schon mal hochgeladen. Wir zeigen dir das gespeicherte Ergebnis.
             </div>
           )}
 
@@ -454,6 +510,11 @@ export default function KrumeAnalysePage() {
                 </div>
               </div>
               <div className="text-right text-xs text-cocoa-500">
+                {result.erkannte_brotart && BROT_ART_LABELS[result.erkannte_brotart] && (
+                  <div className="font-medium text-cocoa-700">
+                    {BROT_ART_LABELS[result.erkannte_brotart]}
+                  </div>
+                )}
                 <div>Porung: {result.porung}</div>
                 <div>Hydration: {result.hydration_estimate}</div>
               </div>

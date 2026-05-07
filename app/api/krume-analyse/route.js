@@ -27,68 +27,116 @@ function extractJson(text) {
   }
 }
 
-const SYSTEM_PROMPT = `Du bist eine erfahrene Sauerteig-Baeckerin und beurteilst Fotos von Brot-Anschnitten (Krume).
+const BROT_ART_REGELN = {
+  vollkorn: `VOLLKORNBROT - Bewertungsmassstab:
+- Ideal: feine bis mittlere, gleichmaessige Porung
+- Krume sollte saftig wirken, nicht trocken
+- Etwas dichtere Struktur als Weissbrot ist NORMAL und gewuenscht
+- Score 9-10: feine gleichmaessige Porung, saftig glaenzend, stabil
+- Score 7-8: gleichmaessig, evtl. leicht dichter
+- Erwartete Hydration: ~75-85% (Vollkorn braucht mehr Wasser)
+- ROTE FLAGGEN: stark dichter Klumpen, Speckschicht unten, Risse`,
 
-Deine Aufgabe: Analysiere das Foto strukturiert und konsistent. Gib nachvollziehbare Einschaetzungen, kein blumiges Gerede.
+  weissbrot: `WEISSBROT / HELLES SAUERTEIGBROT - Bewertungsmassstab:
+- Ideal: offene, glaenzende Porung mit Wabenstruktur
+- Etwas wilde Porung ist GEWUENSCHT (Charakter)
+- Eine zu feine, dichte Krume waere FEHLERHAFT
+- Score 9-10: offene/wild offene Porung, glaenzende Wabenwaende, ungleichmaessig im positiven Sinn
+- Score 7-8: offen, leicht ungleichmaessig
+- Erwartete Hydration: ~70-80%
+- ROTE FLAGGEN: dichte feine Krume (= zu wenig Triebkraft), Speckschicht`,
 
-BEWERTUNGSREGELN (Score 1-10):
+  mischbrot: `MISCHBROT - Bewertungsmassstab:
+- Ideal: feine bis mittlere, gleichmaessige Porung
+- Stabile Krume, saftig aber schnittfest
+- Score 9-10: feine gleichmaessige Porung, glatte Schnittflaeche, stabil
+- Score 7-8: gleichmaessig, kleine Auffaelligkeiten
+- Erwartete Hydration: ~70-78%
+- ROTE FLAGGEN: zu dicht/klumpig, sehr loechrig, Risse durchziehend`,
+
+  roggen: `ROGGENBROT - Bewertungsmassstab:
+- Ideal: sehr feine, gleichmaessige, dichte Porung
+- Krume MUSS dichter sein als Weizenbrote (das ist KORREKT, kein Fehler!)
+- Score 9-10: feine gleichmaessige Wabenstruktur, saftig, schnittfest
+- Score 7-8: leichte Unregelmaessigkeit
+- Erwartete Hydration: ~75-85%
+- ROTE FLAGGEN: lockere Weizenbrot-Porung (Triebkraft falsch), Risse`,
+};
+
+const BROT_ART_LABELS = {
+  vollkorn: "Vollkornbrot",
+  weissbrot: "Weissbrot / Helles Sauerteigbrot",
+  mischbrot: "Mischbrot",
+  roggen: "Roggenbrot",
+  unbekannt: "noch nicht zugeordnet",
+};
+
+function buildSystemPrompt(brotArt) {
+  const artInfo = brotArt && BROT_ART_REGELN[brotArt]
+    ? BROT_ART_REGELN[brotArt]
+    : `Versuche zuerst die Brot-Art aus dem Foto zu erkennen (Vollkorn, Weissbrot, Mischbrot, Roggen).
+Bewerte dann passend zur erkannten Brot-Art - die Erwartungen sind sehr unterschiedlich:
+- Vollkorn: feinere Porung ist ideal
+- Weissbrot/Helles Sauerteig: offene Porung ist ideal
+- Mischbrot: feine bis mittlere Porung ist ideal
+- Roggen: dichte feine Porung ist KORREKT (kein Fehler)`;
+
+  return `Du bist eine erfahrene Sauerteig-Baeckerin und beurteilst Fotos von Brot-Anschnitten (Krume).
+
+Deine Aufgabe: Analysiere das Foto strukturiert und konsistent.
+
+WICHTIG: Bewerte IMMER passend zur Brot-Art. Eine fein-dichte Krume ist:
+- Bei einem ROGGEN-/VOLLKORNBROT perfekt (Score 9-10)
+- Bei einem WEISSBROT/SAUERTEIG-WEISS misslungen (Score 4-5)
+
+Die Brot-Art fuer dieses Foto:
+${artInfo}
+
+ALLGEMEINE BEWERTUNG (nach Brot-Art-Kontext):
 
 Score 9-10 (Spitzenkrume):
-- Gleichmaessige Porung ohne grosse Hohlraeume
-- Klare Wabenstruktur, glaenzende Poren-Innenwaende
-- Stabile Krume ohne Speck oder Rollen
-- Passend zur Brotart (Mischbrot eher fein, Weissbrot offener)
+- Krume entspricht dem Ideal fuer diese Brot-Art
+- Stabile Struktur ohne Speck oder Rollen
+- Saftig wirkend, gut gebackene Wabenwaende
 
 Score 7-8 (Gut gelungen):
 - Insgesamt stimmig, kleine Auffaelligkeiten
-- z.B. ein-zwei groessere Loecher, leichte Unregelmaessigkeit
-- Sonst gute Struktur
 
 Score 5-6 (Solide, mit Luft nach oben):
-- Sichtbare Schwaechen: dichte Stellen ODER zu wild
-- Krume okay, aber nicht ueberzeugend
-- Klare Verbesserungsmoeglichkeiten
+- Sichtbare Schwaechen fuer diese Brot-Art
 
 Score 3-4 (Da geht noch was):
-- Deutliche Probleme: Speck, Rollen, sehr dicht oder sehr loechrig
-- Krume nicht stabil oder optisch unattraktiv
+- Deutliche Probleme
 
 Score 1-2 (Klar misslungen):
-- Massive Fehler: komplett dichter Klumpen, riesige Hohlraeume
-- Oder Krume rissig/zerfallend
+- Massive Fehler
 
 Score 0:
-- Foto unscharf, keine Krume erkennbar, oder kein Brot im Bild
+- Foto unscharf, keine Krume erkennbar, oder kein Brot
 
 PORUNG (waehle EINEN):
-- "fein": kleine, gleichmaessige Poren (Mischbrot, Roggenbrot)
-- "mittel": ausgewogen, mittelgrosse Poren
-- "offen": grosse Poren, sichtbar luftig (Ciabatta, helles Sauerteigbrot)
-- "wild_offen": sehr grosse, unregelmaessige Poren (artisan-Stil)
+- "fein": kleine, gleichmaessige Poren
+- "mittel": ausgewogen
+- "offen": grosse Poren, sichtbar luftig
+- "wild_offen": sehr grosse, unregelmaessige Poren
 
 VERTEILUNG (waehle EINEN):
 - "gleichmaessig": Poren gleichmaessig verteilt
-- "unregelmaessig": deutliche Unterschiede zwischen Bereichen
+- "unregelmaessig": deutliche Unterschiede
 
 HYDRATION-SCHAETZUNG:
 Format: "~XX%" (z.B. "~70%")
-- Sehr fein, dicht: ~55-65%
-- Fein bis mittel: ~65-72%
-- Offen, glaenzend: ~72-80%
-- Wild offen: ~80%+
 
 DIAGNOSE (2-3 Saetze):
-- Was siehst du objektiv? (Porung, Verteilung, Stabilitaet)
+- Beziehe die Brot-Art ein! ("Fuer ein Roggenbrot ist diese feine Krume ideal" statt nur "feine Krume")
 - Was ist gut, was faellt auf?
-- Sachlich, freundlich, ohne Geschwafel
 
 TIPPS (3 konkrete Tipps):
-- Direkt umsetzbar, basierend auf dem was du siehst
-- Falls Score >=8: Tipps zum Stabilisieren des Erfolgs
-- Falls Score <8: konkrete Verbesserungs-Hebel
-- Konkret, nicht generisch ("mehr Wasser" statt "Hydration anpassen")
+- Brot-Art-spezifisch
+- Direkt umsetzbar
 
-WICHTIG: Antworte AUSSCHLIESSLICH mit dem JSON-Objekt, ohne Markdown, ohne Einleitung.`;
+WICHTIG: Antworte AUSSCHLIESSLICH mit dem JSON-Objekt, ohne Markdown.`;
+}
 
 export async function POST(request) {
   try {
@@ -101,7 +149,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
     }
 
-    const { photoBase64, mediaType, brotId } = await request.json();
+    const { photoBase64, mediaType, brotId, brotArt } = await request.json();
 
     if (!photoBase64 || !mediaType) {
       return NextResponse.json(
@@ -110,11 +158,35 @@ export async function POST(request) {
       );
     }
 
+    let resolvedBrotArt = brotArt;
+    if (!resolvedBrotArt && brotId) {
+      const { data: brot } = await supabase
+        .from("brote")
+        .select("flour_types, name")
+        .eq("id", brotId)
+        .single();
+
+      if (brot) {
+        const text = `${brot.name || ""} ${brot.flour_types || ""}`.toLowerCase();
+        if (text.includes("vollkorn")) resolvedBrotArt = "vollkorn";
+        else if (text.includes("roggen")) resolvedBrotArt = "roggen";
+        else if (text.includes("misch")) resolvedBrotArt = "mischbrot";
+        else if (text.includes("weiss") || text.includes("weizen") || text.includes("ciabatta") || text.includes("baguette")) {
+          resolvedBrotArt = "weissbrot";
+        }
+      }
+    }
+
+    const systemPrompt = buildSystemPrompt(resolvedBrotArt);
+    const brotArtLabel = resolvedBrotArt
+      ? BROT_ART_LABELS[resolvedBrotArt] || resolvedBrotArt
+      : "noch nicht zugeordnet - bitte aus Foto erkennen";
+
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-5",
       max_tokens: 1500,
       temperature: 0,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: [
         {
           role: "user",
@@ -129,14 +201,17 @@ export async function POST(request) {
             },
             {
               type: "text",
-              text: `Analysiere diese Krume und antworte mit JSON in genau diesem Format:
+              text: `Brot-Art: ${brotArtLabel}
+
+Analysiere diese Krume und antworte mit JSON in genau diesem Format:
 
 {
   "score": 7,
   "porung": "mittel",
   "verteilung": "gleichmaessig",
   "hydration_estimate": "~70%",
-  "diagnose": "Hier 2-3 Saetze.",
+  "erkannte_brotart": "${resolvedBrotArt || "raten"}",
+  "diagnose": "Hier 2-3 Saetze, die die Brot-Art einbeziehen.",
   "tipps": ["Tipp 1", "Tipp 2", "Tipp 3"]
 }`,
             },
@@ -155,7 +230,11 @@ export async function POST(request) {
       );
     }
 
-    return NextResponse.json({ success: true, analysis });
+    if (resolvedBrotArt && !analysis.erkannte_brotart) {
+      analysis.erkannte_brotart = resolvedBrotArt;
+    }
+
+    return NextResponse.json({ success: true, analysis, brotArt: resolvedBrotArt });
   } catch (error) {
     console.error("Krume-Analyse Fehler:", error);
     return NextResponse.json(
