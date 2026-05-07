@@ -19,6 +19,14 @@ const CRUMB_LABELS = {
   wild_offen: "Wild offen",
 };
 
+function scoreLabel(score) {
+  if (score >= 8) return { text: "Spitzenkrume!", emoji: "🏆", color: "text-emerald-700" };
+  if (score >= 6) return { text: "Gut gelungen", emoji: "👍", color: "text-emerald-600" };
+  if (score >= 4) return { text: "Solide Krume", emoji: "🌾", color: "text-honey-600" };
+  if (score >= 2) return { text: "Da geht noch was", emoji: "🌱", color: "text-terra-500" };
+  return { text: "Foto unklar", emoji: "🤔", color: "text-cocoa-500" };
+}
+
 export default async function BrotDetailPage({ params }) {
   const supabase = createClient();
   const { id } = params;
@@ -42,6 +50,30 @@ export default async function BrotDetailPage({ params }) {
       .single();
     starterName = starter?.name;
   }
+
+  let krumeAnalyse = null;
+  let krumePhotoUrl = null;
+  if (brot.krume_analyse_id) {
+    const { data: analyse } = await supabase
+      .from("krumen_analysen")
+      .select("*")
+      .eq("id", brot.krume_analyse_id)
+      .single();
+    if (analyse) {
+      krumeAnalyse = analyse;
+      if (analyse.photo_path) {
+        krumePhotoUrl = await getSignedPhotoUrl(analyse.photo_path);
+      }
+    }
+  }
+
+  const krumeTippsList =
+    brot.krume_tipps && typeof brot.krume_tipps === "string"
+      ? brot.krume_tipps.split("\n").filter((t) => t.trim())
+      : krumeAnalyse?.raw_json?.tipps || [];
+
+  const krumeScore = brot.krume_score || krumeAnalyse?.score;
+  const krumeDiagnose = brot.krume_diagnose || krumeAnalyse?.diagnose;
 
   return (
     <main className="px-5 pt-6">
@@ -112,6 +144,82 @@ export default async function BrotDetailPage({ params }) {
           </span>
         )}
       </div>
+
+      {krumeScore != null && (
+        <section className="mt-6">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-mauve-700">
+            KI-Krumen-Analyse
+          </h2>
+
+          <div className="mt-2 rounded-2xl bg-cream-50 p-5 shadow-sm">
+            <div className="flex items-baseline justify-between">
+              <div>
+                <div className={`text-4xl font-bold ${scoreLabel(krumeScore).color}`}>
+                  {krumeScore}/10
+                </div>
+                <div className={`text-sm font-medium ${scoreLabel(krumeScore).color}`}>
+                  {scoreLabel(krumeScore).emoji} {scoreLabel(krumeScore).text}
+                </div>
+              </div>
+              {krumeAnalyse && (
+                <div className="text-right text-xs text-cocoa-500">
+                  {krumeAnalyse.porung && <div>Porung: {krumeAnalyse.porung}</div>}
+                  {krumeAnalyse.hydration_estimate && (
+                    <div>Hydration: {krumeAnalyse.hydration_estimate}</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {krumePhotoUrl && (
+            <div className="mt-3 overflow-hidden rounded-2xl shadow-sm">
+              <img
+                src={krumePhotoUrl}
+                alt="Krume"
+                className="aspect-square w-full object-cover"
+              />
+            </div>
+          )}
+
+          {krumeDiagnose && (
+            <div className="mt-3 rounded-2xl bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-medium text-cocoa-900">Diagnose</h3>
+              <p className="mt-1 text-sm text-cocoa-700">{krumeDiagnose}</p>
+            </div>
+          )}
+
+          {krumeTippsList && krumeTippsList.length > 0 && (
+            <div className="mt-3 rounded-2xl bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-medium text-cocoa-900">
+                Tipps fuers naechste Mal
+              </h3>
+              <ul className="mt-2 space-y-1.5">
+                {krumeTippsList.map((tipp, i) => (
+                  <li key={i} className="flex gap-2 text-sm text-cocoa-700">
+                    <span className="text-terra-500">→</span>
+                    <span>{tipp}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
+
+      {!krumeScore && (
+        <section className="mt-6 rounded-2xl border border-dashed border-mauve-300 bg-cream-50 p-4 text-center">
+          <p className="text-sm text-cocoa-700">
+            Noch keine Krumen-Analyse fuer dieses Brot.
+          </p>
+          <Link
+            href="/krume"
+            className="mt-2 inline-block text-sm font-medium text-terra-600 hover:text-terra-700"
+          >
+            Jetzt Krume analysieren →
+          </Link>
+        </section>
+      )}
 
       {brot.flour_types && (
         <section className="mt-6">
