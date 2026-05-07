@@ -128,10 +128,10 @@ export default function KrumeAnalysePage() {
         <div className="rounded-2xl bg-cream-50 p-6 shadow-sm">
           {!photoPreview ? (
             <div className="flex flex-col gap-3">
-              <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-mauve-300 bg-white px-6 py-8 text-center hover:border-terra-400 hover:bg-cream-100">
+              <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-mauve-300 bg-white px-6 py-6 text-center hover:border-terra-400 hover:bg-cream-100">
                 <span className="text-3xl">📸</span>
                 <span className="mt-2 text-sm font-medium text-cocoa-800">Foto aufnehmen</span>
-                <span className="mt-1 text-xs text-cocoa-500">oder aus Galerie waehlen</span>
+                <span className="mt-1 text-xs text-cocoa-500">Mit der Kamera</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -140,6 +140,19 @@ export default function KrumeAnalysePage() {
                   className="hidden"
                 />
               </label>
+
+              <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-mauve-300 bg-white px-6 py-6 text-center hover:border-terra-400 hover:bg-cream-100">
+                <span className="text-3xl">🖼️</span>
+                <span className="mt-2 text-sm font-medium text-cocoa-800">Aus Galerie waehlen</span>
+                <span className="mt-1 text-xs text-cocoa-500">Vorhandenes Foto</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+
               <p className="text-center text-xs text-cocoa-500">
                 Tipp: Schneide das Brot frisch an, sorge fuer gutes Licht und halte die Kamera ruhig.
               </p>
