@@ -11,7 +11,7 @@ const items = [
     icon: (active) => (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path
-          d="M6 8 Q 6 6, 8 6 L 16 6 Q 18 6, 18 8 L 17.5 19 Q 17.5 20.5, 16 20.5 L 8 20.5 Q 6.5 20.5, 6.5 19 Z"
+          d="M6 8 Q 6, 8 6 L 16 6 Q 18 6, 18 8 L 17.5 19 Q 17.5 20.5, 16 20.5 L 8 20.5 Q 6.5 20.5, 6.5 19 Z"
           stroke="currentColor"
           strokeWidth="1.6"
           fill={active ? "currentColor" : "none"}
@@ -48,6 +48,29 @@ const items = [
     ),
   },
   {
+    href: "/krume",
+    label: "Krume",
+    matches: (p) => p.startsWith("/krume"),
+    icon: (active) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle
+          cx="12"
+          cy="12"
+          r="9"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          fill={active ? "currentColor" : "none"}
+          fillOpacity={active ? "0.15" : "0"}
+        />
+        <circle cx="9" cy="10" r="1.2" fill="currentColor" opacity="0.7" />
+        <circle cx="14" cy="9" r="0.8" fill="currentColor" opacity="0.7" />
+        <circle cx="15" cy="13" r="1.4" fill="currentColor" opacity="0.7" />
+        <circle cx="10" cy="14" r="1" fill="currentColor" opacity="0.7" />
+        <circle cx="13" cy="15" r="0.7" fill="currentColor" opacity="0.7" />
+      </svg>
+    ),
+  },
+  {
     href: "/sos",
     label: "SOS",
     matches: (p) => p.startsWith("/sos"),
@@ -78,7 +101,7 @@ export default function BottomNav() {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-40 border-t border-mauve-500/15
-                 bg-cream-50/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
+             bg-cream-50/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
     >
       <ul className="mx-auto flex max-w-md items-stretch justify-around">
         {items.map((item) => {
