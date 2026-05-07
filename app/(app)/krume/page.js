@@ -5,6 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+async function calculateFileHash(file) {
+  try {
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  } catch (e) {
+    return null;
+  }
+}
+
 export default function KrumeAnalysePage() {
   const router = useRouter();
   const [photoFile, setPhotoFile] = useState(null);
@@ -13,6 +24,7 @@ export default function KrumeAnalysePage() {
   const [result, setResult] = useState(null);
   const [analysisId, setAnalysisId] = useState(null);
   const [photoPath, setPhotoPath] = useState(null);
+  const [reusedFromHistory, setReusedFromHistory] = useState(false);
   const [error, setError] = useState(null);
 
   const [brote, setBrote] = useState([]);
@@ -46,8 +58,11 @@ export default function KrumeAnalysePage() {
     }
     setError(null);
     setResult(null);
+    setReusedFromHistory(false);
     setPostAction(null);
     setPostMessage(null);
+    setAnalysisId(null);
+    setPhotoPath(null);
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
   }
@@ -69,8 +84,35 @@ export default function KrumeAnalysePage() {
     setAnalyzing(true);
     setError(null);
     setResult(null);
+    setReusedFromHistory(false);
 
     try {
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) throw new Error("Nicht angemeldet");
+
+      const photoHash = await calculateFileHash(photoFile);
+
+      if (photoHash) {
+        const { data: existing } = await supabase
+          .from("krumen_analysen")
+          .select("*")
+          .eq("user_id", userData.user.id)
+          .eq("photo_hash", photoHash)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (existing && existing.raw_json) {
+          setResult(existing.raw_json);
+          setAnalysisId(existing.id);
+          setPhotoPath(existing.photo_path);
+          setReusedFromHistory(true);
+          setAnalyzing(false);
+          return;
+        }
+      }
+
       const photoBase64 = await fileToBase64(photoFile);
       const mediaType = photoFile.type;
 
@@ -88,54 +130,47 @@ export default function KrumeAnalysePage() {
 
       setResult(data.analysis);
 
-      try {
-        const supabase = createClient();
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user) {
-          const ext = photoFile.name.split(".").pop() || "jpg";
-          const path = `${userData.user.id}/krume/${Date.now()}.${ext}`;
-          const { error: upErr } = await supabase.storage
-            .from("photos")
-            .upload(path, photoFile);
+      const ext = photoFile.name.split(".").pop() || "jpg";
+      const path = `${userData.user.id}/krume/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("photos")
+        .upload(path, photoFile);
 
-          if (!upErr) {
-            const { data: inserted } = await supabase
-              .from("krumen_analysen")
-              .insert({
-                user_id: userData.user.id,
-                brot_id: selectedBrotId || null,
-                photo_path: path,
-                analysis_text: JSON.stringify(data.analysis),
-                porung: data.analysis.porung,
-                hydration_estimate: data.analysis.hydration_estimate,
-                diagnose: data.analysis.diagnose,
-                tipps: data.analysis.tipps?.join("\n"),
-                score: data.analysis.score,
-                raw_json: data.analysis,
+      if (!upErr) {
+        const { data: inserted } = await supabase
+          .from("krumen_analysen")
+          .insert({
+            user_id: userData.user.id,
+            brot_id: selectedBrotId || null,
+            photo_path: path,
+            photo_hash: photoHash,
+            analysis_text: JSON.stringify(data.analysis),
+            porung: data.analysis.porung,
+            hydration_estimate: data.analysis.hydration_estimate,
+            diagnose: data.analysis.diagnose,
+            tipps: data.analysis.tipps?.join("\n"),
+            score: data.analysis.score,
+            raw_json: data.analysis,
+          })
+          .select("id")
+          .single();
+
+        if (inserted) {
+          setAnalysisId(inserted.id);
+          setPhotoPath(path);
+
+          if (selectedBrotId) {
+            await supabase
+              .from("brote")
+              .update({
+                krume_analyse_id: inserted.id,
+                krume_score: data.analysis.score,
+                krume_diagnose: data.analysis.diagnose,
+                krume_tipps: data.analysis.tipps?.join("\n"),
               })
-              .select("id")
-              .single();
-
-            if (inserted) {
-              setAnalysisId(inserted.id);
-              setPhotoPath(path);
-
-              if (selectedBrotId) {
-                await supabase
-                  .from("brote")
-                  .update({
-                    krume_analyse_id: inserted.id,
-                    krume_score: data.analysis.score,
-                    krume_diagnose: data.analysis.diagnose,
-                    krume_tipps: data.analysis.tipps?.join("\n"),
-                  })
-                  .eq("id", selectedBrotId);
-              }
-            }
+              .eq("id", selectedBrotId);
           }
         }
-      } catch (saveErr) {
-        console.error("Speichern fehlgeschlagen:", saveErr);
       }
     } catch (err) {
       setError(err.message);
@@ -219,6 +254,7 @@ export default function KrumeAnalysePage() {
     setError(null);
     setAnalysisId(null);
     setPhotoPath(null);
+    setReusedFromHistory(false);
     setPostAction(null);
     setPostMessage(null);
     setNewBrotName("");
@@ -252,11 +288,15 @@ export default function KrumeAnalysePage() {
         </Link>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-4">
         <h1 className="font-display text-3xl text-cocoa-900">Krumenleser</h1>
         <p className="mt-2 text-sm text-cocoa-600">
           Mach ein Foto vom Anschnitt deines Brotes - die KI analysiert die Krume und gibt dir Tipps fuers naechste Backen.
         </p>
+      </div>
+
+      <div className="mb-6 rounded-2xl bg-mauve-50 border border-mauve-200 p-3 text-xs text-cocoa-700">
+        <strong className="font-medium">Hinweis:</strong> Die KI bewertet nach festen Kriterien, kann aber bei mehreren Versuchen leichte Unterschiede zeigen. Sie ersetzt nicht das Urteil eines erfahrenen Baeckers - sieh sie als Hilfe, nicht als letztes Wort.
       </div>
 
       {!result && (
@@ -389,6 +429,12 @@ export default function KrumeAnalysePage() {
 
       {result && (
         <div className="space-y-4">
+          {reusedFromHistory && (
+            <div className="rounded-2xl bg-honey-50 border border-honey-200 p-3 text-xs text-cocoa-700">
+              ✨ <strong className="font-medium">Bereits analysiert</strong> - Dieses Foto hattest du schon mal hochgeladen. Wir zeigen dir das gespeicherte Ergebnis. So bleibt es konsistent.
+            </div>
+          )}
+
           {photoPreview && (
             <img
               src={photoPreview}
@@ -433,7 +479,7 @@ export default function KrumeAnalysePage() {
             </div>
           )}
 
-          {!postMessage && analysisId && !selectedBrotId && (
+          {!postMessage && analysisId && !selectedBrotId && !reusedFromHistory && (
             <div className="rounded-2xl border border-mauve-200 bg-white p-5 shadow-sm">
               <h2 className="font-display text-lg text-cocoa-900">Was moechtest du machen?</h2>
               <p className="mt-1 text-xs text-cocoa-500">
