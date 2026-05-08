@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { findProblemByDiagnose } from "@/lib/fehlerfinder-data";
 
 const BROT_ARTEN = [
   { value: "vollkorn", label: "Vollkorn", emoji: "🌾", desc: "100% Vollkorn" },
@@ -313,6 +314,11 @@ export default function KrumePage() {
   const aiScoreNum = result?.score ? Number(result.score) : null;
   const scoreDiff = userScoreNum && aiScoreNum ? Math.abs(userScoreNum - aiScoreNum) : 0;
   const bigDisagreement = scoreDiff >= 3;
+
+  // Smart-Link zum Fehlerfinder bei passender Diagnose
+  const matchedProblem = result ? findProblemByDiagnose(
+    `${result.diagnose || ""} ${result.analysis_text || ""} ${userKrume || ""}`
+  ) : null;
 
   return (
     <div className="space-y-6 pb-8">
@@ -640,6 +646,30 @@ export default function KrumePage() {
                 ))}
               </ul>
             </div>
+          )}
+
+          {/* Smart-Link zum Fehlerfinder bei passender Diagnose */}
+          {matchedProblem && (
+            <Link
+              href={`/fehlerfinder?problem=${matchedProblem.id}`}
+              className="block rounded-2xl border-2 border-mauve-500/40 bg-gradient-to-br from-mauve-500/10 to-terra-500/5 p-4 transition-all hover:border-mauve-500/60 hover:shadow-soft"
+            >
+              <div className="flex items-center gap-3">
+                <div className="text-3xl">{matchedProblem.emoji}</div>
+                <div className="flex-1">
+                  <div className="text-[10px] uppercase tracking-wider text-mauve-700">
+                    Tiefer eintauchen
+                  </div>
+                  <div className="text-sm font-semibold text-cocoa-900">
+                    Fehlerfinder: {matchedProblem.titel}
+                  </div>
+                  <div className="text-[11px] text-cocoa-700/70">
+                    {matchedProblem.ursachen.length} moegliche Ursachen mit Loesungen
+                  </div>
+                </div>
+                <div className="text-mauve-700">→</div>
+              </div>
+            </Link>
           )}
 
           {!selectedBrotId && !result.brot_id && !showAttachUI && (

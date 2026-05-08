@@ -3,93 +3,60 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const items = [
+const NAV_ITEMS = [
   {
-    href: "/dashboard",
+    href: "/starter",
     label: "Starter",
-    matches: (p) => p === "/dashboard" || p.startsWith("/starter/"),
     icon: (active) => (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M6 8 Q 6, 8 6 L 16 6 Q 18 6, 18 8 L 17.5 19 Q 17.5 20.5, 16 20.5 L 8 20.5 Q 6.5 20.5, 6.5 19 Z"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          fill={active ? "currentColor" : "none"}
-          fillOpacity={active ? "0.15" : "0"}
-        />
-        <circle cx="10" cy="14" r="1" fill="currentColor" />
-        <circle cx="14" cy="16" r="1.2" fill="currentColor" />
-        <circle cx="13" cy="12" r="0.8" fill="currentColor" />
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c97a5d" : "#7a5e6a"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 2h6l-1 7h-4z" />
+        <path d="M5 9h14l-1 11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z" />
+        <circle cx="12" cy="15" r="2" />
       </svg>
     ),
   },
   {
     href: "/brote",
     label: "Brote",
-    matches: (p) => p.startsWith("/brote"),
     icon: (active) => (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M3 14 Q 3 9, 7 8 Q 8 5, 12 5 Q 16 5, 17 8 Q 21 9, 21 14 L 21 17 Q 21 19, 19 19 L 5 19 Q 3 19, 3 17 Z"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          fill={active ? "currentColor" : "none"}
-          fillOpacity={active ? "0.15" : "0"}
-          strokeLinejoin="round"
-        />
-        <path
-          d="M9 13 L 11 11 M 13 14 L 15 12 M 11 16 L 13 14"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          opacity="0.7"
-        />
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c97a5d" : "#7a5e6a"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 7 Q 3 5, 5 5 L 8 5 L 9.5 3 L 14.5 3 L 16 5 L 19 5 Q 21 5, 21 7 L 21 17 Q 21 19, 19 19 L 5 19 Q 3 19, 3 17 Z" />
       </svg>
     ),
   },
   {
     href: "/krume",
     label: "Krume",
-    matches: (p) => p.startsWith("/krume"),
     icon: (active) => (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <circle
-          cx="12"
-          cy="12"
-          r="9"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          fill={active ? "currentColor" : "none"}
-          fillOpacity={active ? "0.15" : "0"}
-        />
-        <circle cx="9" cy="10" r="1.2" fill="currentColor" opacity="0.7" />
-        <circle cx="14" cy="9" r="0.8" fill="currentColor" opacity="0.7" />
-        <circle cx="15" cy="13" r="1.4" fill="currentColor" opacity="0.7" />
-        <circle cx="10" cy="14" r="1" fill="currentColor" opacity="0.7" />
-        <circle cx="13" cy="15" r="0.7" fill="currentColor" opacity="0.7" />
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c97a5d" : "#7a5e6a"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="9" />
+        <circle cx="9" cy="10" r="1.2" fill={active ? "#c97a5d" : "#7a5e6a"} />
+        <circle cx="14" cy="9" r="1.5" fill={active ? "#c97a5d" : "#7a5e6a"} />
+        <circle cx="11" cy="14" r="1.8" fill={active ? "#c97a5d" : "#7a5e6a"} />
+        <circle cx="15" cy="14" r="1" fill={active ? "#c97a5d" : "#7a5e6a"} />
+      </svg>
+    ),
+  },
+  {
+    href: "/fehlerfinder",
+    label: "Fehler",
+    icon: (active) => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c97a5d" : "#7a5e6a"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="7" />
+        <path d="m21 21-4.35-4.35" />
+        <path d="M11 8v3" />
+        <circle cx="11" cy="14" r="0.5" fill={active ? "#c97a5d" : "#7a5e6a"} />
       </svg>
     ),
   },
   {
     href: "/sos",
     label: "SOS",
-    matches: (p) => p.startsWith("/sos"),
     icon: (active) => (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M12 3 L 21 19 L 3 19 Z"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          fill={active ? "currentColor" : "none"}
-          fillOpacity={active ? "0.15" : "0"}
-          strokeLinejoin="round"
-        />
-        <path
-          d="M12 10 L 12 14 M 12 16.5 L 12 16.6"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c97a5d" : "#7a5e6a"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
       </svg>
     ),
   },
@@ -99,30 +66,30 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-mauve-500/15
-             bg-cream-50/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
-    >
-      <ul className="mx-auto flex max-w-md items-stretch justify-around">
-        {items.map((item) => {
-          const active = item.matches(pathname);
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-mauve-500/20 bg-cream-50/95 backdrop-blur">
+      <div className="mx-auto flex max-w-md justify-around px-1 py-2">
+        {NAV_ITEMS.map((item) => {
+          const active = pathname === item.href || pathname?.startsWith(item.href + "/");
           return (
-            <li key={item.href} className="flex-1">
-              <Link
-                href={item.href}
-                className={`flex flex-col items-center gap-1 py-3 transition-colors ${
-                  active ? "text-terra-600" : "text-cocoa-700/60"
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 transition-all ${
+                active ? "bg-terra-500/10" : ""
+              }`}
+            >
+              {item.icon(active)}
+              <span
+                className={`text-[10px] font-semibold ${
+                  active ? "text-terra-700" : "text-cocoa-700/70"
                 }`}
               >
-                {item.icon(active)}
-                <span className="text-[11px] font-semibold tracking-wide">
-                  {item.label}
-                </span>
-              </Link>
-            </li>
+                {item.label}
+              </span>
+            </Link>
           );
         })}
-      </ul>
+      </div>
     </nav>
   );
 }
