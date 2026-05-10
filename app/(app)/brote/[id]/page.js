@@ -32,6 +32,8 @@ export default function BrotDetailPage({ params }) {
       .eq("id", brotId)
       .single();
 
+    console.log("BROT DEBUG:", { brotId, brotData, error });
+
     if (error || !brotData) {
       setLoading(false);
       return;
@@ -55,11 +57,17 @@ export default function BrotDetailPage({ params }) {
 
     // Krume-Analyse laden wenn verknuepft
     if (brotData.krume_analyse_id) {
-      const { data: krumeData } = await supabase
+      const { data: krumeData, error: krumeError } = await supabase
         .from("krumen_analysen")
         .select("*")
         .eq("id", brotData.krume_analyse_id)
         .single();
+
+      console.log("KRUME DEBUG:", {
+        krumeAnalyseId: brotData.krume_analyse_id,
+        krumeData,
+        krumeError,
+      });
 
       if (krumeData) {
         setKrumeAnalyse(krumeData);
@@ -72,6 +80,8 @@ export default function BrotDetailPage({ params }) {
           if (signedKrume?.signedUrl) setKrumePhotoUrl(signedKrume.signedUrl);
         }
       }
+    } else {
+      console.log("KRUME DEBUG: keine krume_analyse_id auf diesem Brot");
     }
 
     setLoading(false);
