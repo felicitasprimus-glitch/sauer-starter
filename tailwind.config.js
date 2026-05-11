@@ -1,61 +1,67 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
-    "./app/**/*.{js,jsx}",
-    "./components/**/*.{js,jsx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        // Sauer macht Krustig palette
+        // Hintergrund-Toene (zartes Rose) - frueher "cream"
         cream: {
-          50: "#FDFAF4",
-          100: "#FAF6F0",
-          200: "#F3EBDD",
+          50: "#fdfbfc",   // fast weiss mit Hauch rosa
+          100: "#f9f3f7",  // sehr zart rosa
+          200: "#f2ecf0",  // hellrosa-mauve (Hintergrund)
+          300: "#e8dde5",  // tieferer Rosa-Hauch
         },
+        // Mauve-Rosa Akzente - frueher "mauve"
         mauve: {
-          400: "#B8869B",
-          500: "#9D6B7E",
-          600: "#7E5366",
-          700: "#5E3D4D",
+          400: "#c4a5bc",
+          500: "#a885a0",  // Hauptakzent (Buttons, Highlights)
+          600: "#95738e",
+          700: "#7a5e75",  // mittleres Mauve fuer Text
+          800: "#5e4a59",
         },
-        terra: {
-          400: "#D89578",
-          500: "#C97B5B",
-          600: "#B5654A",
-          700: "#8E4D38",
-        },
-        honey: {
-          400: "#E8B547",
-          500: "#D4A04C",
-          600: "#B4842F",
-        },
+        // Warmes Aubergine fuer Text - frueher "cocoa"
         cocoa: {
-          700: "#5C4232",
-          800: "#3D2A20",
-          900: "#28190F",
+          50: "#fdfbfc",
+          100: "#f5e8f0",
+          200: "#e6d0db",
+          700: "#6b4a62",
+          800: "#4e364a",
+          900: "#382634",  // dunkler Text
+        },
+        // Warme Akzentfarbe (Pfirsich/Terra) fuer Buttons - frueher "terra"
+        terra: {
+          300: "#e8b8a8",
+          400: "#d99e88",
+          500: "#c87f63",  // Primary-Action-Color (Buttons)
+          600: "#b06b50",
+          700: "#8c543e",  // Fehler-Hinweise
+        },
+        // Honig-Goldton fuer besondere Hinweise - frueher "honey"
+        honey: {
+          400: "#e8c995",
+          500: "#d4a868",
+          600: "#b88a4a",
         },
       },
       fontFamily: {
-        display: ["var(--font-fraunces)", "Georgia", "serif"],
-        body: ["var(--font-manrope)", "system-ui", "sans-serif"],
+        display: ['"Cormorant Garamond"', "Fraunces", "serif"],
+        body: ["Manrope", "Inter", "sans-serif"],
+        script: ["Allura", "cursive"],
       },
       boxShadow: {
-        soft: "0 2px 8px -2px rgba(93, 61, 77, 0.08), 0 4px 24px -4px rgba(93, 61, 77, 0.06)",
-        warm: "0 4px 16px -4px rgba(201, 123, 91, 0.18)",
+        soft: "0 4px 18px rgba(168, 133, 160, 0.18)",
+        glow: "0 8px 24px rgba(200, 127, 99, 0.22)",
       },
       animation: {
-        "rise": "rise 0.5s ease-out",
-        "bubble": "bubble 3s ease-in-out infinite",
+        "fade-in": "fadeIn 0.4s ease-in-out",
       },
       keyframes: {
-        rise: {
-          "0%": { opacity: "0", transform: "translateY(8px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-        bubble: {
-          "0%, 100%": { transform: "translateY(0) scale(1)" },
-          "50%": { transform: "translateY(-4px) scale(1.05)" },
+        fadeIn: {
+          from: { opacity: 0, transform: "translateY(8px)" },
+          to: { opacity: 1, transform: "translateY(0)" },
         },
       },
     },

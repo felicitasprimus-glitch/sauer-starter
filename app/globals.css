@@ -2,72 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-bg: #FAF6F0;
-  --color-text: #3D2A20;
-}
+@import url('https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Manrope:wght@300;400;500;600;700&display=swap');
 
-html, body {
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@layer base {
+  html {
+    font-family: "Manrope", "Inter", sans-serif;
+    color: #382634;
+  }
 
-body {
-  background-image:
-    radial-gradient(circle at 20% 10%, rgba(212, 160, 76, 0.06) 0%, transparent 40%),
-    radial-gradient(circle at 80% 80%, rgba(157, 107, 126, 0.05) 0%, transparent 45%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.31 0 0 0 0 0.23 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  min-height: 100vh;
+  body {
+    background: linear-gradient(180deg, #fdfbfc 0%, #f2ecf0 100%);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: "Cormorant Garamond", serif;
+    color: #382634;
+    font-weight: 500;
+  }
 }
 
 @layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full
-           bg-terra-500 px-5 py-3 font-body font-semibold text-cream-50
-           shadow-warm transition-all hover:bg-terra-600 active:scale-[0.98]
-           disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full
-           border border-mauve-500/30 bg-cream-50 px-5 py-3 font-body
-           font-semibold text-cocoa-800 transition-all
-           hover:bg-cream-200 active:scale-[0.98];
-  }
-  .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-full
-           px-4 py-2 font-body text-cocoa-700 transition-colors
-           hover:bg-mauve-500/10;
-  }
-  .input {
-    @apply w-full rounded-2xl border border-mauve-500/20 bg-cream-50
-           px-4 py-3 font-body text-cocoa-800 placeholder:text-cocoa-700/40
-           shadow-soft transition-all
-           focus:border-terra-500 focus:outline-none focus:ring-2
-           focus:ring-terra-500/20;
-  }
-  .label {
-    @apply block font-body text-sm font-semibold text-cocoa-700 mb-1.5;
-  }
   .card {
-    @apply rounded-3xl border border-mauve-500/15 bg-cream-50 p-5
-           shadow-soft;
+    @apply rounded-2xl border border-mauve-500/25 bg-cream-50/85 p-4 shadow-soft backdrop-blur-sm;
   }
-  .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1
-           text-xs font-semibold;
-  }
-  .h-display {
-    @apply font-display font-medium tracking-tight text-cocoa-900;
-  }
-}
 
-/* Hand-drawn underline */
-.underline-wobble {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8'%3E%3Cpath d='M2 5 Q 25 1, 50 5 T 98 5' stroke='%23C97B5B' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: bottom center;
-  background-size: 100% 6px;
-  padding-bottom: 8px;
+  .btn-primary {
+    @apply rounded-full bg-terra-500 px-5 py-2.5 text-sm font-semibold text-cream-50 shadow-soft transition-all hover:bg-terra-600 hover:shadow-glow active:scale-95 disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply rounded-full border border-mauve-500/30 bg-cream-50 px-5 py-2.5 text-sm font-semibold text-cocoa-800 transition-all hover:border-terra-500/50 hover:bg-cream-100 active:scale-95;
+  }
+
+  .input {
+    @apply w-full rounded-2xl border border-mauve-500/25 bg-cream-50 px-4 py-2.5 text-sm text-cocoa-900 placeholder-cocoa-700/40 transition-all focus:border-terra-500 focus:outline-none focus:ring-2 focus:ring-terra-500/15;
+  }
+
+  .label {
+    @apply text-[10px] font-semibold uppercase tracking-wider text-mauve-700;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold;
+  }
+
+  .font-display {
+    font-family: "Cormorant Garamond", serif;
+    letter-spacing: 0.01em;
+  }
 }
