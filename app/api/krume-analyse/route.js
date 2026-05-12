@@ -1,4 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { createClient } from "@/lib/supabase/server";
+
+const DAILY_LIMIT = 5;
 
 const BROT_PROFILE = {
   vollkorn: {
@@ -44,6 +47,45 @@ function extractJson(text) {
 
 export async function POST(request) {
   try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return Response.json({ error: "Nicht eingeloggt" }, { status: 401 });
+    }
+
+    // LIMIT-CHECK: Wie viele Analysen heute schon gemacht?
+    const today = new Date().toISOString().slice(0, 10);
+
+    const { data: limitData } = await supabase
+      .from("krumen_limits")
+      .select("count")
+      .eq("user_id", user.id)
+      .eq("date", today)
+      .maybeSingle();
+
+    const todayCount = limitData?.count || 0;
+
+    // Admin-Check: Admins haben kein Limit
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isAdmin = profile?.is_admin === true;
+
+    if (!isAdmin && todayCount >= DAILY_LIMIT) {
+      return Response.json(
+        {
+          error: `Du hast heute schon ${DAILY_LIMIT} Krumen-Analysen gemacht. Versuch es morgen wieder!`,
+          limitReached: true,
+          dailyLimit: DAILY_LIMIT,
+        },
+        { status: 429 }
+      );
+    }
+
     const { imageBase64, mimeType, brotArt, userBeobachtungen } = await request.json();
 
     if (!imageBase64) {
@@ -54,7 +96,7 @@ export async function POST(request) {
       return Response.json({ error: "ANTHROPIC_API_KEY fehlt" }, { status: 500 });
     }
 
-    const profile = BROT_PROFILE[brotArt] || BROT_PROFILE.unbekannt;
+    const profile2 = BROT_PROFILE[brotArt] || BROT_PROFILE.unbekannt;
 
     let userInfoBlock = "";
     if (userBeobachtungen) {
@@ -87,9 +129,9 @@ export async function POST(request) {
 
     const systemPrompt = `Du bist ein erfahrener Sauerteig-Baecker und bewertest Brot-Krumen.
 
-BROT-ART: ${profile.name}
-Ideale Krume bei dieser Art: ${profile.ideal}
-WARNUNG: ${profile.warnung}
+BROT-ART: ${profile2.name}
+Ideale Krume bei dieser Art: ${profile2.ideal}
+WARNUNG: ${profile2.warnung}
 
 KRITISCHE REGELN — UNBEDINGT BEACHTEN:
 
@@ -180,7 +222,23 @@ Antworte AUSSCHLIESSLICH mit JSON in diesem Format (kein Markdown, kein Code-Blo
       );
     }
 
-    return Response.json({ analysis });
+    // LIMIT-COUNTER hochzaehlen (auch fuer Admins, dann sieht man Trends)
+    if (limitData) {
+      await supabase
+        .from("krumen_limits")
+        .update({ count: todayCount + 1, updated_at: new Date().toISOString() })
+        .eq("user_id", user.id)
+        .eq("date", today);
+    } else {
+      await supabase
+        .from("krumen_limits")
+        .insert({ user_id: user.id, date: today, count: 1 });
+    }
+
+    return Response.json({
+      analysis,
+      remainingToday: isAdmin ? null : Math.max(0, DAILY_LIMIT - (todayCount + 1)),
+    });
   } catch (err) {
     return Response.json(
       { error: err.message || "Fehler bei der Analyse" },
