@@ -2,91 +2,144 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   html {
     font-family: "Inter", "Helvetica Neue", sans-serif;
-    color: #3a2a35;
+    color: #2a1d24;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    background: #faf8f4;
+    background: #faf6ed;
     min-height: 100vh;
     font-weight: 400;
     line-height: 1.6;
   }
 
-  h1, h2, h3, h4 {
-    font-family: "Cormorant Garamond", Georgia, serif;
-    color: #221a20;
-    font-weight: 400;
-    line-height: 1.15;
-    letter-spacing: -0.01em;
-  }
-
+  /* HEADLINES - dramatisch, gross, italic */
   h1 {
+    font-family: "Cormorant Garamond", Georgia, serif;
     font-weight: 400;
+    font-style: italic;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: #1a0f14;
   }
 
-  h2, h3, h4 {
+  h2 {
+    font-family: "Cormorant Garamond", Georgia, serif;
     font-weight: 500;
+    font-style: italic;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: #1a0f14;
+  }
+
+  h3, h4 {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-weight: 500;
+    line-height: 1.15;
+    color: #1a0f14;
   }
 }
 
 @layer components {
-  /* Karten - subtle, editorial */
+  /* KARTEN - mit subtiler Gold-Akzentlinie oben */
   .card {
-    @apply rounded-sm border border-cream-300 bg-cream-50 p-5 shadow-soft;
+    @apply relative rounded-none border border-cream-300 bg-cream-50 p-6 shadow-editorial;
   }
 
-  /* Primary Button - dunkles Mauve, feine Linien */
+  .card::before {
+    content: "";
+    @apply absolute left-6 right-6 top-0 h-px bg-gradient-to-r from-transparent via-gold-400 to-transparent opacity-50;
+  }
+
+  /* PRIMARY BUTTON - dramatisch, Gold-Akzent */
   .btn-primary {
-    @apply rounded-sm bg-mauve-700 px-6 py-3 text-xs font-semibold uppercase tracking-widest text-cream-50 shadow-soft transition-all hover:bg-mauve-800 hover:shadow-glow active:scale-[0.98] disabled:opacity-50;
+    @apply relative inline-flex items-center justify-center rounded-none border border-cocoa-900 bg-cocoa-900 px-8 py-3.5 text-mini font-semibold uppercase tracking-widest text-cream-50 transition-all hover:bg-mauve-700 hover:border-mauve-700 active:scale-[0.98] disabled:opacity-50;
   }
 
-  /* Secondary Button - sehr zurueckhaltend */
+  /* SECONDARY BUTTON - rein typografisch */
   .btn-secondary {
-    @apply rounded-sm border border-mauve-500/40 bg-transparent px-6 py-3 text-xs font-semibold uppercase tracking-widest text-cocoa-800 transition-all hover:border-mauve-700 hover:bg-cream-200 active:scale-[0.98];
+    @apply relative inline-flex items-center justify-center rounded-none border border-cocoa-900/30 bg-transparent px-8 py-3.5 text-mini font-semibold uppercase tracking-widest text-cocoa-800 transition-all hover:border-gold-500 hover:text-gold-700 active:scale-[0.98];
   }
 
-  /* Input - mit dezenter Unterlinie statt Border-Box */
+  /* GOLD BUTTON fuer besondere Aktionen */
+  .btn-gold {
+    @apply inline-flex items-center justify-center rounded-none border border-gold-500 bg-gold-400 px-8 py-3.5 text-mini font-semibold uppercase tracking-widest text-cocoa-900 transition-all hover:bg-gold-500 hover:shadow-gold active:scale-[0.98];
+  }
+
+  /* INPUT - editorial mit Unterstrich */
   .input {
-    @apply w-full rounded-sm border border-cream-300 bg-cream-50 px-4 py-3 text-sm text-cocoa-900 placeholder-cocoa-700/40 transition-all focus:border-mauve-500 focus:outline-none focus:ring-1 focus:ring-mauve-500/20;
+    @apply w-full rounded-none border border-cream-300 bg-cream-50/60 px-4 py-3 text-base text-cocoa-900 placeholder-cocoa-700/35 transition-all focus:border-gold-500 focus:bg-cream-50 focus:outline-none focus:ring-0;
   }
 
-  /* Label - mini, uppercase, editorial */
+  /* LABEL - mini, uppercase, mit Gold-Touch */
   .label {
-    @apply text-[10px] font-medium uppercase tracking-widest text-mauve-700;
+    @apply text-mini font-semibold uppercase tracking-widest text-mauve-700;
   }
 
-  /* Chip - minimal */
+  /* CHIP - editorial */
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-sm border border-mauve-500/30 bg-cream-100 px-3 py-1 text-[10px] font-medium uppercase tracking-wider text-cocoa-800;
+    @apply inline-flex items-center gap-1.5 rounded-none border border-gold-400/40 bg-gold-100/50 px-3 py-1 text-mini font-medium uppercase tracking-widest text-cocoa-800;
   }
 
-  /* Display-Schrift */
+  /* TYPOGRAPHY UTILITIES */
   .font-display {
     font-family: "Cormorant Garamond", Georgia, serif;
-    letter-spacing: -0.01em;
-    font-weight: 400;
+    letter-spacing: -0.015em;
   }
 
-  /* Trenner-Strich */
+  .font-display-italic {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-style: italic;
+    letter-spacing: -0.02em;
+  }
+
+  /* EDITORIAL DIVIDER mit Gold-Punkt */
   .divider {
-    @apply h-px w-full bg-cream-300;
+    @apply relative flex items-center justify-center my-8;
   }
 
-  /* Kleiner Trenner mit Punkt */
-  .divider-dot::before {
-    content: "\00B7";
-    @apply inline-block px-2 text-mauve-500;
+  .divider::before,
+  .divider::after {
+    content: "";
+    @apply h-px flex-1 bg-cocoa-900/15;
+  }
+
+  .divider::before {
+    @apply mr-3;
+  }
+
+  .divider::after {
+    @apply ml-3;
+  }
+
+  .divider-gold::before,
+  .divider-gold::after {
+    @apply bg-gold-500/40;
+  }
+
+  /* MINI LABEL - fuer kleine Akzente */
+  .mini-label {
+    @apply text-mini font-semibold uppercase tracking-widest text-mauve-700;
+  }
+
+  /* BRAND MARK - das kleine "Sauer macht krustig" oben */
+  .brand-mark {
+    @apply text-mini font-medium uppercase tracking-widest text-mauve-700;
+  }
+
+  /* GOLDLINE - dezente Trennung mit Gold-Hauch */
+  .gold-line {
+    @apply h-px w-12 bg-gold-500 mx-auto;
   }
 }
 
-/* Subtle scrollbar for desktop */
+/* Subtle scrollbar */
 @media (min-width: 768px) {
   ::-webkit-scrollbar {
     width: 8px;
@@ -94,15 +147,25 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #faf8f4;
+    background: #faf6ed;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #ebe5db;
-    border-radius: 4px;
+    background: #e3d4ac;
+    border-radius: 0;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #a67c7d;
+    background: #b89238;
   }
+}
+
+/* Disable rounded corners im Editorial-Look */
+.card,
+.btn-primary,
+.btn-secondary,
+.btn-gold,
+.input,
+.chip {
+  border-radius: 2px;
 }
