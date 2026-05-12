@@ -1,35 +1,45 @@
-import { Fraunces, Manrope } from "next/font/google";
 import "./globals.css";
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
-  display: "swap",
-  axes: ["SOFT", "WONK"],
-});
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope",
-  display: "swap",
-});
-
 export const metadata = {
-  title: "Sauer macht Krustig — Starter Tagebuch",
-  description:
-    "Dein Sauerteig-Starter im Blick: Fütterung, Peak und alle Aha-Momente.",
+  title: "Sauer macht krustig",
+  description: "Dein Sauerteig-Tagebuch",
+  manifest: "/manifest.json",
+  themeColor: "#a885a0",
+  icons: {
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "SMK",
+  },
 };
 
 export const viewport = {
-  themeColor: "#FAF6F0",
+  themeColor: "#a885a0",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="de" className={`${fraunces.variable} ${manrope.variable}`}>
-      <body className="font-body min-h-screen">{children}</body>
+    <html lang="de">
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="SMK" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      </head>
+      <body>{children}</body>
     </html>
   );
 }

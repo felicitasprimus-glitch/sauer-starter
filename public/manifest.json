@@ -1,0 +1,31 @@
+{
+  "name": "Sauer macht krustig",
+  "short_name": "SMK",
+  "description": "Dein Sauerteig-Tagebuch — Starter tracken, Brote dokumentieren, Krume analysieren.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2ecf0",
+  "theme_color": "#a885a0",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
