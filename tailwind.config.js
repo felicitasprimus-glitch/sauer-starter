@@ -7,56 +7,60 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Hintergrund-Toene (zartes Rose) - frueher "cream"
+        // Hintergrund - off-white champagne wie Buchpapier
         cream: {
-          50: "#fdfbfc",   // fast weiss mit Hauch rosa
-          100: "#f9f3f7",  // sehr zart rosa
-          200: "#f2ecf0",  // hellrosa-mauve (Hintergrund)
-          300: "#e8dde5",  // tieferer Rosa-Hauch
+          50: "#fdfcfa",   // fast wei\u00df, warm
+          100: "#faf8f4",  // off-white champagne (Haupt-Hintergrund)
+          200: "#f4f0e8",  // cremiges Beige fuer Karten
+          300: "#ebe5db",  // tieferes Beige fuer Borders/Hovers
         },
-        // Mauve-Rosa Akzente - frueher "mauve"
+        // Hauptakzent - warmes Rosenholz/Mauve
         mauve: {
-          400: "#c4a5bc",
-          500: "#a885a0",  // Hauptakzent (Buttons, Highlights)
-          600: "#95738e",
-          700: "#7a5e75",  // mittleres Mauve fuer Text
-          800: "#5e4a59",
+          400: "#b89394",  // helles Rosenholz
+          500: "#a67c7d",  // Hauptakzent
+          600: "#8d6566",  // dunkleres Mauve
+          700: "#7d5560",  // Buttons (primary action)
+          800: "#5e3e47",  // dunkle Akzente
         },
-        // Warmes Aubergine fuer Text - frueher "cocoa"
+        // Text-Farben - warmes Aubergine
         cocoa: {
-          50: "#fdfbfc",
-          100: "#f5e8f0",
-          200: "#e6d0db",
-          700: "#6b4a62",
-          800: "#4e364a",
-          900: "#382634",  // dunkler Text
+          50: "#fdfcfa",
+          100: "#f5ebee",
+          200: "#e8d6dc",
+          700: "#5e4452",
+          800: "#3a2a35",  // Haupttext
+          900: "#221a20",  // Headlines/dunkler Text
         },
-        // Warme Akzentfarbe (Pfirsich/Terra) fuer Buttons - frueher "terra"
+        // Sekund\u00e4r-Akzent - warmes Terrakotta
         terra: {
-          300: "#e8b8a8",
-          400: "#d99e88",
-          500: "#c87f63",  // Primary-Action-Color (Buttons)
-          600: "#b06b50",
-          700: "#8c543e",  // Fehler-Hinweise
+          300: "#d8b8ad",
+          400: "#c89e90",
+          500: "#a67c7d",  // f\u00fcr Highlights
+          600: "#8d6566",
+          700: "#6e4a4e",
         },
-        // Honig-Goldton fuer besondere Hinweise - frueher "honey"
+        // Gold/Honig f\u00fcr besondere Hinweise
         honey: {
-          400: "#e8c995",
-          500: "#d4a868",
-          600: "#b88a4a",
+          400: "#d4b380",
+          500: "#c9a063",  // dezenter Gold-Ton
+          600: "#a8814a",
         },
       },
       fontFamily: {
-        display: ['"Cormorant Garamond"', "Fraunces", "serif"],
-        body: ["Manrope", "Inter", "sans-serif"],
+        display: ['"Cormorant Garamond"', "Georgia", "serif"],
+        body: ['"Inter"', '"Helvetica Neue"', "sans-serif"],
         script: ["Allura", "cursive"],
       },
+      letterSpacing: {
+        widest: "0.2em",
+      },
       boxShadow: {
-        soft: "0 4px 18px rgba(168, 133, 160, 0.18)",
-        glow: "0 8px 24px rgba(200, 127, 99, 0.22)",
+        soft: "0 2px 12px rgba(58, 42, 53, 0.06)",
+        glow: "0 4px 24px rgba(166, 124, 125, 0.18)",
+        editorial: "0 1px 2px rgba(58, 42, 53, 0.04), 0 8px 32px rgba(58, 42, 53, 0.04)",
       },
       animation: {
-        "fade-in": "fadeIn 0.4s ease-in-out",
+        "fade-in": "fadeIn 0.5s ease-out",
       },
       keyframes: {
         fadeIn: {

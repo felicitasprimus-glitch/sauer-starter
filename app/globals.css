@@ -2,53 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Manrope:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
 
 @layer base {
   html {
-    font-family: "Manrope", "Inter", sans-serif;
-    color: #382634;
+    font-family: "Inter", "Helvetica Neue", sans-serif;
+    color: #3a2a35;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    background: linear-gradient(180deg, #fdfbfc 0%, #f2ecf0 100%);
+    background: #faf8f4;
     min-height: 100vh;
+    font-weight: 400;
+    line-height: 1.6;
   }
 
   h1, h2, h3, h4 {
-    font-family: "Cormorant Garamond", serif;
-    color: #382634;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    color: #221a20;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  h1 {
+    font-weight: 400;
+  }
+
+  h2, h3, h4 {
     font-weight: 500;
   }
 }
 
 @layer components {
+  /* Karten - subtle, editorial */
   .card {
-    @apply rounded-2xl border border-mauve-500/25 bg-cream-50/85 p-4 shadow-soft backdrop-blur-sm;
+    @apply rounded-sm border border-cream-300 bg-cream-50 p-5 shadow-soft;
   }
 
+  /* Primary Button - dunkles Mauve, feine Linien */
   .btn-primary {
-    @apply rounded-full bg-terra-500 px-5 py-2.5 text-sm font-semibold text-cream-50 shadow-soft transition-all hover:bg-terra-600 hover:shadow-glow active:scale-95 disabled:opacity-50;
+    @apply rounded-sm bg-mauve-700 px-6 py-3 text-xs font-semibold uppercase tracking-widest text-cream-50 shadow-soft transition-all hover:bg-mauve-800 hover:shadow-glow active:scale-[0.98] disabled:opacity-50;
   }
 
+  /* Secondary Button - sehr zurueckhaltend */
   .btn-secondary {
-    @apply rounded-full border border-mauve-500/30 bg-cream-50 px-5 py-2.5 text-sm font-semibold text-cocoa-800 transition-all hover:border-terra-500/50 hover:bg-cream-100 active:scale-95;
+    @apply rounded-sm border border-mauve-500/40 bg-transparent px-6 py-3 text-xs font-semibold uppercase tracking-widest text-cocoa-800 transition-all hover:border-mauve-700 hover:bg-cream-200 active:scale-[0.98];
   }
 
+  /* Input - mit dezenter Unterlinie statt Border-Box */
   .input {
-    @apply w-full rounded-2xl border border-mauve-500/25 bg-cream-50 px-4 py-2.5 text-sm text-cocoa-900 placeholder-cocoa-700/40 transition-all focus:border-terra-500 focus:outline-none focus:ring-2 focus:ring-terra-500/15;
+    @apply w-full rounded-sm border border-cream-300 bg-cream-50 px-4 py-3 text-sm text-cocoa-900 placeholder-cocoa-700/40 transition-all focus:border-mauve-500 focus:outline-none focus:ring-1 focus:ring-mauve-500/20;
   }
 
+  /* Label - mini, uppercase, editorial */
   .label {
-    @apply text-[10px] font-semibold uppercase tracking-wider text-mauve-700;
+    @apply text-[10px] font-medium uppercase tracking-widest text-mauve-700;
   }
 
+  /* Chip - minimal */
   .chip {
-    @apply inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold;
+    @apply inline-flex items-center gap-1.5 rounded-sm border border-mauve-500/30 bg-cream-100 px-3 py-1 text-[10px] font-medium uppercase tracking-wider text-cocoa-800;
   }
 
+  /* Display-Schrift */
   .font-display {
-    font-family: "Cormorant Garamond", serif;
-    letter-spacing: 0.01em;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    letter-spacing: -0.01em;
+    font-weight: 400;
+  }
+
+  /* Trenner-Strich */
+  .divider {
+    @apply h-px w-full bg-cream-300;
+  }
+
+  /* Kleiner Trenner mit Punkt */
+  .divider-dot::before {
+    content: "\00B7";
+    @apply inline-block px-2 text-mauve-500;
+  }
+}
+
+/* Subtle scrollbar for desktop */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #faf8f4;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #ebe5db;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a67c7d;
   }
 }
