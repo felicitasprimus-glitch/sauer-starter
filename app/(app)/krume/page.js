@@ -11,7 +11,7 @@ const BROT_ARTEN = [
   { value: "weissbrot", label: "Weissbrot", emoji: "🍞", desc: "Helles Weizenbrot, Ciabatta, Baguette" },
   { value: "mischbrot", label: "Mischbrot", emoji: "🥖", desc: "Mix aus hell und Vollkorn" },
   { value: "roggen", label: "Roggenbrot", emoji: "🌑", desc: "Hauptsaechlich Roggen" },
-  { value: "unbekannt", label: "Weiss nicht", emoji: "❓", desc: "Lass die KI raten" },
+  { value: "unbekannt", label: "Weiss nicht", emoji: "❓", desc: "Lass den KI-Baecker raten" },
 ];
 
 const AUFGANG_OPTIONEN = [
@@ -315,7 +315,6 @@ export default function KrumePage() {
   const scoreDiff = userScoreNum && aiScoreNum ? Math.abs(userScoreNum - aiScoreNum) : 0;
   const bigDisagreement = scoreDiff >= 3;
 
-  // Smart-Link zum Fehlerfinder bei passender Diagnose
   const matchedProblem = result ? findProblemByDiagnose(
     `${result.diagnose || ""} ${result.analysis_text || ""} ${userKrume || ""}`
   ) : null;
@@ -323,17 +322,20 @@ export default function KrumePage() {
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <h1 className="font-display text-3xl text-cocoa-900">Krumenleser</h1>
-        <p className="mt-1 text-sm text-cocoa-700/70">
-          Foto deines angeschnittenen Brotes hochladen — KI analysiert die Krume.
+        <p className="brand-mark">Sauer macht krustig</p>
+        <h1 className="font-display-italic text-display-lg mt-2">Krumenleser</h1>
+        <p className="mt-3 text-sm leading-relaxed text-cocoa-700/80">
+          Der <em>KI-Baecker</em> analysiert deine Krume und gibt dir eine
+          ehrliche Einschaetzung — wie ein erfahrener Kollege, der ueber die
+          Schulter schaut.
         </p>
       </div>
 
-      <div className="rounded-2xl border border-honey-500/30 bg-honey-500/10 px-4 py-3">
+      <div className="border border-honey-500/40 bg-honey-500/10 px-4 py-3">
         <p className="text-xs leading-relaxed text-cocoa-800">
-          <strong>Wichtig:</strong> KI-Vision-Modelle koennen Untergare/Uebergare
-          oft schlecht erkennen. Deine eigene Einschaetzung ist immer wertvoller —
-          die KI ist nur Zweitmeinung. Vertrau deinen Sinnen!
+          <strong>Wichtig:</strong> Der KI-Baecker kann Untergare/Uebergare
+          oft schlecht erkennen. Deine eigene Einschaetzung ist immer wertvoller.
+          Vertrau deinen Sinnen!
         </p>
       </div>
 
@@ -347,10 +349,10 @@ export default function KrumePage() {
                   key={art.value}
                   type="button"
                   onClick={() => setBrotArt(art.value)}
-                  className={`rounded-2xl border p-3 text-left transition-all ${
+                  className={`border p-3 text-left transition-all ${
                     brotArt === art.value
-                      ? "border-terra-500 bg-terra-500/10"
-                      : "border-mauve-500/25 bg-cream-50 hover:border-terra-500/50"
+                      ? "border-gold-500 bg-gold-100/40"
+                      : "border-cream-300 bg-cream-50 hover:border-gold-400/50"
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -376,10 +378,10 @@ export default function KrumePage() {
                     key={opt.value}
                     type="button"
                     onClick={() => setUserAufgang(userAufgang === opt.value ? "" : opt.value)}
-                    className={`rounded-2xl border p-2 text-center transition-all ${
+                    className={`border p-2 text-center transition-all ${
                       userAufgang === opt.value
-                        ? "border-terra-500 bg-terra-500/10"
-                        : "border-mauve-500/25 bg-cream-50 hover:border-terra-500/50"
+                        ? "border-gold-500 bg-gold-100/40"
+                        : "border-cream-300 bg-cream-50 hover:border-gold-400/50"
                     }`}
                   >
                     <div className="text-xl">{opt.emoji}</div>
@@ -399,10 +401,10 @@ export default function KrumePage() {
                     key={opt.value}
                     type="button"
                     onClick={() => setUserGefuehl(userGefuehl === opt.value ? "" : opt.value)}
-                    className={`rounded-2xl border p-2 text-center transition-all ${
+                    className={`border p-2 text-center transition-all ${
                       userGefuehl === opt.value
-                        ? "border-terra-500 bg-terra-500/10"
-                        : "border-mauve-500/25 bg-cream-50 hover:border-terra-500/50"
+                        ? "border-gold-500 bg-gold-100/40"
+                        : "border-cream-300 bg-cream-50 hover:border-gold-400/50"
                     }`}
                   >
                     <div className="text-xl">{opt.emoji}</div>
@@ -422,10 +424,10 @@ export default function KrumePage() {
                     key={opt.value}
                     type="button"
                     onClick={() => setUserKrume(userKrume === opt.value ? "" : opt.value)}
-                    className={`rounded-2xl border p-2 text-left transition-all ${
+                    className={`border p-2 text-left transition-all ${
                       userKrume === opt.value
-                        ? "border-terra-500 bg-terra-500/10"
-                        : "border-mauve-500/25 bg-cream-50 hover:border-terra-500/50"
+                        ? "border-gold-500 bg-gold-100/40"
+                        : "border-cream-300 bg-cream-50 hover:border-gold-400/50"
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -480,10 +482,10 @@ export default function KrumePage() {
                   <button
                     type="button"
                     onClick={() => setSelectedBrotId("")}
-                    className={`w-full rounded-2xl border p-2 text-left text-xs ${
+                    className={`w-full border p-2 text-left text-xs ${
                       selectedBrotId === ""
-                        ? "border-terra-500 bg-terra-500/10"
-                        : "border-mauve-500/25 bg-cream-50"
+                        ? "border-gold-500 bg-gold-100/40"
+                        : "border-cream-300 bg-cream-50"
                     }`}
                   >
                     Kein Brot zuordnen
@@ -493,10 +495,10 @@ export default function KrumePage() {
                       key={brot.id}
                       type="button"
                       onClick={() => setSelectedBrotId(brot.id)}
-                      className={`w-full rounded-2xl border p-2 text-left text-xs ${
+                      className={`w-full border p-2 text-left text-xs ${
                         selectedBrotId === brot.id
-                          ? "border-terra-500 bg-terra-500/10"
-                          : "border-mauve-500/25 bg-cream-50"
+                          ? "border-gold-500 bg-gold-100/40"
+                          : "border-cream-300 bg-cream-50"
                       }`}
                     >
                       <div className="font-semibold text-cocoa-800">{brot.name}</div>
@@ -515,17 +517,17 @@ export default function KrumePage() {
             <div className="mt-2">
               {preview ? (
                 <div className="relative">
-                  <img src={preview} alt="Vorschau" className="h-48 w-full rounded-2xl object-cover" />
+                  <img src={preview} alt="Vorschau" className="h-48 w-full object-cover" />
                   <button
                     type="button"
                     onClick={() => { setPhotoFile(null); setPreview(null); }}
-                    className="absolute right-2 top-2 rounded-full bg-cream-50/95 px-3 py-1 text-xs font-semibold text-cocoa-800"
+                    className="absolute right-2 top-2 bg-cream-50/95 px-3 py-1 text-xs font-semibold text-cocoa-800"
                   >
                     Anderes Foto
                   </button>
                 </div>
               ) : (
-                <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-mauve-500/30 bg-cream-200/30 hover:border-terra-500/50">
+                <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 border-2 border-dashed border-cream-300 bg-cream-100/50 hover:border-gold-500/50">
                   <span className="text-2xl">📷</span>
                   <span className="text-xs font-semibold text-cocoa-800">Foto hochladen</span>
                   <input
@@ -545,11 +547,11 @@ export default function KrumePage() {
             disabled={!photoFile || analyzing}
             className="btn-primary w-full"
           >
-            {analyzing ? "KI analysiert ..." : "Krume analysieren"}
+            {analyzing ? "Der KI-Baecker analysiert deine Krume ..." : "Vom KI-Baecker analysieren lassen"}
           </button>
 
           {error && (
-            <div className="rounded-2xl border border-terra-500/40 bg-terra-500/10 px-4 py-3 text-sm text-terra-700">
+            <div className="border border-terra-500/40 bg-terra-400/10 px-4 py-3 text-sm text-terra-700">
               {error}
             </div>
           )}
@@ -558,14 +560,21 @@ export default function KrumePage() {
 
       {result && (
         <div className="space-y-4">
+          <div>
+            <p className="brand-mark">Bewertung vom KI-Baecker</p>
+            <h2 className="font-display-italic text-display-md mt-1">
+              {result.diagnose || "Deine Krume"}
+            </h2>
+          </div>
+
           {result.isExisting && (
-            <div className="rounded-2xl border border-mauve-500/30 bg-mauve-500/10 px-4 py-3 text-xs text-cocoa-800">
+            <div className="border border-mauve-500/30 bg-mauve-500/10 px-4 py-3 text-xs text-cocoa-800">
               ✨ Bereits analysiert — gespeichertes Ergebnis wird gezeigt.
             </div>
           )}
 
           {result.photo_path && preview && (
-            <img src={preview} alt="Krume" className="h-48 w-full rounded-2xl object-cover shadow-soft" />
+            <img src={preview} alt="Krume" className="h-48 w-full object-cover" />
           )}
 
           <div className="grid grid-cols-2 gap-3">
@@ -575,10 +584,8 @@ export default function KrumePage() {
               return (
                 <>
                   <div className="card text-center">
-                    <div className="text-[10px] uppercase tracking-wider text-mauve-700">
-                      KI-Score
-                    </div>
-                    <div className="mt-1 text-3xl font-bold text-cocoa-900">
+                    <div className="label">KI-Baecker</div>
+                    <div className="mt-1 font-display-italic text-4xl font-bold text-cocoa-900">
                       {result.score ? `${result.score}/10` : "—"}
                     </div>
                     {aiLabel && (
@@ -588,10 +595,8 @@ export default function KrumePage() {
                     )}
                   </div>
                   <div className="card text-center">
-                    <div className="text-[10px] uppercase tracking-wider text-mauve-700">
-                      Dein Score
-                    </div>
-                    <div className="mt-1 text-3xl font-bold text-cocoa-900">
+                    <div className="label">Du</div>
+                    <div className="mt-1 font-display-italic text-4xl font-bold text-cocoa-900">
                       {userScoreNum ? `${userScoreNum}/10` : "—"}
                     </div>
                     {userLabel && (
@@ -606,30 +611,19 @@ export default function KrumePage() {
           </div>
 
           {bigDisagreement && (
-            <div className="rounded-2xl border border-terra-500/40 bg-terra-500/10 px-4 py-3">
+            <div className="border border-terra-500/40 bg-terra-400/10 px-4 py-3">
               <p className="text-xs leading-relaxed text-terra-700">
-                <strong>🤔 Du und die KI seid uneinig.</strong> Vertrau deinen
-                Sinnen — du hast das Brot in den Haenden, gerochen, geschmeckt.
-                Die KI sieht nur das Foto.
+                <strong>🤔 Du und der KI-Baecker seid uneinig.</strong> Vertrau
+                deinen Sinnen — du hast das Brot in den Haenden, gerochen,
+                geschmeckt. Der KI-Baecker sieht nur das Foto.
               </p>
-            </div>
-          )}
-
-          {result.diagnose && (
-            <div className="card">
-              <div className="text-[10px] uppercase tracking-wider text-mauve-700">
-                KI-Diagnose
-              </div>
-              <p className="mt-1 text-sm text-cocoa-800">{result.diagnose}</p>
             </div>
           )}
 
           {result.analysis_text && (
             <div className="card">
-              <div className="text-[10px] uppercase tracking-wider text-mauve-700">
-                Was die KI sieht
-              </div>
-              <p className="mt-1 text-sm leading-relaxed text-cocoa-800">
+              <div className="label">Was der KI-Baecker sieht</div>
+              <p className="mt-2 text-sm leading-relaxed text-cocoa-800">
                 {result.analysis_text}
               </p>
             </div>
@@ -637,9 +631,7 @@ export default function KrumePage() {
 
           {Array.isArray(result.tipps) && result.tipps.length > 0 && (
             <div className="card">
-              <div className="text-[10px] uppercase tracking-wider text-mauve-700">
-                Tipps fuer naechstes Mal
-              </div>
+              <div className="label">Tipps vom KI-Baecker</div>
               <ul className="mt-2 space-y-1">
                 {result.tipps.map((tipp, i) => (
                   <li key={i} className="text-sm text-cocoa-800">• {tipp}</li>
@@ -648,23 +640,17 @@ export default function KrumePage() {
             </div>
           )}
 
-          {/* Smart-Link zum Fehlerfinder bei passender Diagnose */}
           {matchedProblem && (
             <Link
               href={`/fehlerfinder?problem=${matchedProblem.id}`}
-              className="block rounded-2xl border-2 border-mauve-500/40 bg-gradient-to-br from-mauve-500/10 to-terra-500/5 p-4 transition-all hover:border-mauve-500/60 hover:shadow-soft"
+              className="block border-2 border-gold-500 bg-gold-100/30 p-4 transition-all hover:shadow-glow"
             >
               <div className="flex items-center gap-3">
                 <div className="text-3xl">{matchedProblem.emoji}</div>
                 <div className="flex-1">
-                  <div className="text-[10px] uppercase tracking-wider text-mauve-700">
-                    Tiefer eintauchen
-                  </div>
-                  <div className="text-sm font-semibold text-cocoa-900">
+                  <div className="label text-gold-700">Tiefer eintauchen</div>
+                  <div className="font-display-italic text-base text-cocoa-900">
                     Fehlerfinder: {matchedProblem.titel}
-                  </div>
-                  <div className="text-[11px] text-cocoa-700/70">
-                    {matchedProblem.ursachen.length} moegliche Ursachen mit Loesungen
                   </div>
                 </div>
                 <div className="text-mauve-700">→</div>
@@ -717,7 +703,7 @@ export default function KrumePage() {
                         key={brot.id}
                         type="button"
                         onClick={() => attachToExisting(brot.id)}
-                        className="w-full rounded-2xl border border-mauve-500/25 bg-cream-50 p-2 text-left text-xs hover:border-terra-500"
+                        className="w-full border border-cream-300 bg-cream-50 p-2 text-left text-xs hover:border-gold-400"
                       >
                         <div className="font-semibold text-cocoa-800">{brot.name}</div>
                         <div className="text-[10px] text-cocoa-700/60">
@@ -731,10 +717,11 @@ export default function KrumePage() {
             </div>
           )}
 
-          <div className="rounded-2xl border border-mauve-500/30 bg-cream-50 px-4 py-3">
+          <div className="border border-cream-300 bg-cream-100 px-4 py-3">
             <p className="text-[10px] leading-relaxed text-cocoa-700/70">
-              KI-Einschaetzung — kein Profibaecker-Urteil. Bei Untergare/Uebergare
-              kann die KI besonders danebenliegen. Vertrau auch deinem Gefuehl. 🥖
+              Einschaetzung vom KI-Baecker — kein Profibaecker-Urteil. Bei
+              Untergare/Uebergare kann der KI-Baecker besonders danebenliegen.
+              Vertrau auch deinem Gefuehl. 🥖
             </p>
           </div>
 
