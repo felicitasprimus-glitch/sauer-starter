@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSignedPhotoUrls } from "@/lib/photos";
 import FeedingForm from "@/components/FeedingForm";
 import FeedingHistory from "@/components/FeedingHistory";
+import StarterAnalyseSection from "@/components/StarterAnalyseSection";
 import { calculateStats, scoreLabel } from "@/lib/starterStats";
 
 export const dynamic = "force-dynamic";
@@ -82,6 +83,11 @@ export default async function StarterDetailPage({ params }) {
             {daysOld === 0 ? "frisch angesetzt" : `${daysOld} Tage`}
           </span>
         )}
+        {starter.in_fridge && (
+          <span className="chip border-mauve-500/30 bg-mauve-500/10 text-mauve-700">
+            ❄️ Kuehlschrank
+          </span>
+        )}
       </div>
 
       {starter.notes && (
@@ -124,6 +130,11 @@ export default async function StarterDetailPage({ params }) {
           </div>
         </Link>
       )}
+
+      {/* KI-BAECKER ANALYSE-SECTION */}
+      <section className="mt-8">
+        <StarterAnalyseSection starter={starter} />
+      </section>
 
       <section className="mt-8">
         <h2 className="font-display text-xl font-semibold text-cocoa-900">
