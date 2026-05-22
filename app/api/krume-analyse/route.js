@@ -124,6 +124,17 @@ export async function POST(request) {
       } else if (userBeobachtungen.openCrumb === "nein") {
         parts.push("- KEIN Open Crumb angestrebt: Die Baeckerin wollte eine normale, gleichmaessige Krume. Bewerte NICHT negativ wenn die Porung nicht wild-offen ist.");
       }
+      if (userBeobachtungen.hydration) {
+        const map = {
+          unter65: "Teig-Hydration UNTER 65% (fester Teig) - hier ist eine dichtere, gleichmaessige Krume voellig normal. Erwarte KEINE offene Porung.",
+          "65-70": "Teig-Hydration 65-70% (Standard) - moderate Porung erwartbar, keine wilde Offenheit.",
+          "70-75": "Teig-Hydration 70-75% (weicher Teig) - offenere Porung moeglich.",
+          "75-80": "Teig-Hydration 75-80% (hoch) - offene, unregelmaessige Porung gut moeglich.",
+          ueber80: "Teig-Hydration UEBER 80% (high hydration, z.B. Ciabatta oder Pan de Cristal) - sehr offene, wilde, glasige Porung ist hier das ZIEL. Solche Brote sind oft flach, haben KEIN Ohr und werden teils gar nicht eingeschnitten - das ist VOELLIG NORMAL und kein Mangel.",
+          weissnicht: "Hydration unbekannt - schaetze sie aus dem Foto und beruecksichtige sie.",
+        };
+        parts.push("- HYDRATION: " + (map[userBeobachtungen.hydration] || userBeobachtungen.hydration));
+      }
       if (userBeobachtungen.eigeneNote) {
         parts.push("- Selbsteinschaetzung der Baeckerin: " + userBeobachtungen.eigeneNote + "/10");
       }
@@ -176,6 +187,17 @@ KRITISCHE REGELN — UNBEDINGT BEACHTEN:
    - Foerdernde Faktoren: hohe Hydration (75%+), schonendes Formen, ausreichende Stockgare, gutes Dehnen-und-Falten, starker Trieb, heisses Anbacken mit Dampf
    - Wenn Open Crumb angestrebt wurde: bewerte gezielt die Offenheit und gib in den Tipps KONKRETE Hinweise fuer eine offenere Krume
    - Open Crumb ist NUR bei Weiss-/Weizenbrot sinnvoll, NICHT bei Vollkorn oder Roggen (dort ist feine dichte Krume normal und gut)
+
+7. NUR DIE KRUME BEWERTEN - NICHT die Kruste, NICHT die Form:
+   - Du bewertest den ANSCHNITT (die Porung im Inneren), NICHT die aussere Kruste
+   - Erwaehne NIEMALS ein fehlendes "Ohr" (das ist ein Krusten-Merkmal beim Einschneiden und gehoert NICHT zur Krumenanalyse)
+   - Bemaengle NICHT die Hoehe, Woelbung oder flache Form - viele tolle Brote sind flach
+   - Konzentriere dich rein auf: Porung, Porenverteilung, Krumenfeuchtigkeit, Struktur
+
+8. HYDRATION beruecksichtigen:
+   - Bei niedriger Hydration (unter 70%) ist eine dichtere, gleichmaessige Krume normal und gut - bewerte sie NICHT als zu dicht
+   - Bei hoher Hydration (75%+) ist eine offene Porung erwartbar
+   - SPEZIALBROTE wie Pan de Cristal, Ciabatta oder Focaccia (sehr hohe Hydration 80%+): wilde glasige Porung, oft flach, KEIN Ohr, teils nicht eingeschnitten - das ist PERFEKT und kein Mangel. Bewerte solche Brote nach ihrer Offenheit und Struktur, nicht nach Standardkriterien.
 
 Antworte AUSSCHLIESSLICH mit JSON in diesem Format (kein Markdown, kein Code-Block, keine Erklaerung davor oder danach):
 

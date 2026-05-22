@@ -34,6 +34,15 @@ const KRUME_OPTIONEN = [
   { value: "risse", label: "Risse / Hohlraeume", emoji: "🕳️" },
 ];
 
+const HYDRATION_OPTIONEN = [
+  { value: "unter65", label: "Unter 65%", desc: "fest" },
+  { value: "65-70", label: "65-70%", desc: "Standard" },
+  { value: "70-75", label: "70-75%", desc: "weich" },
+  { value: "75-80", label: "75-80%", desc: "offen moeglich" },
+  { value: "ueber80", label: "Ueber 80%", desc: "high hydration" },
+  { value: "weissnicht", label: "Weiss nicht", desc: "KI schaetzt" },
+];
+
 async function calculateFileHash(file) {
   const buffer = await file.arrayBuffer();
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
@@ -69,6 +78,7 @@ export default function KrumePage() {
   const [userGefuehl, setUserGefuehl] = useState("");
   const [userKrume, setUserKrume] = useState("");
   const [userOpenCrumb, setUserOpenCrumb] = useState("");
+  const [userHydration, setUserHydration] = useState("");
   const [userScore, setUserScore] = useState("");
 
   const [analyzing, setAnalyzing] = useState(false);
@@ -173,6 +183,7 @@ export default function KrumePage() {
         gefuehl: userGefuehl || null,
         krume: userKrume || null,
         openCrumb: userOpenCrumb || null,
+        hydration: userHydration || null,
         eigeneNote: userScore ? Number(userScore) : null,
       };
 
@@ -299,6 +310,7 @@ export default function KrumePage() {
     setUserGefuehl("");
     setUserKrume("");
     setUserOpenCrumb("");
+    setUserHydration("");
     setUserScore("");
     setShowAttachUI(false);
     setNewBrotName("");
@@ -489,6 +501,36 @@ export default function KrumePage() {
                   </button>
                 </div>
               </div>
+
+              {/* Hydration-Angabe */}
+              <div className="mt-3 border-t border-cream-300 pt-3">
+                <label className="label">Teig-Hydration (optional)</label>
+                <p className="mt-1 text-[10px] text-cocoa-700/60">
+                  Wie viel Wasser im Verhaeltnis zum Mehl? Hilft dem KI-Baecker
+                  enorm bei der Bewertung.
+                </p>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {HYDRATION_OPTIONEN.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() =>
+                        setUserHydration(userHydration === opt.value ? "" : opt.value)
+                      }
+                      className={`border p-2 text-center transition-all ${
+                        userHydration === opt.value
+                          ? "border-gold-500 bg-gold-100/40"
+                          : "border-cream-300 bg-cream-50 hover:border-gold-400/50"
+                      }`}
+                    >
+                      <div className="text-xs font-semibold text-cocoa-800">
+                        {opt.label}
+                      </div>
+                      <div className="text-[9px] text-cocoa-700/60">{opt.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div>
@@ -676,6 +718,16 @@ export default function KrumePage() {
               <p className="mt-2 text-sm leading-relaxed text-cocoa-800">
                 {result.analysis_text}
               </p>
+              {(result.porung || result.hydration_estimate) && (
+                <div className="mt-3 flex flex-wrap gap-2 border-t border-cream-300 pt-3">
+                  {result.porung && (
+                    <span className="chip">Porung: {result.porung}</span>
+                  )}
+                  {result.hydration_estimate && (
+                    <span className="chip">Hydration: {result.hydration_estimate}</span>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
