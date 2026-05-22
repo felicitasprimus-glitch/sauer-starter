@@ -14,6 +14,7 @@ export default function TeilenPage() {
   const [openBrot, setOpenBrot] = useState(null);
   const [rezeptDraft, setRezeptDraft] = useState({});
   const [savingId, setSavingId] = useState(null);
+  const [ocrId, setOcrId] = useState(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -28,7 +29,6 @@ export default function TeilenPage() {
     }
     setUser(userData.user);
 
-    // Anzeigename laden
     const { data: profile } = await supabase
       .from("user_profiles")
       .select("display_name")
@@ -39,7 +39,6 @@ export default function TeilenPage() {
       setSavedDisplayName(profile.display_name);
     }
 
-    // Eigene Brote laden
     const { data: broteData } = await supabase
       .from("brote")
       .select("id, name, baked_at, is_shared, rezept_text, krume_score")
@@ -68,10 +67,55 @@ export default function TeilenPage() {
     setTimeout(() => setMessage(""), 2000);
   }
 
+  // Screenshot lesen und in Rezept-Text umwandeln
+  async function handleScreenshot(brot, e) {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setOcrId(brot.id);
+    setMessage("");
+    try {
+      // Datei zu base64
+      const reader = new FileReader();
+      const base64 = await new Promise((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const res = await fetch("/api/rezept-ocr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64, mimeType: file.type }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage(data.error || "Konnte das Rezept nicht lesen");
+        setOcrId(null);
+        return;
+      }
+
+      // Umgewandelten Text ins Textfeld setzen (an evtl. vorhandenen anhaengen)
+      setRezeptDraft((prev) => {
+        const existing = prev[brot.id]?.trim();
+        const combined = existing
+          ? existing + "\n\n" + data.rezeptText
+          : data.rezeptText;
+        return { ...prev, [brot.id]: combined };
+      });
+      setOpenBrot(brot.id);
+      setMessage("Rezept erkannt! Schau drueber und speichere es.");
+      setTimeout(() => setMessage(""), 4000);
+    } catch (err) {
+      setMessage("Fehler: " + err.message);
+    }
+    setOcrId(null);
+  }
+
   async function toggleShare(brot) {
     if (!user) return;
 
-    // Vor dem ersten Teilen muss ein Anzeigename da sein
     if (!brot.is_shared && !savedDisplayName) {
       setMessage("Bitte zuerst einen Anzeigenamen eingeben und speichern");
       setTimeout(() => setMessage(""), 3000);
@@ -169,7 +213,6 @@ export default function TeilenPage() {
         </div>
       )}
 
-      {/* Brote-Liste */}
       {loading ? (
         <div className="card text-center text-sm text-cocoa-700">Laedt ...</div>
       ) : brote.length === 0 ? (
@@ -203,9 +246,7 @@ export default function TeilenPage() {
                   type="button"
                   onClick={() => toggleShare(brot)}
                   disabled={savingId === brot.id}
-                  className={
-                    brot.is_shared ? "btn-primary" : "btn-secondary"
-                  }
+                  className={brot.is_shared ? "btn-primary" : "btn-secondary"}
                 >
                   {savingId === brot.id
                     ? "..."
@@ -219,9 +260,7 @@ export default function TeilenPage() {
               <div>
                 <button
                   type="button"
-                  onClick={() =>
-                    setOpenBrot(openBrot === brot.id ? null : brot.id)
-                  }
+                  onClick={() => setOpenBrot(openBrot === brot.id ? null : brot.id)}
                   className="text-mini font-semibold uppercase tracking-widest text-gold-700"
                 >
                   {openBrot === brot.id
@@ -232,27 +271,56 @@ export default function TeilenPage() {
                 </button>
 
                 {openBrot === brot.id && (
-                  <div className="mt-2 space-y-2">
-                    <textarea
-                      rows={6}
-                      placeholder="Schreib hier dein Rezept rein — Zutaten, Mengen, Schritte ..."
-                      value={rezeptDraft[brot.id] || ""}
-                      onChange={(e) =>
-                        setRezeptDraft({
-                          ...rezeptDraft,
-                          [brot.id]: e.target.value,
-                        })
-                      }
-                      className="input resize-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => saveRezept(brot)}
-                      disabled={savingId === brot.id}
-                      className="btn-secondary w-full"
-                    >
-                      Rezept speichern
-                    </button>
+                  <div className="mt-3 space-y-4">
+                    {/* Screenshot-Upload mit KI-Umwandlung */}
+                    <div className="border border-gold-400/40 bg-gold-100/30 p-3">
+                      <p className="label">Rezept aus Screenshot</p>
+                      <p className="mt-1 text-xs text-cocoa-700/70">
+                        Lade einen Screenshot oder ein Foto deines Rezepts hoch.
+                        Der KI-Baecker schreibt es automatisch ab.
+                      </p>
+                      <label className="mt-2 flex h-24 w-full cursor-pointer flex-col items-center justify-center gap-1 border-2 border-dashed border-gold-400/50 bg-cream-50 hover:border-gold-500">
+                        <span className="text-2xl">📸</span>
+                        <span className="text-xs font-semibold text-cocoa-800">
+                          {ocrId === brot.id
+                            ? "Der KI-Baecker liest das Rezept ..."
+                            : "Screenshot hochladen"}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleScreenshot(brot, e)}
+                          className="hidden"
+                          disabled={ocrId === brot.id}
+                        />
+                      </label>
+                    </div>
+
+                    {/* Textfeld (editierbar - auch nach OCR) */}
+                    <div>
+                      <label className="label">Rezept-Text</label>
+                      <p className="mt-1 text-[10px] text-cocoa-700/60">
+                        Hier kannst du das erkannte Rezept noch anpassen oder
+                        selbst eintippen.
+                      </p>
+                      <textarea
+                        rows={8}
+                        placeholder="Zutaten, Mengen, Schritte ... oder oben einen Screenshot hochladen"
+                        value={rezeptDraft[brot.id] || ""}
+                        onChange={(e) =>
+                          setRezeptDraft({ ...rezeptDraft, [brot.id]: e.target.value })
+                        }
+                        className="input mt-2 resize-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => saveRezept(brot)}
+                        disabled={savingId === brot.id}
+                        className="btn-primary mt-2 w-full"
+                      >
+                        Rezept speichern
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

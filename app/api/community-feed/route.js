@@ -5,18 +5,14 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    // 1. Pruefen ob eingeloggt (nur angemeldete duerfen den Feed sehen)
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return Response.json({ error: "Nicht eingeloggt" }, { status: 401 });
     }
 
-    // 2. Admin-Client mit Service-Role (umgeht RLS, damit wir fremde
-    //    geteilte Brote + deren Fotos laden koennen)
     const adminUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
     if (!adminUrl || !adminKey) {
       return Response.json(
         { error: "Server nicht konfiguriert (Supabase-Keys fehlen)" },
@@ -26,11 +22,10 @@ export async function GET() {
 
     const admin = createAdminClient(adminUrl, adminKey);
 
-    // 3. Geteilte Brote laden
     const { data: brote, error: broteError } = await admin
       .from("brote")
       .select(
-        "id, name, photo_path, rezept_text, krume_score, krume_diagnose, shared_at, baked_at, user_id"
+        "id, name, photo_path, rezept_text, rezept_photo_path, krume_score, krume_diagnose, shared_at, baked_at, user_id"
       )
       .eq("is_shared", true)
       .order("shared_at", { ascending: false })
@@ -40,7 +35,6 @@ export async function GET() {
       return Response.json({ error: broteError.message }, { status: 500 });
     }
 
-    // 4. Anzeige-Namen der Autorinnen laden
     const userIds = [...new Set((brote || []).map((b) => b.user_id))];
     const nameMap = {};
     if (userIds.length > 0) {
@@ -53,7 +47,6 @@ export async function GET() {
       });
     }
 
-    // 5. Fuer jedes Brot eine signed URL fuers Foto generieren
     const posts = [];
     for (const b of brote || []) {
       let fotoUrl = null;
@@ -63,11 +56,21 @@ export async function GET() {
           .createSignedUrl(b.photo_path, 3600);
         fotoUrl = signed?.signedUrl || null;
       }
+
+      let rezeptFotoUrl = null;
+      if (b.rezept_photo_path) {
+        const { data: signedR } = await admin.storage
+          .from("photos")
+          .createSignedUrl(b.rezept_photo_path, 3600);
+        rezeptFotoUrl = signedR?.signedUrl || null;
+      }
+
       posts.push({
         id: b.id,
         name: b.name,
         fotoUrl,
         rezept: b.rezept_text || null,
+        rezeptFotoUrl,
         krumeScore: b.krume_score || null,
         krumeDiagnose: b.krume_diagnose || null,
         autor: nameMap[b.user_id] || "Anonym",

@@ -103,7 +103,7 @@ export default function CommunityPage() {
                 </p>
               )}
 
-              {post.rezept && (
+              {(post.rezept || post.rezeptFotoUrl) && (
                 <div className="mt-4">
                   <button
                     type="button"
@@ -115,8 +115,19 @@ export default function CommunityPage() {
                     {openRezept === post.id ? "Rezept schliessen" : "Rezept ansehen"}
                   </button>
                   {openRezept === post.id && (
-                    <div className="mt-2 whitespace-pre-wrap border-t border-cream-300 pt-3 text-sm leading-relaxed text-cocoa-800">
-                      {post.rezept}
+                    <div className="mt-2 border-t border-cream-300 pt-3">
+                      {post.rezeptFotoUrl && (
+                        <img
+                          src={post.rezeptFotoUrl}
+                          alt="Rezept"
+                          className="mb-3 w-full object-cover"
+                        />
+                      )}
+                      {post.rezept && (
+                        <div className="whitespace-pre-wrap text-sm leading-relaxed text-cocoa-800">
+                          {post.rezept}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
