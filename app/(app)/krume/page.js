@@ -68,6 +68,7 @@ export default function KrumePage() {
   const [userAufgang, setUserAufgang] = useState("");
   const [userGefuehl, setUserGefuehl] = useState("");
   const [userKrume, setUserKrume] = useState("");
+  const [userOpenCrumb, setUserOpenCrumb] = useState("");
   const [userScore, setUserScore] = useState("");
 
   const [analyzing, setAnalyzing] = useState(false);
@@ -171,6 +172,7 @@ export default function KrumePage() {
         aufgang: userAufgang || null,
         gefuehl: userGefuehl || null,
         krume: userKrume || null,
+        openCrumb: userOpenCrumb || null,
         eigeneNote: userScore ? Number(userScore) : null,
       };
 
@@ -296,6 +298,7 @@ export default function KrumePage() {
     setUserAufgang("");
     setUserGefuehl("");
     setUserKrume("");
+    setUserOpenCrumb("");
     setUserScore("");
     setShowAttachUI(false);
     setNewBrotName("");
@@ -438,6 +441,53 @@ export default function KrumePage() {
                     </div>
                   </button>
                 ))}
+              </div>
+
+              {/* Open-Crumb-Angabe */}
+              <div className="mt-3 border-t border-cream-300 pt-3">
+                <label className="label">Open Crumb angestrebt?</label>
+                <p className="mt-1 text-[10px] text-cocoa-700/60">
+                  Wolltest du eine wilde, offene Porung (z.B. Ciabatta-Style)?
+                  Dann bewertet der KI-Baecker gezielt die Offenheit.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setUserOpenCrumb(userOpenCrumb === "ja" ? "" : "ja")
+                    }
+                    className={`border p-2 text-left transition-all ${
+                      userOpenCrumb === "ja"
+                        ? "border-gold-500 bg-gold-100/40"
+                        : "border-cream-300 bg-cream-50 hover:border-gold-400/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🫧</span>
+                      <span className="text-xs font-semibold text-cocoa-800">
+                        Ja, offene Porung
+                      </span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setUserOpenCrumb(userOpenCrumb === "nein" ? "" : "nein")
+                    }
+                    className={`border p-2 text-left transition-all ${
+                      userOpenCrumb === "nein"
+                        ? "border-gold-500 bg-gold-100/40"
+                        : "border-cream-300 bg-cream-50 hover:border-gold-400/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🍞</span>
+                      <span className="text-xs font-semibold text-cocoa-800">
+                        Nein, normale Krume
+                      </span>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
 

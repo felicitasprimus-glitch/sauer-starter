@@ -119,6 +119,11 @@ export async function POST(request) {
         };
         parts.push("- Krumen-Eindruck: " + (map[userBeobachtungen.krume] || userBeobachtungen.krume));
       }
+      if (userBeobachtungen.openCrumb === "ja") {
+        parts.push("- ZIEL OPEN CRUMB: Die Baeckerin wollte eine wilde, offene Porung (Open Crumb). Bewerte gezielt, wie offen und unregelmaessig die Porung ist, und gib konkrete Tipps fuer eine offenere Krume.");
+      } else if (userBeobachtungen.openCrumb === "nein") {
+        parts.push("- KEIN Open Crumb angestrebt: Die Baeckerin wollte eine normale, gleichmaessige Krume. Bewerte NICHT negativ wenn die Porung nicht wild-offen ist.");
+      }
       if (userBeobachtungen.eigeneNote) {
         parts.push("- Selbsteinschaetzung der Baeckerin: " + userBeobachtungen.eigeneNote + "/10");
       }
@@ -165,6 +170,12 @@ KRITISCHE REGELN — UNBEDINGT BEACHTEN:
    - 5-6: Solide, aber sichtbare Schwaechen
    - 3-4: Klare Probleme (Untergare, schwacher Trieb)
    - 1-2: Stark fehlerhaft
+
+6. OPEN CRUMB (nur wenn die Baeckerin es als Ziel angibt):
+   - Open Crumb = wilde, sehr offene, unregelmaessige Porung mit grossen glaenzenden Loechern
+   - Foerdernde Faktoren: hohe Hydration (75%+), schonendes Formen, ausreichende Stockgare, gutes Dehnen-und-Falten, starker Trieb, heisses Anbacken mit Dampf
+   - Wenn Open Crumb angestrebt wurde: bewerte gezielt die Offenheit und gib in den Tipps KONKRETE Hinweise fuer eine offenere Krume
+   - Open Crumb ist NUR bei Weiss-/Weizenbrot sinnvoll, NICHT bei Vollkorn oder Roggen (dort ist feine dichte Krume normal und gut)
 
 Antworte AUSSCHLIESSLICH mit JSON in diesem Format (kein Markdown, kein Code-Block, keine Erklaerung davor oder danach):
 
