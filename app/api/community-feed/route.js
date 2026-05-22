@@ -35,13 +35,51 @@ export async function GET() {
       return Response.json({ error: broteError.message }, { status: 500 });
     }
 
-    const userIds = [...new Set((brote || []).map((b) => b.user_id))];
+    const brotIds = (brote || []).map((b) => b.id);
+
+    // Likes laden
+    const likesByBrot = {};
+    const likedByMe = {};
+    if (brotIds.length > 0) {
+      const { data: likes } = await admin
+        .from("brot_likes")
+        .select("brot_id, user_id")
+        .in("brot_id", brotIds);
+      (likes || []).forEach((l) => {
+        likesByBrot[l.brot_id] = (likesByBrot[l.brot_id] || 0) + 1;
+        if (l.user_id === user.id) likedByMe[l.brot_id] = true;
+      });
+    }
+
+    // Kommentare laden
+    const kommentareByBrot = {};
+    const kommentarUserIds = [];
+    if (brotIds.length > 0) {
+      const { data: komms } = await admin
+        .from("brot_kommentare")
+        .select("id, brot_id, user_id, text, created_at")
+        .in("brot_id", brotIds)
+        .order("created_at", { ascending: true });
+      (komms || []).forEach((k) => {
+        if (!kommentareByBrot[k.brot_id]) kommentareByBrot[k.brot_id] = [];
+        kommentareByBrot[k.brot_id].push(k);
+        kommentarUserIds.push(k.user_id);
+      });
+    }
+
+    // Alle Anzeige-Namen laden (Brot-Autorinnen + Kommentatorinnen)
+    const allUserIds = [
+      ...new Set([
+        ...(brote || []).map((b) => b.user_id),
+        ...kommentarUserIds,
+      ]),
+    ];
     const nameMap = {};
-    if (userIds.length > 0) {
+    if (allUserIds.length > 0) {
       const { data: profiles } = await admin
         .from("user_profiles")
         .select("id, display_name")
-        .in("id", userIds);
+        .in("id", allUserIds);
       (profiles || []).forEach((p) => {
         nameMap[p.id] = p.display_name;
       });
@@ -65,6 +103,14 @@ export async function GET() {
         rezeptFotoUrl = signedR?.signedUrl || null;
       }
 
+      const komms = (kommentareByBrot[b.id] || []).map((k) => ({
+        id: k.id,
+        text: k.text,
+        autor: nameMap[k.user_id] || "Anonym",
+        istEigener: k.user_id === user.id,
+        createdAt: k.created_at,
+      }));
+
       posts.push({
         id: b.id,
         name: b.name,
@@ -77,6 +123,9 @@ export async function GET() {
         sharedAt: b.shared_at,
         bakedAt: b.baked_at,
         isOwn: b.user_id === user.id,
+        likeCount: likesByBrot[b.id] || 0,
+        likedByMe: likedByMe[b.id] || false,
+        kommentare: komms,
       });
     }
 
