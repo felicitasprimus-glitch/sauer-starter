@@ -123,9 +123,6 @@ export default function DashboardPage() {
     .toUpperCase();
   const firstName = displayName ? displayName.split(" ")[0] : "";
 
-  const heroEntry = startersWithStatus.find((s) => imageUrls[s.id]);
-  const heroImg = heroEntry ? imageUrls[heroEntry.id] : null;
-
   const tipp = TIPPS[new Date().getDate() % TIPPS.length];
 
   return (
@@ -135,13 +132,11 @@ export default function DashboardPage() {
         className="relative -mx-4 -mt-6 mb-5 h-[240px] overflow-hidden"
         style={{ background: "linear-gradient(135deg, #8b6a7d 0%, #5a3f56 100%)" }}
       >
-        {heroImg ? (
-          <img
-            src={heroImg}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : null}
+        <img
+          src="/starter-hero.jpg"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
         <div
           className="absolute inset-0"
           style={{
