@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import CommunityDashboard from "@/components/CommunityDashboard";
 
 export default function CommunityPage() {
   const supabase = createClient();
@@ -151,6 +152,10 @@ export default function CommunityPage() {
       >
         🏆 Bestenliste ansehen
       </Link>
+
+      {!loading && !error && posts.length > 0 && (
+        <CommunityDashboard posts={posts} />
+      )}
 
       {loading ? (
         <div className="card text-center text-sm text-cocoa-700">
