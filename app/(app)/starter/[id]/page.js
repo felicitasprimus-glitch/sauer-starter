@@ -5,6 +5,7 @@ import { getSignedPhotoUrls } from "@/lib/photos";
 import FeedingForm from "@/components/FeedingForm";
 import FeedingHistory from "@/components/FeedingHistory";
 import StarterAnalyseSection from "@/components/StarterAnalyseSection";
+import StarterGlas from "@/components/StarterGlas";
 import { calculateStats, scoreLabel } from "@/lib/starterStats";
 
 export const dynamic = "force-dynamic";
@@ -68,6 +69,8 @@ export default async function StarterDetailPage({ params }) {
           Bearbeiten
         </Link>
       </header>
+
+      <StarterGlas name={starter.name} score={stats.triebkraftScore} />
 
       <div className="mt-4 flex flex-wrap gap-2">
         <span className="chip border-honey-400/30 bg-honey-400/15 text-honey-600">
