@@ -88,6 +88,11 @@ export default function KrumePage() {
   const [showAttachUI, setShowAttachUI] = useState(false);
   const [newBrotName, setNewBrotName] = useState("");
 
+  const [pastAnalysen, setPastAnalysen] = useState([]);
+  const [showPast, setShowPast] = useState(false);
+  const [loadingPast, setLoadingPast] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
@@ -314,6 +319,80 @@ export default function KrumePage() {
     setUserScore("");
     setShowAttachUI(false);
     setNewBrotName("");
+    setShowPast(false);
+  }
+
+  async function loadPastAnalysen() {
+    if (!user) return;
+    setLoadingPast(true);
+    const { data } = await supabase
+      .from("krumen_analysen")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(30);
+    const list = data || [];
+    const withUrls = await Promise.all(
+      list.map(async (a) => {
+        if (!a.photo_path) return { ...a, thumbUrl: null };
+        const { data: signed } = await supabase.storage
+          .from("photos")
+          .createSignedUrl(a.photo_path, 3600);
+        return { ...a, thumbUrl: signed?.signedUrl || null };
+      })
+    );
+    setPastAnalysen(withUrls);
+    setLoadingPast(false);
+  }
+
+  function togglePast() {
+    const next = !showPast;
+    setShowPast(next);
+    if (next) loadPastAnalysen();
+  }
+
+  function openPastAnalyse(a) {
+    setResult({
+      ...a,
+      tipps: typeof a.tipps === "string" ? JSON.parse(a.tipps || "[]") : (a.tipps || []),
+      isExisting: true,
+    });
+    setPreview(a.thumbUrl || null);
+    setPhotoPath(a.photo_path || null);
+    setUserScore(a.user_score != null ? String(a.user_score) : "");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function deleteAnalyse(a) {
+    if (!a?.id) return;
+    if (!window.confirm("Diese Analyse wirklich loeschen? Das laesst sich nicht rueckgaengig machen.")) return;
+    setDeletingId(a.id);
+    try {
+      // Falls die Analyse mit einem Brot verknuepft ist: Verknuepfung loesen
+      await supabase
+        .from("brote")
+        .update({
+          krume_analyse_id: null,
+          krume_score: null,
+          krume_diagnose: null,
+          krume_tipps: null,
+        })
+        .eq("krume_analyse_id", a.id);
+      // Analyse-Eintrag loeschen (Foto im Speicher bleibt erhalten)
+      const { error: delError } = await supabase
+        .from("krumen_analysen")
+        .delete()
+        .eq("id", a.id);
+      if (delError) throw new Error(delError.message);
+      // Liste sofort aktualisieren
+      setPastAnalysen((prev) => prev.filter((x) => x.id !== a.id));
+      // Falls die geloeschte gerade angezeigt wird: Ansicht zuruecksetzen
+      if (result?.id === a.id) reset();
+    } catch (err) {
+      setError(err.message || "Loeschen fehlgeschlagen");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   function getScoreLabel(score) {
@@ -647,6 +726,78 @@ export default function KrumePage() {
               {error}
             </div>
           )}
+
+          <div className="card">
+            <button
+              type="button"
+              onClick={togglePast}
+              className="flex w-full items-center justify-between text-left"
+            >
+              <span className="text-sm font-semibold text-cocoa-800">
+                Meine bisherigen Analysen
+              </span>
+              <span className="text-xs text-mauve-700">
+                {showPast ? "Schliessen" : "Anzeigen"}
+              </span>
+            </button>
+
+            {showPast && (
+              <div className="mt-3 space-y-2">
+                {loadingPast && (
+                  <p className="text-xs text-cocoa-700/60">Wird geladen ...</p>
+                )}
+                {!loadingPast && pastAnalysen.length === 0 && (
+                  <p className="text-xs text-cocoa-700/60">
+                    Noch keine gespeicherten Analysen.
+                  </p>
+                )}
+                {pastAnalysen.map((a) => (
+                  <div
+                    key={a.id}
+                    className="flex items-center gap-3 border border-cream-300 bg-cream-50 p-2"
+                  >
+                    {a.thumbUrl ? (
+                      <img
+                        src={a.thumbUrl}
+                        alt="Krume"
+                        className="h-14 w-14 flex-shrink-0 object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center bg-cream-300 text-lg">
+                        🍞
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => openPastAnalyse(a)}
+                      className="min-w-0 flex-1 text-left"
+                    >
+                      <div className="truncate text-xs font-semibold text-cocoa-800">
+                        {a.diagnose || "Krumen-Analyse"}
+                      </div>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[10px] text-cocoa-700/60">
+                        <span>{a.score ? `${a.score}/10` : "—"}</span>
+                        {a.porung && <span>• {a.porung}</span>}
+                        {a.created_at && (
+                          <span>
+                            • {new Date(a.created_at).toLocaleDateString("de-DE")}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteAnalyse(a)}
+                      disabled={deletingId === a.id}
+                      className="flex-shrink-0 px-2 py-1 text-[10px] font-semibold text-terra-700 hover:opacity-70"
+                    >
+                      {deletingId === a.id ? "..." : "Loeschen"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -830,6 +981,17 @@ export default function KrumePage() {
           <button type="button" onClick={reset} className="btn-secondary w-full">
             Neue Analyse starten
           </button>
+
+          {result.id && (
+            <button
+              type="button"
+              onClick={() => deleteAnalyse(result)}
+              disabled={deletingId === result.id}
+              className="w-full px-4 py-2 text-xs font-semibold text-terra-700 hover:opacity-70"
+            >
+              {deletingId === result.id ? "Wird geloescht ..." : "Diese Analyse loeschen"}
+            </button>
+          )}
         </div>
       )}
     </div>
