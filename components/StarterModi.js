@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const MODI = [
-  { key: "powerkur", emoji: "💪", label: "Powerkur", desc: "Alle 8h, Raumtemperatur", sub: "Schwachen Starter aufpaeppeln", in_fridge: false, hours: 8 },
-  { key: "backbereit", emoji: "🔥", label: "Backbereit", desc: "Alle 12h, Raumtemperatur", sub: "Volle Triebkraft fuer den Backtag", in_fridge: false, hours: 12 },
-  { key: "ausgeglichen", emoji: "⚖️", label: "Ausgeglichen", desc: "Alle 24h, Raumtemperatur", sub: "Der entspannte Alltag", in_fridge: false, hours: 24 },
-  { key: "sparflamme", emoji: "😴", label: "Sparflamme", desc: "Kuehlschrank, alle 7 Tage", sub: "Wenig Aufwand", in_fridge: true, days: 7 },
-  { key: "urlaub", emoji: "🏖️", label: "Urlaubsmodus", desc: "Kuehlschrank, alle 14 Tage", sub: "Fuer laengere Pausen", in_fridge: true, days: 14 },
+  { key: "powerkur", emoji: "💪", label: "Powerkur", desc: "Alle 8h, Raumtemperatur", sub: "Schwachen Starter aufpaeppeln", in_fridge: false, hours: 8, ratio: "1:2:3" },
+  { key: "backbereit", emoji: "🔥", label: "Backbereit", desc: "Alle 12h, Raumtemperatur", sub: "Volle Triebkraft fuer den Backtag", in_fridge: false, hours: 12, ratio: "1:2:2" },
+  { key: "ausgeglichen", emoji: "⚖️", label: "Ausgeglichen", desc: "Alle 24h, Raumtemperatur", sub: "Der entspannte Alltag", in_fridge: false, hours: 24, ratio: "1:3:3" },
+  { key: "sparflamme", emoji: "😴", label: "Sparflamme", desc: "Kuehlschrank, alle 7 Tage", sub: "Wenig Aufwand", in_fridge: true, days: 7, ratio: "1:5:5" },
+  { key: "urlaub", emoji: "🏖️", label: "Urlaubsmodus", desc: "Kuehlschrank, alle 14 Tage", sub: "Fuer laengere Pausen", in_fridge: true, days: 14, ratio: "1:10:10" },
 ];
 
 function deriveActive(inFridge, hours, days) {
@@ -74,8 +74,8 @@ export default function StarterModi({ starterId, inFridge, feedIntervalHours, fr
     setBusy(m.key);
     setErr("");
     const patch = m.in_fridge
-      ? { in_fridge: true, fridge_interval_days: m.days }
-      : { in_fridge: false, feed_interval_hours: m.hours };
+      ? { in_fridge: true, fridge_interval_days: m.days, default_ratio: m.ratio }
+      : { in_fridge: false, feed_interval_hours: m.hours, default_ratio: m.ratio };
 
     const { error } = await supabase.from("starters").update(patch).eq("id", starterId);
     if (error) {
@@ -130,6 +130,9 @@ export default function StarterModi({ starterId, inFridge, feedIntervalHours, fr
                 {busy === m.key ? "Speichert ..." : m.desc}
               </div>
               <div className="mt-2 text-xs text-cocoa-700/65">{m.sub}</div>
+              <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-widest text-gold-700">
+                Futter {m.ratio}
+              </div>
             </button>
           );
         })}

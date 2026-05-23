@@ -49,7 +49,7 @@ export default function FeedingForm({ starter }) {
 
   const initialPreset = VERHAELTNIS_PRESETS.find((p) => p.value === defaultRatioStr)
     ? defaultRatioStr
-    : "1:2:2";
+    : "custom";
 
   const [verhaeltnis, setVerhaeltnis] = useState(initialPreset);
   const [customRatio, setCustomRatio] = useState({
@@ -71,6 +71,22 @@ export default function FeedingForm({ starter }) {
 
   const activeRatio =
     verhaeltnis === "custom" ? customRatio : parseRatio(verhaeltnis);
+
+  // Wenn sich das empfohlene Verhaeltnis des Starters aendert (z.B. durch einen Pflege-Modus),
+  // die Vorauswahl in der Fuetterung uebernehmen.
+  useEffect(() => {
+    const r = parseRatio(starter.default_ratio);
+    if (!r) return;
+    const str = `${r.asg}:${r.flour}:${r.water}`;
+    const isPreset = VERHAELTNIS_PRESETS.some((p) => p.value === str);
+    if (isPreset) {
+      setVerhaeltnis(str);
+    } else {
+      setVerhaeltnis("custom");
+      setCustomRatio({ asg: r.asg, flour: r.flour, water: r.water });
+    }
+    setAutoCalc(true);
+  }, [starter.default_ratio]);
 
   // Mengen automatisch nachziehen, wenn sich ASG oder das eigene Verhaeltnis aendert
   useEffect(() => {
