@@ -39,46 +39,54 @@ export default function CommunityDashboard({ posts }) {
         .filter((p) => p.krumeScore != null)
         .sort((a, b) => b.krumeScore - a.krumeScore)[0] || null;
 
+    // Frisch geteilt: neueste Brote mit Foto
+    const galerie = posts.filter((p) => p.fotoUrl).slice(0, 6);
+
     // Geteilte Rezepte
     const rezepte = posts
       .filter((p) => p.rezept)
       .map((p) => ({ id: p.id, name: p.name, autor: p.autor }));
 
-    return { broteCount, baecker, herzchen, topBaecker, highlight, rezepte };
+    return {
+      broteCount,
+      baecker,
+      herzchen,
+      topBaecker,
+      highlight,
+      galerie,
+      rezepte,
+    };
   }, [posts]);
 
   if (!data) return null;
 
   const medal = (i) => (i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : null);
+  const initial = (name) => (name ? name.charAt(0).toUpperCase() : "?");
+
+  const stats = [
+    { emoji: "🍞", value: data.broteCount, label: "Brote" },
+    { emoji: "👥", value: data.baecker, label: "Baeckerinnen" },
+    { emoji: "💛", value: data.herzchen, label: "Herzchen" },
+  ];
 
   return (
     <div className="space-y-4">
       {/* Live-Zahlen */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="card text-center">
-          <div className="font-display-italic text-3xl text-cocoa-900">
-            {data.broteCount}
+        {stats.map((s) => (
+          <div
+            key={s.label}
+            className="border border-gold-500/30 bg-gold-100/40 p-3 text-center"
+          >
+            <div className="text-xl leading-none">{s.emoji}</div>
+            <div className="mt-1.5 font-display-italic text-2xl text-gold-700">
+              {s.value}
+            </div>
+            <div className="text-[10px] uppercase tracking-widest text-mauve-700">
+              {s.label}
+            </div>
           </div>
-          <div className="text-[10px] uppercase tracking-widest text-mauve-700">
-            Brote
-          </div>
-        </div>
-        <div className="card text-center">
-          <div className="font-display-italic text-3xl text-cocoa-900">
-            {data.baecker}
-          </div>
-          <div className="text-[10px] uppercase tracking-widest text-mauve-700">
-            Baeckerinnen
-          </div>
-        </div>
-        <div className="card text-center">
-          <div className="font-display-italic text-3xl text-cocoa-900">
-            {data.herzchen}
-          </div>
-          <div className="text-[10px] uppercase tracking-widest text-mauve-700">
-            Herzchen
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Spitzen-Brot */}
@@ -102,7 +110,7 @@ export default function CommunityDashboard({ posts }) {
               <p className="mini-label mt-0.5">von {data.highlight.autor}</p>
             </div>
             <div className="flex-shrink-0 text-center">
-              <div className="font-display-italic text-2xl text-cocoa-900">
+              <div className="font-display-italic text-2xl text-gold-700">
                 {data.highlight.krumeScore}/10
               </div>
               <div className="text-[9px] uppercase tracking-widest text-mauve-700">
@@ -113,15 +121,58 @@ export default function CommunityDashboard({ posts }) {
         </div>
       )}
 
+      {/* Frisch geteilt - Galerie */}
+      {data.galerie.length > 0 && (
+        <div className="card">
+          <p className="brand-mark">Frisch geteilt</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            {data.galerie.map((p) => (
+              <div
+                key={p.id}
+                className="overflow-hidden border border-cream-300 bg-cream-50"
+              >
+                <div className="relative">
+                  <img
+                    src={p.fotoUrl}
+                    alt={p.name}
+                    className="h-28 w-full object-cover"
+                  />
+                  {p.krumeScore != null && (
+                    <span className="absolute right-1.5 top-1.5 rounded-full bg-cocoa-900/80 px-2 py-0.5 text-[10px] font-semibold text-cream-50">
+                      {p.krumeScore}/10
+                    </span>
+                  )}
+                </div>
+                <div className="p-2">
+                  <div className="truncate text-xs font-semibold text-cocoa-900">
+                    {p.name}
+                  </div>
+                  <div className="truncate text-[10px] text-cocoa-700/60">
+                    von {p.autor}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Top-Baeckerinnen */}
       {data.topBaecker.length > 0 && (
         <div className="card">
           <p className="brand-mark">Top-Baeckerinnen</p>
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 space-y-3">
             {data.topBaecker.map((b, i) => (
               <div key={b.autor} className="flex items-center gap-3">
-                <div className="w-6 flex-shrink-0 text-center font-display-italic text-base text-cocoa-900">
-                  {medal(i) || i + 1}
+                <div className="relative flex-shrink-0">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full border border-gold-500/30 bg-gold-100/60 font-display-italic text-lg text-gold-700">
+                    {initial(b.autor)}
+                  </div>
+                  {medal(i) && (
+                    <span className="absolute -bottom-1 -right-1 text-base">
+                      {medal(i)}
+                    </span>
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-semibold text-cocoa-900">
@@ -132,7 +183,7 @@ export default function CommunityDashboard({ posts }) {
                   </div>
                 </div>
                 <div className="flex-shrink-0 text-center">
-                  <div className="font-display-italic text-base text-cocoa-900">
+                  <div className="font-display-italic text-lg text-gold-700">
                     {b.avg}
                   </div>
                   <div className="text-[9px] uppercase tracking-widest text-mauve-700">
