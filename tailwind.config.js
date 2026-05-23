@@ -7,55 +7,56 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Hintergrund - sehr helles Champagne
+        // Hintergruende - Creme & Sand (warm, hell)
         cream: {
-          50: "#fdfcf7",   // off-white mit Hauch von Warm
-          100: "#faf6ed",  // Champagne-Papier (Haupt-Hintergrund)
-          200: "#f0e8d5",  // gedeckte Champagne
-          300: "#e3d4ac",  // mehr Gold-Touch
+          50: "#fffdfb",   // fast weiss, warm - fuer Karten
+          100: "#faf4ee",  // Creme - Haupt-Hintergrund
+          200: "#f2e9dc",  // zwischen Creme und Sand
+          300: "#e8dfc9",  // Sand - Linien & Raender
         },
-        // Akzentfarbe - tiefes Aubergine/Mauve (statt fad rosa)
+        // Akzent - Mauve (mittlerer Rose-Ton)
         mauve: {
-          400: "#a07c80",
-          500: "#7d5560",  // Hauptakzent
-          600: "#664047",
-          700: "#4a2e34",
-          800: "#2e1a1f",  // sehr dunkel - fuer Drama
+          400: "#a98c99",
+          500: "#886a7d",  // Mauve - Hauptakzent
+          600: "#6e5266",
+          700: "#4a3447",  // dunkles Plum - Labels & Hover
+          800: "#382836",
         },
-        // Text - dunkel und kraeftig
+        // Dunkel - Brombeer (Text, Primaer-Buttons, aktive Navi)
         cocoa: {
-          50: "#fdfcf7",
-          100: "#f5ebee",
-          200: "#e8d6dc",
-          700: "#4a3640",
-          800: "#2a1d24",  // Haupttext - kraeftig
-          900: "#1a0f14",  // fuer Headlines
+          50: "#fbf7f4",
+          100: "#f3e9ec",
+          200: "#e4d2d9",
+          700: "#6b4f61",
+          800: "#46303d",  // Haupttext
+          900: "#5a3f56",  // Brombeer - Primaer-Buttons & aktive Elemente
         },
-        // GOLD - die Hauptakzentfarbe
+        // "Gold" umgedeutet zu sanftem Rose (alte Gold-Akzente werden rose)
         gold: {
-          100: "#f7eecf",
-          200: "#ecdaa1",
-          300: "#dec069",
-          400: "#cba84d",  // Hauptgold
-          500: "#b89238",  // Tiefes Gold (Buttons, wichtige Akzente)
-          600: "#9a7a2c",
-          700: "#7a6121",
+          100: "#f6e9ec",
+          200: "#ebd3da",
+          300: "#ddbcc6",  // Altrosa
+          400: "#cba3b2",
+          500: "#b5879a",
+          600: "#9a6e82",
+          700: "#7d5668",
         },
-        // Terrakotta fuer warme Akzente
+        // Terra - warmer Rose-Taupe
         terra: {
-          400: "#c89e90",
-          500: "#a67c7d",
-          600: "#8d6566",
-          700: "#6e4a4e",
+          400: "#c8a6ae",
+          500: "#b08c97",
+          600: "#977380",
+          700: "#6e5161",
         },
+        // Honey - Sand-Toene
         honey: {
-          400: "#d4b380",
-          500: "#c9a063",
-          600: "#a8814a",
+          400: "#e0d2b4",
+          500: "#d6c29b",
+          600: "#bba47c",
         },
       },
       fontFamily: {
-        display: ['"Cormorant Garamond"', "Georgia", "serif"],
+        display: ['"Playfair Display"', "Georgia", "serif"],
         body: ['"Inter"', '"Helvetica Neue"', "sans-serif"],
         script: ["Allura", "cursive"],
       },
@@ -66,10 +67,10 @@ module.exports = {
         mini: ["10px", { lineHeight: "1.4", letterSpacing: "0.25em" }],
       },
       boxShadow: {
-        soft: "0 1px 4px rgba(74, 46, 52, 0.06)",
-        glow: "0 4px 28px rgba(184, 146, 56, 0.18)",
-        editorial: "0 1px 2px rgba(58, 42, 53, 0.04), 0 12px 40px rgba(58, 42, 53, 0.06)",
-        gold: "0 4px 16px rgba(184, 146, 56, 0.25)",
+        soft: "0 1px 4px rgba(90, 63, 86, 0.06)",
+        glow: "0 4px 28px rgba(136, 106, 125, 0.18)",
+        editorial: "0 1px 2px rgba(74, 48, 67, 0.04), 0 12px 40px rgba(74, 48, 67, 0.07)",
+        gold: "0 4px 16px rgba(203, 163, 178, 0.28)",
       },
       animation: {
         "fade-in": "fadeIn 0.5s ease-out",

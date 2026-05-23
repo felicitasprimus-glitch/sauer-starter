@@ -4,7 +4,7 @@ export const metadata = {
   title: "Sauer macht krustig",
   description: "Dein Sauerteig-Tagebuch",
   manifest: "/manifest.json",
-  themeColor: "#a885a0",
+  themeColor: "#5a3f56",
   icons: {
     icon: [
       { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
@@ -22,7 +22,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#a885a0",
+  themeColor: "#5a3f56",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
