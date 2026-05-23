@@ -6,6 +6,7 @@ import FeedingForm from "@/components/FeedingForm";
 import FeedingHistory from "@/components/FeedingHistory";
 import StarterAnalyseSection from "@/components/StarterAnalyseSection";
 import StarterGlas from "@/components/StarterGlas";
+import StarterModi from "@/components/StarterModi";
 import { calculateStats, scoreLabel } from "@/lib/starterStats";
 
 export const dynamic = "force-dynamic";
@@ -92,6 +93,13 @@ export default async function StarterDetailPage({ params }) {
           </span>
         )}
       </div>
+
+      <StarterModi
+        starterId={starter.id}
+        inFridge={starter.in_fridge}
+        feedIntervalHours={starter.feed_interval_hours}
+        fridgeIntervalDays={starter.fridge_interval_days}
+      />
 
       {starter.notes && (
         <div className="mt-4 rounded-2xl border border-mauve-500/15 bg-cream-200/40 p-4 text-sm italic text-cocoa-700/85">

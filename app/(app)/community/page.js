@@ -145,6 +145,13 @@ export default function CommunityPage() {
         Eigenes Brot teilen
       </Link>
 
+      <Link
+        href="/community/bestenliste"
+        className="btn-secondary block text-center"
+      >
+        🏆 Bestenliste ansehen
+      </Link>
+
       {loading ? (
         <div className="card text-center text-sm text-cocoa-700">
           Laedt Community-Feed ...
