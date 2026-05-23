@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+const ACTIVE = "#8b6a7d";
+const INACTIVE = "#9a8290";
+
 const NAV_ITEMS = [
   {
     href: "/dashboard",
     label: "Starter",
     icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c87f63" : "#7a5e75"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 2h6l-1 7h-4z" />
-        <path d="M5 9h14l-1 11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z" />
-        <circle cx="12" cy="15" r="2" />
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke={active ? ACTIVE : INACTIVE} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M8 3h8M9 3v3c0 1-3 2-3 6v8a1 1 0 001 1h10a1 1 0 001-1v-8c0-4-3-5-3-6V3" />
       </svg>
     ),
   },
@@ -19,8 +20,9 @@ const NAV_ITEMS = [
     href: "/brote",
     label: "Brote",
     icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c87f63" : "#7a5e75"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 7 Q 3 5, 5 5 L 8 5 L 9.5 3 L 14.5 3 L 16 5 L 19 5 Q 21 5, 21 7 L 21 17 Q 21 19, 19 19 L 5 19 Q 3 19, 3 17 Z" />
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke={active ? ACTIVE : INACTIVE} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 13c0-4 3.6-6 8-6s8 2 8 6a2 2 0 01-2 2H6a2 2 0 01-2-2z" />
+        <path d="M9 10.5l1.5 1.5M13 10l1.5 1.5" />
       </svg>
     ),
   },
@@ -28,12 +30,9 @@ const NAV_ITEMS = [
     href: "/krume",
     label: "Krume",
     icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c87f63" : "#7a5e75"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="9" />
-        <circle cx="9" cy="10" r="1.2" fill={active ? "#c87f63" : "#7a5e75"} />
-        <circle cx="14" cy="9" r="1.5" fill={active ? "#c87f63" : "#7a5e75"} />
-        <circle cx="11" cy="14" r="1.8" fill={active ? "#c87f63" : "#7a5e75"} />
-        <circle cx="15" cy="14" r="1" fill={active ? "#c87f63" : "#7a5e75"} />
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke={active ? ACTIVE : INACTIVE} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="6" />
+        <path d="M20 20l-4.5-4.5" />
       </svg>
     ),
   },
@@ -41,11 +40,8 @@ const NAV_ITEMS = [
     href: "/community",
     label: "Community",
     icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c87f63" : "#7a5e75"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke={active ? ACTIVE : INACTIVE} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 20s-7-4.3-7-9.2A3.8 3.8 0 0112 8a3.8 3.8 0 017 2.8C19 15.7 12 20 12 20z" />
       </svg>
     ),
   },
@@ -53,11 +49,10 @@ const NAV_ITEMS = [
     href: "/fehlerfinder",
     label: "Fehler",
     icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c87f63" : "#7a5e75"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="7" />
-        <path d="m21 21-4.35-4.35" />
-        <path d="M11 8v3" />
-        <circle cx="11" cy="14" r="0.5" fill={active ? "#c87f63" : "#7a5e75"} />
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke={active ? ACTIVE : INACTIVE} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
       </svg>
     ),
   },
@@ -65,10 +60,10 @@ const NAV_ITEMS = [
     href: "/sos",
     label: "SOS",
     icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c87f63" : "#7a5e75"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 9v4" />
-        <path d="M12 17h.01" />
-        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke={active ? ACTIVE : INACTIVE} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="8" />
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 4v3M12 17v3M4 12h3M17 12h3" />
       </svg>
     ),
   },
@@ -78,23 +73,24 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-mauve-500/20 bg-cream-50/95 backdrop-blur">
-      <div className="mx-auto flex max-w-md justify-around px-1 py-2">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-line backdrop-blur"
+      style={{ background: "rgba(255,255,255,0.92)" }}
+    >
+      <div className="mx-auto flex max-w-md justify-around px-1 pb-3.5 pt-2">
         {NAV_ITEMS.map((item) => {
-          const active = pathname === item.href || pathname?.startsWith(item.href + "/");
+          const active =
+            pathname === item.href || (pathname && pathname.startsWith(item.href + "/"));
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-1 flex-col items-center gap-0.5 rounded-xl px-0.5 py-1.5 transition-all ${
-                active ? "bg-terra-500/10" : ""
-              }`}
+              className="flex flex-1 flex-col items-center gap-1 px-0.5 py-1"
             >
               {item.icon(active)}
               <span
-                className={`whitespace-nowrap text-[9px] font-semibold ${
-                  active ? "text-terra-700" : "text-cocoa-700/70"
-                }`}
+                className="whitespace-nowrap text-[10px] font-semibold"
+                style={{ color: active ? ACTIVE : INACTIVE }}
               >
                 {item.label}
               </span>

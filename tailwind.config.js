@@ -9,51 +9,56 @@ module.exports = {
       colors: {
         // Hintergruende - Creme & Sand (warm, hell)
         cream: {
-          50: "#fffdfb",   // fast weiss, warm - fuer Karten
-          100: "#faf4ee",  // Creme - Haupt-Hintergrund
-          200: "#f2e9dc",  // zwischen Creme und Sand
-          300: "#e8dfc9",  // Sand - Linien & Raender
+          50: "#fffdfb",
+          100: "#faf4ee", // Creme - Haupt-Hintergrund
+          200: "#f2e9dc",
+          300: "#e8dfc9", // Sand
         },
-        // Akzent - Mauve (mittlerer Rose-Ton)
+        // Akzent - Mauve (mittlerer Rose-Ton, exakt aus dem Prototyp)
         mauve: {
           400: "#a98c99",
-          500: "#886a7d",  // Mauve - Hauptakzent
+          500: "#8b6a7d", // Mauve - Hauptakzent
           600: "#6e5266",
-          700: "#4a3447",  // dunkles Plum - Labels & Hover
+          700: "#4a3447",
           800: "#382836",
         },
-        // Dunkel - Brombeer (Text, Primaer-Buttons, aktive Navi)
+        // Dunkel - Brombeer & Text
         cocoa: {
           50: "#fbf7f4",
           100: "#f3e9ec",
           200: "#e4d2d9",
           700: "#6b4f61",
-          800: "#46303d",  // Haupttext
-          900: "#5a3f56",  // Brombeer - Primaer-Buttons & aktive Elemente
+          800: "#3e2c39", // Haupttext (ink)
+          900: "#5a3f56", // Brombeer - Primaer-Buttons & aktive Elemente
         },
-        // "Gold" umgedeutet zu sanftem Rose (alte Gold-Akzente werden rose)
+        // "Gold" umgedeutet zu sanftem Rose
         gold: {
           100: "#f6e9ec",
           200: "#ebd3da",
-          300: "#ddbcc6",  // Altrosa
+          300: "#ddbcc6",
           400: "#cba3b2",
           500: "#b5879a",
           600: "#9a6e82",
           700: "#7d5668",
         },
-        // Terra - warmer Rose-Taupe
         terra: {
           400: "#c8a6ae",
           500: "#b08c97",
           600: "#977380",
           700: "#6e5161",
         },
-        // Honey - Sand-Toene
         honey: {
           400: "#e0d2b4",
           500: "#d6c29b",
           600: "#bba47c",
         },
+        // Flache Marken-Tokens (Prototyp) - fuer neue Bausteine
+        altrosa: "#ddbcc6",
+        sand: "#e8dfc9",
+        brombeer: "#5a3f56",
+        ink: "#3e2c39",
+        muted: "#9a8290",
+        line: "#ece0e6",
       },
       fontFamily: {
         display: ['"Playfair Display"', "Georgia", "serif"],
@@ -70,6 +75,7 @@ module.exports = {
         soft: "0 1px 4px rgba(90, 63, 86, 0.06)",
         glow: "0 4px 28px rgba(136, 106, 125, 0.18)",
         editorial: "0 1px 2px rgba(74, 48, 67, 0.04), 0 12px 40px rgba(74, 48, 67, 0.07)",
+        card: "0 8px 24px rgba(123, 90, 110, 0.10)",
         gold: "0 4px 16px rgba(203, 163, 178, 0.28)",
       },
       animation: {

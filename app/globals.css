@@ -7,7 +7,7 @@
 @layer base {
   html {
     font-family: "Inter", "Helvetica Neue", sans-serif;
-    color: #46303d;
+    color: #3e2c39;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -19,37 +19,40 @@
     line-height: 1.6;
   }
 
-  /* HEADLINES - Playfair Display, aufrecht & ruhig (wie im Board) */
+  /* HEADLINES - Playfair Display, aufrecht (wie im Prototyp) */
   h1 {
     font-family: "Playfair Display", Georgia, serif;
-    font-weight: 500;
+    font-weight: 600;
     font-style: normal;
     line-height: 1.1;
-    letter-spacing: -0.015em;
-    color: #46303d;
+    letter-spacing: -0.01em;
+    color: #5a3f56;
   }
 
   h2 {
     font-family: "Playfair Display", Georgia, serif;
-    font-weight: 500;
+    font-weight: 600;
     font-style: normal;
     line-height: 1.15;
     letter-spacing: -0.01em;
-    color: #46303d;
+    color: #5a3f56;
   }
 
   h3, h4 {
     font-family: "Playfair Display", Georgia, serif;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.2;
-    color: #46303d;
+    color: #5a3f56;
   }
 }
 
 @layer components {
-  /* KARTEN - weich, sanfter Schatten */
+  /* KARTEN - weiss, weich gerundet, zarter rosa Schatten */
   .card {
-    @apply relative border border-cream-300 bg-cream-50 p-6 shadow-editorial;
+    @apply relative p-6;
+    background: #ffffff;
+    border: 1px solid #ece0e6;
+    box-shadow: 0 8px 24px rgba(123, 90, 110, 0.10);
   }
 
   /* PRIMARY BUTTON - gefuelltes Brombeer */
@@ -62,7 +65,7 @@
     @apply relative inline-flex items-center justify-center border border-cocoa-900/30 bg-transparent px-6 py-3 text-sm font-semibold normal-case tracking-normal text-cocoa-800 transition-all hover:border-mauve-500 hover:text-mauve-600 active:scale-[0.98];
   }
 
-  /* ROSE BUTTON fuer besondere Aktionen (frueher btn-gold) */
+  /* ROSE BUTTON (frueher btn-gold) */
   .btn-gold {
     @apply inline-flex items-center justify-center border border-gold-400 bg-gold-300 px-6 py-3 text-sm font-semibold normal-case tracking-normal text-cocoa-900 transition-all hover:bg-gold-400 hover:shadow-gold active:scale-[0.98];
   }
@@ -72,30 +75,26 @@
     @apply w-full border border-cream-300 bg-cream-50/60 px-4 py-3 text-base text-cocoa-900 placeholder-cocoa-700/35 transition-all focus:border-mauve-500 focus:bg-cream-50 focus:outline-none focus:ring-0;
   }
 
-  /* LABEL - mini, uppercase */
   .label {
     @apply text-mini font-semibold uppercase tracking-widest text-mauve-700;
   }
 
-  /* CHIP / TAG */
   .chip {
     @apply inline-flex items-center gap-1.5 border border-gold-400/40 bg-gold-100 px-3 py-1 text-mini font-medium uppercase tracking-widest text-cocoa-800;
   }
 
-  /* TYPOGRAPHY UTILITIES */
   .font-display {
     font-family: "Playfair Display", Georgia, serif;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.01em;
   }
 
-  /* bleibt als Akzent verfuegbar - jetzt Playfair kursiv */
+  /* bleibt als Akzent verfuegbar - Playfair kursiv */
   .font-display-italic {
     font-family: "Playfair Display", Georgia, serif;
     font-style: italic;
     letter-spacing: -0.01em;
   }
 
-  /* DIVIDER */
   .divider {
     @apply relative flex items-center justify-center my-8;
   }
@@ -119,17 +118,14 @@
     @apply bg-mauve-500/40;
   }
 
-  /* MINI LABEL */
   .mini-label {
     @apply text-mini font-semibold uppercase tracking-widest text-mauve-700;
   }
 
-  /* BRAND MARK - das kleine "Sauer macht krustig" oben */
   .brand-mark {
     @apply text-mini font-medium uppercase tracking-widest text-mauve-700;
   }
 
-  /* DEZENTE TRENNUNG */
   .gold-line {
     @apply h-px w-12 bg-mauve-500 mx-auto;
   }
@@ -152,13 +148,13 @@
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #886a7d;
+    background: #8b6a7d;
   }
 }
 
-/* RUNDUNGEN - weiche Formen (loest den alten 2px-Editorial-Look ab) */
+/* RUNDUNGEN - weiche Formen */
 .card {
-  border-radius: 20px;
+  border-radius: 24px;
 }
 
 .btn-primary,
@@ -172,5 +168,5 @@
 }
 
 .chip {
-  border-radius: 8px;
+  border-radius: 999px;
 }
