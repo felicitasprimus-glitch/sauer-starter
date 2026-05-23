@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { calculateStats } from "@/lib/starterStats";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +73,55 @@ export async function GET() {
       });
     }
 
-    return Response.json({ brote: broteListe });
+    // STAERKSTE STARTER: nur Opt-in-Starter, Triebkraft live berechnet
+    let starterListe = [];
+    const { data: starters } = await admin
+      .from("starters")
+      .select("id, name, user_id")
+      .eq("share_in_ranking", true);
+
+    if (starters && starters.length > 0) {
+      const starterIds = starters.map((s) => s.id);
+
+      const { data: feedings } = await admin
+        .from("feedings")
+        .select("starter_id, fed_at, asg_g, flour_g, water_g, state, temperature")
+        .in("starter_id", starterIds)
+        .order("fed_at", { ascending: false });
+
+      const byStarter = {};
+      (feedings || []).forEach((f) => {
+        if (!byStarter[f.starter_id]) byStarter[f.starter_id] = [];
+        byStarter[f.starter_id].push(f);
+      });
+
+      const sUserIds = [...new Set(starters.map((s) => s.user_id))];
+      const sNameMap = {};
+      if (sUserIds.length > 0) {
+        const { data: sProfiles } = await admin
+          .from("user_profiles")
+          .select("id, display_name")
+          .in("id", sUserIds);
+        (sProfiles || []).forEach((p) => {
+          sNameMap[p.id] = p.display_name;
+        });
+      }
+
+      starterListe = starters.map((s) => {
+        const stats = calculateStats(byStarter[s.id] || []);
+        return {
+          id: s.id,
+          name: s.name,
+          autor: sNameMap[s.user_id] || "Anonym",
+          score: stats.triebkraftScore,
+          isOwn: s.user_id === user.id,
+        };
+      });
+      starterListe.sort((a, b) => b.score - a.score);
+      starterListe = starterListe.slice(0, 10);
+    }
+
+    return Response.json({ brote: broteListe, starter: starterListe });
   } catch (err) {
     return Response.json(
       { error: err.message || "Fehler beim Laden der Bestenliste" },

@@ -24,7 +24,7 @@ function deriveActive(inFridge, hours, days) {
   return null;
 }
 
-export default function StarterModi({ starterId, inFridge, feedIntervalHours, fridgeIntervalDays }) {
+export default function StarterModi({ starterId, inFridge, feedIntervalHours, fridgeIntervalDays, shareInRanking }) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -35,6 +35,8 @@ export default function StarterModi({ starterId, inFridge, feedIntervalHours, fr
   });
   const [busy, setBusy] = useState(null);
   const [err, setErr] = useState("");
+  const [opt, setOpt] = useState(!!shareInRanking);
+  const [optBusy, setOptBusy] = useState(false);
 
   useEffect(() => {
     setVals({
@@ -43,6 +45,28 @@ export default function StarterModi({ starterId, inFridge, feedIntervalHours, fr
       days: Number(fridgeIntervalDays) || 7,
     });
   }, [inFridge, feedIntervalHours, fridgeIntervalDays]);
+
+  useEffect(() => {
+    setOpt(!!shareInRanking);
+  }, [shareInRanking]);
+
+  async function toggleRanking() {
+    const next = !opt;
+    setOpt(next);
+    setOptBusy(true);
+    setErr("");
+    const { error } = await supabase
+      .from("starters")
+      .update({ share_in_ranking: next })
+      .eq("id", starterId);
+    setOptBusy(false);
+    if (error) {
+      setOpt(!next);
+      setErr(error.message);
+      return;
+    }
+    router.refresh();
+  }
 
   const active = deriveActive(vals.inFridge, vals.hours, vals.days);
 
@@ -120,6 +144,35 @@ export default function StarterModi({ starterId, inFridge, feedIntervalHours, fr
           . Du kannst ihn jederzeit unter Bearbeiten anpassen.
         </p>
       )}
+
+      <div className="mt-5 flex items-center justify-between gap-3 border-t border-cream-300 pt-4">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-cocoa-900">
+            An der Bestenliste teilnehmen
+          </p>
+          <p className="mt-0.5 text-xs text-cocoa-700/65">
+            Zeigt diesen Starter mit Triebkraft-Score in der Community-Rangliste.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={toggleRanking}
+          disabled={optBusy}
+          aria-pressed={opt}
+          className={`relative h-7 w-12 flex-shrink-0 rounded-full transition-colors ${
+            opt ? "bg-gold-500" : "bg-cream-300"
+          }`}
+        >
+          <span
+            className="absolute top-0.5 h-6 w-6 rounded-full bg-white"
+            style={{
+              left: opt ? "22px" : "2px",
+              transition: "left .2s ease",
+              boxShadow: "0 1px 2px rgba(0,0,0,.2)",
+            }}
+          />
+        </button>
+      </div>
 
       {err && (
         <div className="mt-3 border border-terra-500/40 bg-terra-400/10 px-4 py-3 text-sm text-terra-700">

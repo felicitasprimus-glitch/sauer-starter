@@ -99,6 +99,7 @@ export default async function StarterDetailPage({ params }) {
         inFridge={starter.in_fridge}
         feedIntervalHours={starter.feed_interval_hours}
         fridgeIntervalDays={starter.fridge_interval_days}
+        shareInRanking={starter.share_in_ranking}
       />
 
       {starter.notes && (
