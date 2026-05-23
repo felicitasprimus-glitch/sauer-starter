@@ -23,6 +23,15 @@ function parseRatio(ratio) {
   return { asg: parts[0], flour: parts[1], water: parts[2] };
 }
 
+function berechneMengen(ratio, asgValue) {
+  const asgVal = Number(asgValue) || 0;
+  if (!ratio || !ratio.asg) return null;
+  return {
+    flour_g: Math.round((asgVal * ratio.flour) / ratio.asg),
+    water_g: Math.round((asgVal * ratio.water) / ratio.asg),
+  };
+}
+
 export default function FeedingForm({ starter }) {
   const router = useRouter();
   const supabase = createClient();
@@ -63,13 +72,24 @@ export default function FeedingForm({ starter }) {
   const activeRatio =
     verhaeltnis === "custom" ? customRatio : parseRatio(verhaeltnis);
 
+  // Mengen automatisch nachziehen, wenn sich ASG oder das eigene Verhaeltnis aendert
   useEffect(() => {
-    if (!autoCalc || !activeRatio) return;
-    const asgVal = Number(form.asg_g) || 0;
-    const newFlour = Math.round((asgVal * activeRatio.flour) / activeRatio.asg);
-    const newWater = Math.round((asgVal * activeRatio.water) / activeRatio.asg);
-    setForm((f) => ({ ...f, flour_g: newFlour, water_g: newWater }));
+    if (!autoCalc) return;
+    const ratio =
+      verhaeltnis === "custom" ? customRatio : parseRatio(verhaeltnis);
+    const mengen = berechneMengen(ratio, form.asg_g);
+    if (mengen) setForm((f) => ({ ...f, ...mengen }));
   }, [verhaeltnis, customRatio.asg, customRatio.flour, customRatio.water, form.asg_g, autoCalc]);
+
+  // Klick auf einen Verhaeltnis-Knopf: sofort ausrechnen und Auto-rechnen wieder anschalten
+  function selectVerhaeltnis(presetValue) {
+    setVerhaeltnis(presetValue);
+    setAutoCalc(true);
+    const ratio =
+      presetValue === "custom" ? customRatio : parseRatio(presetValue);
+    const mengen = berechneMengen(ratio, form.asg_g);
+    if (mengen) setForm((f) => ({ ...f, ...mengen }));
+  }
 
   function update(key, value) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -137,7 +157,7 @@ export default function FeedingForm({ starter }) {
             <button
               key={preset.value}
               type="button"
-              onClick={() => setVerhaeltnis(preset.value)}
+              onClick={() => selectVerhaeltnis(preset.value)}
               className={`rounded-2xl border px-3 py-2 text-center transition-all ${
                 verhaeltnis === preset.value
                   ? "border-terra-500 bg-terra-500/10"
