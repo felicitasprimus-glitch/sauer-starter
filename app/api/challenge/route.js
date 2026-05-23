@@ -44,9 +44,65 @@ export async function GET() {
       .eq("id", user.id)
       .maybeSingle();
 
+    // Einreichungen + eigene teilbare Brote (nur wenn es eine Challenge gibt)
+    let einreichungen = [];
+    let eigeneBrote = [];
+    if (challenge) {
+      const { data: brote } = await admin
+        .from("brote")
+        .select("id, name, photo_path, krume_score, user_id, shared_at")
+        .eq("challenge_id", challenge.id)
+        .order("shared_at", { ascending: false });
+
+      const userIds = [...new Set((brote || []).map((b) => b.user_id))];
+      const nameMap = {};
+      if (userIds.length > 0) {
+        const { data: profiles } = await admin
+          .from("user_profiles")
+          .select("id, display_name")
+          .in("id", userIds);
+        (profiles || []).forEach((p) => {
+          nameMap[p.id] = p.display_name;
+        });
+      }
+
+      for (const b of brote || []) {
+        let fotoUrl = null;
+        if (b.photo_path) {
+          const { data: signed } = await admin.storage
+            .from("photos")
+            .createSignedUrl(b.photo_path, 3600);
+          fotoUrl = signed?.signedUrl || null;
+        }
+        einreichungen.push({
+          id: b.id,
+          name: b.name,
+          autor: nameMap[b.user_id] || "Anonym",
+          krumeScore: b.krume_score,
+          fotoUrl,
+          isOwn: b.user_id === user.id,
+        });
+      }
+
+      // Eigene geteilte Brote zur Auswahl
+      const { data: meine } = await admin
+        .from("brote")
+        .select("id, name, challenge_id")
+        .eq("user_id", user.id)
+        .eq("is_shared", true)
+        .order("shared_at", { ascending: false });
+      eigeneBrote = (meine || []).map((b) => ({
+        id: b.id,
+        name: b.name,
+        eingereicht: b.challenge_id === challenge.id,
+      }));
+    }
+
     return Response.json({
       challenge: challenge || null,
       isAdmin: !!profile?.is_admin,
+      einreichungen,
+      eigeneBrote,
     });
   } catch (err) {
     return Response.json(
