@@ -153,6 +153,13 @@ export default function CommunityPage() {
         🏆 Bestenliste ansehen
       </Link>
 
+      <Link
+        href="/community/challenge"
+        className="btn-secondary block text-center"
+      >
+        🎯 Challenge ansehen
+      </Link>
+
       {!loading && !error && posts.length > 0 && (
         <CommunityDashboard posts={posts} />
       )}
