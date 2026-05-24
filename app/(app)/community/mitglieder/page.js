@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function MitgliederPage() {
   const [members, setMembers] = useState([]);
@@ -78,8 +79,9 @@ export default function MitgliederPage() {
       ) : (
         <div className="space-y-3">
           {members.map((m, i) => (
-            <div
+            <Link
               key={m.autor}
+              href={"/community/profil?name=" + encodeURIComponent(m.autor)}
               className="flex items-center gap-3.5 rounded-[20px] border border-line bg-white p-3.5 shadow-card"
             >
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-altrosa font-display text-lg font-bold text-brombeer">
@@ -98,8 +100,10 @@ export default function MitgliederPage() {
                 <span className="flex-shrink-0 text-xl">
                   {i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}
                 </span>
-              ) : null}
-            </div>
+              ) : (
+                <span className="flex-shrink-0 text-muted">›</span>
+              )}
+            </Link>
           ))}
         </div>
       )}
