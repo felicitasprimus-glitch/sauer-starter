@@ -1,38 +1,45 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { translate } from "@/lib/translations";
+import PublicLanguageSwitcher from "@/components/PublicLanguageSwitcher";
 
 export default function HomePage() {
+  const lang = cookies().get("lang")?.value || "de";
+  const t = (k) => translate(lang, k);
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6 text-center">
+        <PublicLanguageSwitcher initialLang={lang} />
+
         <div>
           <div className="text-5xl">🍞</div>
           <h1 className="mt-3 font-display text-4xl text-cocoa-900">
             Sauer macht krustig
           </h1>
           <p className="mt-2 text-sm text-cocoa-700/70">
-            Dein Sauerteig-Tagebuch
+            {t("land.tagline")}
           </p>
         </div>
 
         <div className="card space-y-4 text-left">
           <p className="text-sm leading-relaxed text-cocoa-800">
-            Tracke deinen Starter, dokumentiere deine Brote und analysiere
-            deine Krume mit KI. Alles an einem Ort.
+            {t("land.desc")}
           </p>
         </div>
 
         <div className="flex flex-col gap-3">
           <Link href="/register" className="btn-primary text-center">
-            Kostenlos starten
+            {t("land.start")}
           </Link>
 
           <Link href="/login" className="btn-secondary text-center">
-            Ich habe schon ein Konto
+            {t("land.haveAccount")}
           </Link>
         </div>
 
         <p className="text-[10px] text-cocoa-700/60">
-          Du brauchst einen Aktivierungs-Code zur Anmeldung. 🥖
+          {t("land.codeNote")}
         </p>
       </div>
     </div>
