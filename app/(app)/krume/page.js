@@ -5,43 +5,47 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { findProblemByDiagnose } from "@/lib/fehlerfinder-data";
+import { useLang } from "@/components/LanguageProvider";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const BROT_ARTEN = [
-  { value: "vollkorn", label: "Vollkorn", emoji: "🌾", desc: "100% Vollkorn" },
-  { value: "weissbrot", label: "Weissbrot", emoji: "🍞", desc: "Helles Weizenbrot, Ciabatta, Baguette" },
-  { value: "mischbrot", label: "Mischbrot", emoji: "🥖", desc: "Mix aus hell und Vollkorn" },
-  { value: "roggen", label: "Roggenbrot", emoji: "🌑", desc: "Hauptsaechlich Roggen" },
-  { value: "unbekannt", label: "Weiss nicht", emoji: "❓", desc: "Lass den KI-Baecker raten" },
+  { value: "vollkorn", labelKey: "krume.art.vollkorn", emoji: "🌾", descKey: "krume.art.vollkornD" },
+  { value: "weissbrot", labelKey: "krume.art.weissbrot", emoji: "🍞", descKey: "krume.art.weissbrotD" },
+  { value: "mischbrot", labelKey: "krume.art.mischbrot", emoji: "🥖", descKey: "krume.art.mischbrotD" },
+  { value: "roggen", labelKey: "krume.art.roggen", emoji: "🌑", descKey: "krume.art.roggenD" },
+  { value: "unbekannt", labelKey: "krume.art.unbekannt", emoji: "❓", descKey: "krume.art.unbekanntD" },
 ];
 
 const AUFGANG_OPTIONEN = [
-  { value: "gut", label: "Gut aufgegangen", emoji: "📈" },
-  { value: "okay", label: "Okay aufgegangen", emoji: "👌" },
-  { value: "kaum", label: "Kaum aufgegangen", emoji: "📉" },
+  { value: "gut", labelKey: "krume.auf.gut", emoji: "📈" },
+  { value: "okay", labelKey: "krume.auf.okay", emoji: "👌" },
+  { value: "kaum", labelKey: "krume.auf.kaum", emoji: "📉" },
 ];
 
 const GEFUEHL_OPTIONEN = [
-  { value: "luftig", label: "Leicht und luftig", emoji: "☁️" },
-  { value: "normal", label: "Normal", emoji: "👍" },
-  { value: "schwer", label: "Schwer / feucht", emoji: "🥄" },
+  { value: "luftig", labelKey: "krume.feel.luftig", emoji: "☁️" },
+  { value: "normal", labelKey: "krume.feel.normal", emoji: "👍" },
+  { value: "schwer", labelKey: "krume.feel.schwer", emoji: "🥄" },
 ];
 
 const KRUME_OPTIONEN = [
-  { value: "luftig", label: "Luftig mit Poren", emoji: "🫧" },
-  { value: "dicht-fein", label: "Dicht und fein", emoji: "📏" },
-  { value: "gummig", label: "Gummig / klitschig", emoji: "🍮" },
-  { value: "speck", label: "Speckschicht unten", emoji: "🥓" },
-  { value: "risse", label: "Risse / Hohlraeume", emoji: "🕳️" },
+  { value: "luftig", labelKey: "krume.cr.luftig", emoji: "🫧" },
+  { value: "dicht-fein", labelKey: "krume.cr.dichtfein", emoji: "📏" },
+  { value: "gummig", labelKey: "krume.cr.gummig", emoji: "🍮" },
+  { value: "speck", labelKey: "krume.cr.speck", emoji: "🥓" },
+  { value: "risse", labelKey: "krume.cr.risse", emoji: "🕳️" },
 ];
 
 const HYDRATION_OPTIONEN = [
-  { value: "unter65", label: "Unter 65%", desc: "fest" },
-  { value: "65-70", label: "65-70%", desc: "Standard" },
-  { value: "70-75", label: "70-75%", desc: "weich" },
-  { value: "75-80", label: "75-80%", desc: "offen moeglich" },
-  { value: "ueber80", label: "Ueber 80%", desc: "high hydration" },
-  { value: "weissnicht", label: "Weiss nicht", desc: "KI schaetzt" },
+  { value: "unter65", labelKey: "krume.hyd.unter65", descKey: "krume.hyd.unter65D" },
+  { value: "65-70", labelKey: "krume.hyd.6570", descKey: "krume.hyd.6570D" },
+  { value: "70-75", labelKey: "krume.hyd.7075", descKey: "krume.hyd.7075D" },
+  { value: "75-80", labelKey: "krume.hyd.7580", descKey: "krume.hyd.7580D" },
+  { value: "ueber80", labelKey: "krume.hyd.ueber80", descKey: "krume.hyd.ueber80D" },
+  { value: "weissnicht", labelKey: "krume.hyd.weissnicht", descKey: "krume.hyd.weissnichtD" },
 ];
+
+const DATE_LOCALE = { de: "de-DE", en: "en-US", es: "es-ES" };
 
 async function calculateFileHash(file) {
   const buffer = await file.arrayBuffer();
@@ -63,6 +67,7 @@ function detectBrotArt(brot) {
 export default function KrumePage() {
   const router = useRouter();
   const supabase = createClient();
+  const { t, lang } = useLang();
 
   const [user, setUser] = useState(null);
   const [brote, setBrote] = useState([]);
@@ -205,7 +210,7 @@ export default function KrumePage() {
 
       const apiData = await apiRes.json();
       if (!apiRes.ok) {
-        setError(apiData.error || "Analyse fehlgeschlagen");
+        setError(apiData.error || t("krume.analyzeFailed"));
         setAnalyzing(false);
         return;
       }
@@ -259,7 +264,7 @@ export default function KrumePage() {
       });
       setAnalyzing(false);
     } catch (err) {
-      setError(err.message || "Etwas ist schiefgelaufen");
+      setError(err.message || t("comm.genericError"));
       setAnalyzing(false);
     }
   }
@@ -365,7 +370,7 @@ export default function KrumePage() {
 
   async function deleteAnalyse(a) {
     if (!a?.id) return;
-    if (!window.confirm("Diese Analyse wirklich loeschen? Das laesst sich nicht rueckgaengig machen.")) return;
+    if (!window.confirm(t("krume.confirmDelete"))) return;
     setDeletingId(a.id);
     try {
       // Falls die Analyse mit einem Brot verknuepft ist: Verknuepfung loesen
@@ -389,7 +394,7 @@ export default function KrumePage() {
       // Falls die geloeschte gerade angezeigt wird: Ansicht zuruecksetzen
       if (result?.id === a.id) reset();
     } catch (err) {
-      setError(err.message || "Loeschen fehlgeschlagen");
+      setError(err.message || t("krume.deleteFailed"));
     } finally {
       setDeletingId(null);
     }
@@ -397,11 +402,11 @@ export default function KrumePage() {
 
   function getScoreLabel(score) {
     if (!score) return null;
-    if (score >= 8) return { emoji: "🏆", text: "Spitzenkrume" };
-    if (score >= 6) return { emoji: "👍", text: "Gut gelungen" };
-    if (score >= 4) return { emoji: "🌾", text: "Solide" };
-    if (score >= 2) return { emoji: "🌱", text: "Da geht noch was" };
-    return { emoji: "🤔", text: "Foto unklar" };
+    if (score >= 8) return { emoji: "🏆", text: t("krume.scoreTop") };
+    if (score >= 6) return { emoji: "👍", text: t("krume.scoreGood") };
+    if (score >= 4) return { emoji: "🌾", text: t("krume.scoreSolid") };
+    if (score >= 2) return { emoji: "🌱", text: t("krume.scoreMore") };
+    return { emoji: "🤔", text: t("krume.scoreUnclear") };
   }
 
   const userScoreNum = userScore ? Number(userScore) : null;
@@ -415,6 +420,9 @@ export default function KrumePage() {
 
   return (
     <div className="space-y-6 pb-8">
+      <div className="flex justify-end">
+        <LanguageSwitcher variant="light" />
+      </div>
       <div>
         {/* HERO BANNER (zeigt Verlauf, solange kein krume-hero.jpg da ist) */}
         <div
@@ -428,27 +436,24 @@ export default function KrumePage() {
         />
         <div className="mt-4 text-center">
           <h1 className="font-display text-[30px] font-semibold text-brombeer">
-            Krumenleser
+            {t("krume.title")}
           </h1>
           <p className="mx-auto mt-1 max-w-xs text-[13px] leading-relaxed text-muted">
-            Verstehe, was dein Brot dir sagen will - der KI-Baecker schaut dir
-            ueber die Schulter.
+            {t("krume.subtitle")}
           </p>
         </div>
       </div>
 
       <div className="border border-honey-500/40 bg-honey-500/10 px-4 py-3">
         <p className="text-xs leading-relaxed text-cocoa-800">
-          <strong>Wichtig:</strong> Der KI-Baecker kann Untergare/Uebergare
-          oft schlecht erkennen. Deine eigene Einschaetzung ist immer wertvoller.
-          Vertrau deinen Sinnen!
+          <strong>{t("krume.warnLabel")}</strong> {t("krume.warnText")}
         </p>
       </div>
 
       {!result && (
         <div className="space-y-5">
           <div className="card space-y-3">
-            <label className="label">1. Welche Brot-Art?</label>
+            <label className="label">{t("krume.step1")}</label>
             <div className="grid grid-cols-2 gap-2">
               {BROT_ARTEN.map((art) => (
                 <button
@@ -464,11 +469,11 @@ export default function KrumePage() {
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{art.emoji}</span>
                     <span className="text-sm font-semibold text-cocoa-800">
-                      {art.label}
+                      {t(art.labelKey)}
                     </span>
                   </div>
                   <div className="mt-1 text-[10px] text-cocoa-700/60">
-                    {art.desc}
+                    {t(art.descKey)}
                   </div>
                 </button>
               ))}
@@ -477,7 +482,7 @@ export default function KrumePage() {
 
           <div className="card space-y-4">
             <div>
-              <label className="label">2. Wie ist es aufgegangen? (optional)</label>
+              <label className="label">{t("krume.step2")}</label>
               <div className="mt-2 grid grid-cols-3 gap-2">
                 {AUFGANG_OPTIONEN.map((opt) => (
                   <button
@@ -492,7 +497,7 @@ export default function KrumePage() {
                   >
                     <div className="text-xl">{opt.emoji}</div>
                     <div className="text-[10px] font-semibold text-cocoa-800">
-                      {opt.label}
+                      {t(opt.labelKey)}
                     </div>
                   </button>
                 ))}
@@ -500,7 +505,7 @@ export default function KrumePage() {
             </div>
 
             <div>
-              <label className="label">3. Wie fuehlt sich das Brot an? (optional)</label>
+              <label className="label">{t("krume.step3")}</label>
               <div className="mt-2 grid grid-cols-3 gap-2">
                 {GEFUEHL_OPTIONEN.map((opt) => (
                   <button
@@ -515,7 +520,7 @@ export default function KrumePage() {
                   >
                     <div className="text-xl">{opt.emoji}</div>
                     <div className="text-[10px] font-semibold text-cocoa-800">
-                      {opt.label}
+                      {t(opt.labelKey)}
                     </div>
                   </button>
                 ))}
@@ -523,7 +528,7 @@ export default function KrumePage() {
             </div>
 
             <div>
-              <label className="label">4. Wie wirkt die Krume? (optional)</label>
+              <label className="label">{t("krume.step4")}</label>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {KRUME_OPTIONEN.map((opt) => (
                   <button
@@ -539,7 +544,7 @@ export default function KrumePage() {
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{opt.emoji}</span>
                       <span className="text-xs font-semibold text-cocoa-800">
-                        {opt.label}
+                        {t(opt.labelKey)}
                       </span>
                     </div>
                   </button>
@@ -548,10 +553,9 @@ export default function KrumePage() {
 
               {/* Open-Crumb-Angabe */}
               <div className="mt-3 border-t border-cream-300 pt-3">
-                <label className="label">Open Crumb angestrebt?</label>
+                <label className="label">{t("krume.openCrumbLabel")}</label>
                 <p className="mt-1 text-[10px] text-cocoa-700/60">
-                  Wolltest du eine wilde, offene Porung (z.B. Ciabatta-Style)?
-                  Dann bewertet der KI-Baecker gezielt die Offenheit.
+                  {t("krume.openCrumbHint")}
                 </p>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   <button
@@ -568,7 +572,7 @@ export default function KrumePage() {
                     <div className="flex items-center gap-2">
                       <span className="text-xl">🫧</span>
                       <span className="text-xs font-semibold text-cocoa-800">
-                        Ja, offene Porung
+                        {t("krume.openCrumbYes")}
                       </span>
                     </div>
                   </button>
@@ -586,7 +590,7 @@ export default function KrumePage() {
                     <div className="flex items-center gap-2">
                       <span className="text-xl">🍞</span>
                       <span className="text-xs font-semibold text-cocoa-800">
-                        Nein, normale Krume
+                        {t("krume.openCrumbNo")}
                       </span>
                     </div>
                   </button>
@@ -595,10 +599,9 @@ export default function KrumePage() {
 
               {/* Hydration-Angabe */}
               <div className="mt-3 border-t border-cream-300 pt-3">
-                <label className="label">Teig-Hydration (optional)</label>
+                <label className="label">{t("krume.hydLabel")}</label>
                 <p className="mt-1 text-[10px] text-cocoa-700/60">
-                  Wie viel Wasser im Verhaeltnis zum Mehl? Hilft dem KI-Baecker
-                  enorm bei der Bewertung.
+                  {t("krume.hydHint")}
                 </p>
                 <div className="mt-2 grid grid-cols-3 gap-2">
                   {HYDRATION_OPTIONEN.map((opt) => (
@@ -615,9 +618,9 @@ export default function KrumePage() {
                       }`}
                     >
                       <div className="text-xs font-semibold text-cocoa-800">
-                        {opt.label}
+                        {t(opt.labelKey)}
                       </div>
-                      <div className="text-[9px] text-cocoa-700/60">{opt.desc}</div>
+                      <div className="text-[9px] text-cocoa-700/60">{t(opt.descKey)}</div>
                     </button>
                   ))}
                 </div>
@@ -626,7 +629,7 @@ export default function KrumePage() {
 
             <div>
               <label className="label" htmlFor="userScore">
-                5. Deine eigene Bewertung 1-10 (optional)
+                {t("krume.step5")}
               </label>
               <input
                 id="userScore"
@@ -635,13 +638,13 @@ export default function KrumePage() {
                 min="1"
                 max="10"
                 step="0.5"
-                placeholder="z.B. 7"
+                placeholder={t("krume.scorePlaceholder")}
                 className="input mt-1"
                 value={userScore}
                 onChange={(e) => setUserScore(e.target.value)}
               />
               <p className="mt-1 text-[10px] text-cocoa-700/60">
-                Du bist die Baeckerin. Deine Einschaetzung zaehlt!
+                {t("krume.scoreHint")}
               </p>
             </div>
           </div>
@@ -654,10 +657,10 @@ export default function KrumePage() {
                 className="flex w-full items-center justify-between text-left"
               >
                 <span className="text-sm font-semibold text-cocoa-800">
-                  6. Mit Brot verknuepfen? (optional)
+                  {t("krume.step6")}
                 </span>
                 <span className="text-xs text-mauve-700">
-                  {showBrotPicker ? "Schliessen" : "Auswaehlen"}
+                  {showBrotPicker ? t("krume.close") : t("krume.choose")}
                 </span>
               </button>
               {showBrotPicker && (
@@ -671,7 +674,7 @@ export default function KrumePage() {
                         : "border-cream-300 bg-cream-50"
                     }`}
                   >
-                    Kein Brot zuordnen
+                    {t("krume.noBrot")}
                   </button>
                   {brote.map((brot) => (
                     <button
@@ -686,7 +689,7 @@ export default function KrumePage() {
                     >
                       <div className="font-semibold text-cocoa-800">{brot.name}</div>
                       <div className="text-[10px] text-cocoa-700/60">
-                        {new Date(brot.baked_at).toLocaleDateString("de-DE")}
+                        {new Date(brot.baked_at).toLocaleDateString(DATE_LOCALE[lang] || "de-DE")}
                       </div>
                     </button>
                   ))}
@@ -696,23 +699,23 @@ export default function KrumePage() {
           )}
 
           <div className="card">
-            <label className="label">7. Foto des Anschnitts</label>
+            <label className="label">{t("krume.step7")}</label>
             <div className="mt-2">
               {preview ? (
                 <div className="relative">
-                  <img src={preview} alt="Vorschau" className="h-48 w-full object-cover" />
+                  <img src={preview} alt={t("krume.previewAlt")} className="h-48 w-full object-cover" />
                   <button
                     type="button"
                     onClick={() => { setPhotoFile(null); setPreview(null); }}
                     className="absolute right-2 top-2 bg-cream-50/95 px-3 py-1 text-xs font-semibold text-cocoa-800"
                   >
-                    Anderes Foto
+                    {t("krume.otherPhoto")}
                   </button>
                 </div>
               ) : (
                 <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 border-2 border-dashed border-cream-300 bg-cream-100/50 hover:border-gold-500/50">
                   <span className="text-2xl">📷</span>
-                  <span className="text-xs font-semibold text-cocoa-800">Foto hochladen</span>
+                  <span className="text-xs font-semibold text-cocoa-800">{t("krume.uploadPhoto")}</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -730,7 +733,7 @@ export default function KrumePage() {
             disabled={!photoFile || analyzing}
             className="btn-primary w-full"
           >
-            {analyzing ? "Der KI-Baecker analysiert deine Krume ..." : "Vom KI-Baecker analysieren lassen"}
+            {analyzing ? t("krume.analyzing") : t("krume.analyzeBtn")}
           </button>
 
           {error && (
@@ -746,21 +749,21 @@ export default function KrumePage() {
               className="flex w-full items-center justify-between text-left"
             >
               <span className="text-sm font-semibold text-cocoa-800">
-                Meine bisherigen Analysen
+                {t("krume.pastTitle")}
               </span>
               <span className="text-xs text-mauve-700">
-                {showPast ? "Schliessen" : "Anzeigen"}
+                {showPast ? t("krume.close") : t("krume.show")}
               </span>
             </button>
 
             {showPast && (
               <div className="mt-3 space-y-2">
                 {loadingPast && (
-                  <p className="text-xs text-cocoa-700/60">Wird geladen ...</p>
+                  <p className="text-xs text-cocoa-700/60">{t("krume.loadingPast")}</p>
                 )}
                 {!loadingPast && pastAnalysen.length === 0 && (
                   <p className="text-xs text-cocoa-700/60">
-                    Noch keine gespeicherten Analysen.
+                    {t("krume.noPast")}
                   </p>
                 )}
                 {pastAnalysen.map((a) => (
@@ -771,7 +774,7 @@ export default function KrumePage() {
                     {a.thumbUrl ? (
                       <img
                         src={a.thumbUrl}
-                        alt="Krume"
+                        alt={t("krume.krumeAlt")}
                         className="h-14 w-14 flex-shrink-0 object-cover"
                       />
                     ) : (
@@ -785,14 +788,14 @@ export default function KrumePage() {
                       className="min-w-0 flex-1 text-left"
                     >
                       <div className="truncate text-xs font-semibold text-cocoa-800">
-                        {a.diagnose || "Krumen-Analyse"}
+                        {a.diagnose || t("krume.analyseFallback")}
                       </div>
                       <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[10px] text-cocoa-700/60">
                         <span>{a.score ? `${a.score}/10` : "—"}</span>
                         {a.porung && <span>• {a.porung}</span>}
                         {a.created_at && (
                           <span>
-                            • {new Date(a.created_at).toLocaleDateString("de-DE")}
+                            • {new Date(a.created_at).toLocaleDateString(DATE_LOCALE[lang] || "de-DE")}
                           </span>
                         )}
                       </div>
@@ -803,7 +806,7 @@ export default function KrumePage() {
                       disabled={deletingId === a.id}
                       className="flex-shrink-0 px-2 py-1 text-[10px] font-semibold text-terra-700 hover:opacity-70"
                     >
-                      {deletingId === a.id ? "..." : "Loeschen"}
+                      {deletingId === a.id ? "..." : t("krume.deleteShort")}
                     </button>
                   </div>
                 ))}
@@ -816,20 +819,20 @@ export default function KrumePage() {
       {result && (
         <div className="space-y-4">
           <div>
-            <p className="brand-mark">Bewertung vom KI-Baecker</p>
+            <p className="brand-mark">{t("krume.ratingLabel")}</p>
             <h2 className="font-display-italic text-display-md mt-1">
-              {result.diagnose || "Deine Krume"}
+              {result.diagnose || t("krume.yourCrumb")}
             </h2>
           </div>
 
           {result.isExisting && (
             <div className="border border-mauve-500/30 bg-mauve-500/10 px-4 py-3 text-xs text-cocoa-800">
-              ✨ Bereits analysiert — gespeichertes Ergebnis wird gezeigt.
+              {t("krume.existingNote")}
             </div>
           )}
 
           {result.photo_path && preview && (
-            <img src={preview} alt="Krume" className="h-48 w-full object-cover" />
+            <img src={preview} alt={t("krume.krumeAlt")} className="h-48 w-full object-cover" />
           )}
 
           <div className="grid grid-cols-2 gap-3">
@@ -839,7 +842,7 @@ export default function KrumePage() {
               return (
                 <>
                   <div className="card text-center">
-                    <div className="label">KI-Baecker</div>
+                    <div className="label">{t("krume.aiCol")}</div>
                     <div className="mt-1 font-display-italic text-4xl font-bold text-cocoa-900">
                       {result.score ? `${result.score}/10` : "—"}
                     </div>
@@ -850,7 +853,7 @@ export default function KrumePage() {
                     )}
                   </div>
                   <div className="card text-center">
-                    <div className="label">Du</div>
+                    <div className="label">{t("krume.youCol")}</div>
                     <div className="mt-1 font-display-italic text-4xl font-bold text-cocoa-900">
                       {userScoreNum ? `${userScoreNum}/10` : "—"}
                     </div>
@@ -868,26 +871,24 @@ export default function KrumePage() {
           {bigDisagreement && (
             <div className="border border-terra-500/40 bg-terra-400/10 px-4 py-3">
               <p className="text-xs leading-relaxed text-terra-700">
-                <strong>🤔 Du und der KI-Baecker seid uneinig.</strong> Vertrau
-                deinen Sinnen — du hast das Brot in den Haenden, gerochen,
-                geschmeckt. Der KI-Baecker sieht nur das Foto.
+                <strong>{t("krume.disagreeBold")}</strong> {t("krume.disagreeText")}
               </p>
             </div>
           )}
 
           {result.analysis_text && (
             <div className="card">
-              <div className="label">Was der KI-Baecker sieht</div>
+              <div className="label">{t("krume.sees")}</div>
               <p className="mt-2 text-sm leading-relaxed text-cocoa-800">
                 {result.analysis_text}
               </p>
               {(result.porung || result.hydration_estimate) && (
                 <div className="mt-3 flex flex-wrap gap-2 border-t border-cream-300 pt-3">
                   {result.porung && (
-                    <span className="chip">Porung: {result.porung}</span>
+                    <span className="chip">{t("krume.porungLabel")}: {result.porung}</span>
                   )}
                   {result.hydration_estimate && (
-                    <span className="chip">Hydration: {result.hydration_estimate}</span>
+                    <span className="chip">{t("krume.hydrationLabel")}: {result.hydration_estimate}</span>
                   )}
                 </div>
               )}
@@ -896,7 +897,7 @@ export default function KrumePage() {
 
           {Array.isArray(result.tipps) && result.tipps.length > 0 && (
             <div className="card">
-              <div className="label">Tipps vom KI-Baecker</div>
+              <div className="label">{t("krume.tippsLabel")}</div>
               <ul className="mt-2 space-y-1">
                 {result.tipps.map((tipp, i) => (
                   <li key={i} className="text-sm text-cocoa-800">• {tipp}</li>
@@ -913,9 +914,9 @@ export default function KrumePage() {
               <div className="flex items-center gap-3">
                 <div className="text-3xl">{matchedProblem.emoji}</div>
                 <div className="flex-1">
-                  <div className="label text-gold-700">Tiefer eintauchen</div>
+                  <div className="label text-gold-700">{t("krume.deeper")}</div>
                   <div className="font-display-italic text-base text-cocoa-900">
-                    Fehlerfinder: {matchedProblem.titel}
+                    {t("krume.fehlerfinderPrefix")} {matchedProblem.titel}
                   </div>
                 </div>
                 <div className="text-mauve-700">→</div>
@@ -925,13 +926,13 @@ export default function KrumePage() {
 
           {!selectedBrotId && !result.brot_id && !showAttachUI && (
             <div className="card space-y-2">
-              <p className="text-sm text-cocoa-800">Mit einem Brot verknuepfen?</p>
+              <p className="text-sm text-cocoa-800">{t("krume.linkBreadQ")}</p>
               <button
                 type="button"
                 onClick={() => setShowAttachUI(true)}
                 className="btn-primary w-full"
               >
-                Ja, zuordnen
+                {t("krume.yesAssign")}
               </button>
             </div>
           )}
@@ -939,11 +940,11 @@ export default function KrumePage() {
           {showAttachUI && (
             <div className="card space-y-3">
               <div>
-                <label className="label">Als neuen Brot-Eintrag speichern</label>
+                <label className="label">{t("krume.saveNewLabel")}</label>
                 <div className="mt-1 flex gap-2">
                   <input
                     type="text"
-                    placeholder="Name des Brotes"
+                    placeholder={t("krume.breadNamePlaceholder")}
                     value={newBrotName}
                     onChange={(e) => setNewBrotName(e.target.value)}
                     className="input"
@@ -954,14 +955,14 @@ export default function KrumePage() {
                     disabled={!newBrotName.trim()}
                     className="btn-primary whitespace-nowrap"
                   >
-                    Anlegen
+                    {t("krume.create")}
                   </button>
                 </div>
               </div>
 
               {brote.length > 0 && (
                 <div>
-                  <label className="label">Oder an bestehendes Brot anhaengen</label>
+                  <label className="label">{t("krume.attachExisting")}</label>
                   <div className="mt-1 space-y-1">
                     {brote.map((brot) => (
                       <button
@@ -972,7 +973,7 @@ export default function KrumePage() {
                       >
                         <div className="font-semibold text-cocoa-800">{brot.name}</div>
                         <div className="text-[10px] text-cocoa-700/60">
-                          {new Date(brot.baked_at).toLocaleDateString("de-DE")}
+                          {new Date(brot.baked_at).toLocaleDateString(DATE_LOCALE[lang] || "de-DE")}
                         </div>
                       </button>
                     ))}
@@ -984,14 +985,12 @@ export default function KrumePage() {
 
           <div className="border border-cream-300 bg-cream-100 px-4 py-3">
             <p className="text-[10px] leading-relaxed text-cocoa-700/70">
-              Einschaetzung vom KI-Baecker — kein Profibaecker-Urteil. Bei
-              Untergare/Uebergare kann der KI-Baecker besonders danebenliegen.
-              Vertrau auch deinem Gefuehl. 🥖
+              {t("krume.disclaimer")}
             </p>
           </div>
 
           <button type="button" onClick={reset} className="btn-secondary w-full">
-            Neue Analyse starten
+            {t("krume.newAnalysis")}
           </button>
 
           {result.id && (
@@ -1001,7 +1000,7 @@ export default function KrumePage() {
               disabled={deletingId === result.id}
               className="w-full px-4 py-2 text-xs font-semibold text-terra-700 hover:opacity-70"
             >
-              {deletingId === result.id ? "Wird geloescht ..." : "Diese Analyse loeschen"}
+              {deletingId === result.id ? t("krume.deleting") : t("krume.deleteThis")}
             </button>
           )}
         </div>
