@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { translations, LANGS } from "@/lib/translations";
 
 const LangContext = createContext({
@@ -9,8 +10,15 @@ const LangContext = createContext({
   t: (k) => k,
 });
 
+function writeCookie(l) {
+  try {
+    document.cookie = "lang=" + l + ";path=/;max-age=31536000";
+  } catch (e) {}
+}
+
 export function LanguageProvider({ children }) {
   const [lang, setLangState] = useState("de");
+  const router = useRouter();
 
   useEffect(() => {
     let saved = null;
@@ -22,6 +30,8 @@ export function LanguageProvider({ children }) {
       saved = LANGS.includes(nav) ? nav : "de";
     }
     setLangState(saved);
+    // Cookie setzen, damit auch Server-Seiten die Sprache kennen
+    writeCookie(saved);
   }, []);
 
   function setLang(l) {
@@ -30,9 +40,9 @@ export function LanguageProvider({ children }) {
     try {
       window.localStorage.setItem("lang", l);
     } catch (e) {}
-    try {
-      document.cookie = "lang=" + l + ";path=/;max-age=31536000";
-    } catch (e) {}
+    writeCookie(l);
+    // Server-Seiten (z. B. Brote, SOS) neu rendern lassen
+    router.refresh();
   }
 
   function t(key) {

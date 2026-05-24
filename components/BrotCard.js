@@ -1,22 +1,13 @@
 import Link from "next/link";
+import { translate } from "@/lib/translations";
 
-const CRUST_LABELS = {
-  hell: "Hell",
-  goldbraun: "Goldbraun",
-  dunkel: "Dunkel",
-  rustikal: "Rustikal",
-};
+const DATE_LOCALE = { de: "de-DE", en: "en-US", es: "es-ES" };
 
-const CRUMB_LABELS = {
-  fein: "Fein",
-  mittel: "Mittel",
-  offen: "Offen",
-  wild_offen: "Wild offen",
-};
+export default function BrotCard({ brot, photoUrl, starterName, lang = "de" }) {
+  const t = (k) => translate(lang, k);
 
-export default function BrotCard({ brot, photoUrl, starterName }) {
   const date = brot.baked_at
-    ? new Date(brot.baked_at).toLocaleDateString("de-DE", {
+    ? new Date(brot.baked_at).toLocaleDateString(DATE_LOCALE[lang] || "de-DE", {
         day: "2-digit",
         month: "long",
         year: "numeric",
@@ -71,7 +62,7 @@ export default function BrotCard({ brot, photoUrl, starterName }) {
                 className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
                 style={{ background: "#F3ECE0", color: "#9a6e82" }}
               >
-                Kruste: {CRUST_LABELS[brot.crust] || brot.crust}
+                {t("brote.crust")}: {t("crust." + brot.crust)}
               </span>
             ) : null}
             {brot.crumb ? (
@@ -79,7 +70,7 @@ export default function BrotCard({ brot, photoUrl, starterName }) {
                 className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
                 style={{ background: "#F1EAEF", color: "#8b6a7d" }}
               >
-                Krume: {CRUMB_LABELS[brot.crumb] || brot.crumb}
+                {t("brote.crumb")}: {t("crumb." + brot.crumb)}
               </span>
             ) : null}
           </div>

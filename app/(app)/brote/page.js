@@ -1,12 +1,18 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getSignedPhotoUrls } from "@/lib/photos";
+import { translate } from "@/lib/translations";
 import BrotCard from "@/components/BrotCard";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export const dynamic = "force-dynamic";
 
 export default async function BrotePage() {
   const supabase = createClient();
+
+  const lang = cookies().get("lang")?.value || "de";
+  const t = (k) => translate(lang, k);
 
   const {
     data: { user },
@@ -42,8 +48,11 @@ export default async function BrotePage() {
         <span className="text-[10px] font-semibold uppercase tracking-[3px] text-mauve-700">
           Sauer · macht · krustig
         </span>
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-altrosa font-display text-base font-bold text-brombeer">
-          {initial}
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher variant="light" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-altrosa font-display text-base font-bold text-brombeer">
+            {initial}
+          </div>
         </div>
       </div>
 
@@ -61,11 +70,9 @@ export default async function BrotePage() {
       {/* TITEL */}
       <div className="mb-5 text-center">
         <h1 className="font-display text-[30px] font-semibold text-brombeer">
-          Mein Brot-Tagebuch
+          {t("brote.title")}
         </h1>
-        <p className="mt-1 text-[13px] text-muted">
-          Fortschritte festhalten & besser werden.
-        </p>
+        <p className="mt-1 text-[13px] text-muted">{t("brote.subtitle")}</p>
       </div>
 
       {/* LISTE */}
@@ -77,6 +84,7 @@ export default async function BrotePage() {
               brot={b}
               photoUrl={b.photo_path ? photoUrls[b.photo_path] : null}
               starterName={b.starter_id ? starterMap[b.starter_id] : null}
+              lang={lang}
             />
           ))}
           <Link
@@ -84,23 +92,21 @@ export default async function BrotePage() {
             className="flex items-center justify-center gap-2 rounded-[22px] border-[1.6px] border-dashed border-altrosa px-4 py-4 text-sm font-semibold text-mauve-500"
             style={{ background: "rgba(221,188,198,0.10)" }}
           >
-            + Neues Brot eintragen
+            + {t("brote.addNew")}
           </Link>
         </div>
       ) : (
         <div className="rounded-[24px] border border-line bg-white p-8 text-center shadow-card">
           <div className="text-4xl">🍞</div>
           <h2 className="mt-3 font-display text-2xl font-semibold text-ink">
-            Noch kein Brot im Tagebuch
+            {t("brote.emptyTitle")}
           </h2>
-          <p className="mt-2 text-sm text-muted">
-            Halte fest, was du gebacken hast - mit Foto, Bewertung und Notizen.
-          </p>
+          <p className="mt-2 text-sm text-muted">{t("brote.emptyText")}</p>
           <Link
             href="/brote/new"
             className="mt-5 inline-block rounded-2xl bg-mauve-500 px-6 py-3 text-sm font-semibold text-white"
           >
-            Erstes Brot eintragen
+            {t("brote.firstBread")}
           </Link>
         </div>
       )}
