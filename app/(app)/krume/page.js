@@ -205,6 +205,7 @@ export default function KrumePage() {
           mimeType: blob.type,
           brotArt: activeBrotArt,
           userBeobachtungen,
+          lang,
         }),
       });
 

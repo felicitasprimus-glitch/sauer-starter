@@ -3,6 +3,32 @@ import { createClient } from "@/lib/supabase/server";
 
 const DAILY_LIMIT = 5;
 
+const LANG_NAME = { de: "Deutsch", en: "Englisch", es: "Spanisch (Espanol)" };
+
+const ERR = {
+  de: {
+    notLoggedIn: "Nicht eingeloggt",
+    noImage: "Kein Bild uebergeben",
+    noKey: "ANTHROPIC_API_KEY fehlt",
+    limit: (n) => `Du hast heute schon ${n} Krumen-Analysen gemacht. Versuch es morgen wieder!`,
+    parse: "KI-Antwort konnte nicht gelesen werden",
+  },
+  en: {
+    notLoggedIn: "Not logged in",
+    noImage: "No image provided",
+    noKey: "ANTHROPIC_API_KEY missing",
+    limit: (n) => `You have already done ${n} crumb analyses today. Try again tomorrow!`,
+    parse: "Could not read the AI response",
+  },
+  es: {
+    notLoggedIn: "No has iniciado sesión",
+    noImage: "No se envió ninguna imagen",
+    noKey: "Falta ANTHROPIC_API_KEY",
+    limit: (n) => `Ya has hecho ${n} análisis de miga hoy. ¡Inténtalo mañana!`,
+    parse: "No se pudo leer la respuesta de la IA",
+  },
+};
+
 const BROT_PROFILE = {
   vollkorn: {
     name: "Vollkornbrot",
@@ -48,10 +74,16 @@ function extractJson(text) {
 export async function POST(request) {
   try {
     const supabase = createClient();
+
+    const body = await request.json().catch(() => ({}));
+    const { imageBase64, mimeType, brotArt, userBeobachtungen, lang } = body;
+    const L = ERR[lang] || ERR.de;
+    const langName = LANG_NAME[lang] || "Deutsch";
+
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      return Response.json({ error: "Nicht eingeloggt" }, { status: 401 });
+      return Response.json({ error: L.notLoggedIn }, { status: 401 });
     }
 
     // LIMIT-CHECK: Wie viele Analysen heute schon gemacht?
@@ -78,7 +110,7 @@ export async function POST(request) {
     if (!isAdmin && todayCount >= DAILY_LIMIT) {
       return Response.json(
         {
-          error: `Du hast heute schon ${DAILY_LIMIT} Krumen-Analysen gemacht. Versuch es morgen wieder!`,
+          error: L.limit(DAILY_LIMIT),
           limitReached: true,
           dailyLimit: DAILY_LIMIT,
         },
@@ -86,14 +118,12 @@ export async function POST(request) {
       );
     }
 
-    const { imageBase64, mimeType, brotArt, userBeobachtungen } = await request.json();
-
     if (!imageBase64) {
-      return Response.json({ error: "Kein Bild uebergeben" }, { status: 400 });
+      return Response.json({ error: L.noImage }, { status: 400 });
     }
 
     if (!process.env.ANTHROPIC_API_KEY) {
-      return Response.json({ error: "ANTHROPIC_API_KEY fehlt" }, { status: 500 });
+      return Response.json({ error: L.noKey }, { status: 500 });
     }
 
     const profile2 = BROT_PROFILE[brotArt] || BROT_PROFILE.unbekannt;
@@ -212,7 +242,9 @@ Antworte AUSSCHLIESSLICH mit JSON in diesem Format (kein Markdown, kein Code-Blo
     "<konkreter Tipp>",
     "<konkreter Tipp>"
   ]
-}`;
+}
+
+SPRACHE: Schreibe die Werte der Felder "diagnose", "zusammenfassung", "tipps", "porung" und "hydration_estimate" AUSSCHLIESSLICH auf ${langName}. Die JSON-Schluesselnamen bleiben EXAKT wie oben (porung, hydration_estimate, score, diagnose, zusammenfassung, tipps) - nur die Werte uebersetzen.`;
 
     const userMessage = `Bewerte diese Krume.${userInfoBlock}\n\nDenk dran: Beobachtungen der Baeckerin sind sehr wichtig!`;
 
@@ -250,7 +282,7 @@ Antworte AUSSCHLIESSLICH mit JSON in diesem Format (kein Markdown, kein Code-Blo
 
     if (!analysis) {
       return Response.json(
-        { error: "KI-Antwort konnte nicht gelesen werden", raw: text },
+        { error: L.parse, raw: text },
         { status: 500 }
       );
     }
