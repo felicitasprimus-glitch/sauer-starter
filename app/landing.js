@@ -41,6 +41,11 @@ export default function HomePage() {
         <p className="text-[10px] text-cocoa-700/60">
           {t("land.codeNote")}
         </p>
+
+        <div className="flex justify-center gap-4 pt-2 text-[11px] text-cocoa-700/60">
+          <Link href="/impressum" className="hover:text-cocoa-900">Impressum</Link>
+          <Link href="/datenschutz" className="hover:text-cocoa-900">Datenschutz</Link>
+        </div>
       </div>
     </div>
   );
