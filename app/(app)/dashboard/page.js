@@ -37,6 +37,12 @@ function pillText(status) {
   return "Aktiv & blubbert";
 }
 
+function jarImage(status) {
+  const c = status && status.statusColor;
+  if (c === "warning" || c === "danger") return "/starter-hungrig.png";
+  return "/starter-peak.png";
+}
+
 function meterPercent(status) {
   if (!status || status.hoursSinceLastFeeding == null || !status.intervalHours) return 6;
   const p = (status.hoursSinceLastFeeding / status.intervalHours) * 100;
@@ -60,7 +66,6 @@ export default function DashboardPage() {
   const [displayName, setDisplayName] = useState("");
   const [starters, setStarters] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [imageUrls, setImageUrls] = useState({});
 
   useEffect(() => {
     init();
@@ -95,17 +100,6 @@ export default function DashboardPage() {
         ),
       }));
       setStarters(startersWithSorted);
-
-      const urls = {};
-      for (const s of startersWithSorted) {
-        if (s.photo_path) {
-          const { data } = await supabase.storage
-            .from("photos")
-            .createSignedUrl(s.photo_path, 3600);
-          if (data && data.signedUrl) urls[s.id] = data.signedUrl;
-        }
-      }
-      setImageUrls(urls);
     }
 
     setLoading(false);
@@ -223,21 +217,11 @@ export default function DashboardPage() {
                     href={`/starter/${s.id}`}
                     className="flex min-w-0 flex-1 items-center gap-3.5"
                   >
-                    {imageUrls[s.id] ? (
-                      <img
-                        src={imageUrls[s.id]}
-                        alt={s.name}
-                        className="h-[62px] w-[62px] flex-shrink-0 rounded-[18px] object-cover"
-                        style={{ boxShadow: "0 4px 12px rgba(123,90,110,0.20)" }}
-                      />
-                    ) : (
-                      <div
-                        className="flex h-[62px] w-[62px] flex-shrink-0 items-center justify-center rounded-[18px] text-2xl"
-                        style={{ background: "#F3E8EE" }}
-                      >
-                        🌾
-                      </div>
-                    )}
+                    <img
+                      src={jarImage(s.status)}
+                      alt={s.name}
+                      className="h-[66px] w-[66px] flex-shrink-0 object-contain"
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="font-display text-[19px] font-semibold leading-none text-ink">
                         {s.name}
