@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import NotificationBell from "@/components/NotificationBell";
+import ProfileAvatar from "@/components/ProfileAvatar";
 
 export default function CommunityPage() {
   const supabase = createClient();
@@ -140,7 +141,10 @@ export default function CommunityPage() {
           <span className="text-muted">.macht.</span>
           <span className="text-mauve-500">krustig</span>
         </span>
-        <NotificationBell />
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <ProfileAvatar />
+        </div>
       </div>
 
       {/* HERO mit Text drauf (Verlauf-Fallback ohne Bild) */}
