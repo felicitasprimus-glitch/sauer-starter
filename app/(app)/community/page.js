@@ -225,23 +225,39 @@ export default function CommunityPage() {
 
         <a
           href="#aktuelles"
-          className="col-span-2 flex items-center gap-3 rounded-[20px] border border-line bg-white p-4 shadow-card"
+          className="rounded-[20px] border border-line bg-white p-4 shadow-card"
         >
           <div
-            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-xl"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-xl"
             style={{ background: "#F1EAEF" }}
           >
             💬
           </div>
-          <div>
-            <h3 className="font-display text-base font-semibold text-ink">
-              Neueste Beitraege
-            </h3>
-            <p className="mt-0.5 text-xs leading-snug text-muted">
-              Was gibt es Neues in der Community?
-            </p>
-          </div>
+          <h3 className="mt-3 font-display text-base font-semibold text-ink">
+            Neueste Beitraege
+          </h3>
+          <p className="mt-0.5 text-xs leading-snug text-muted">
+            Was gibt es Neues in der Community?
+          </p>
         </a>
+
+        <Link
+          href="/community/mitglieder"
+          className="rounded-[20px] border border-line bg-white p-4 shadow-card"
+        >
+          <div
+            className="flex h-11 w-11 items-center justify-center rounded-full text-xl"
+            style={{ background: "#EDE6EA" }}
+          >
+            👥
+          </div>
+          <h3 className="mt-3 font-display text-base font-semibold text-ink">
+            Mitglieder
+          </h3>
+          <p className="mt-0.5 text-xs leading-snug text-muted">
+            Werde Teil unserer Community.
+          </p>
+        </Link>
       </div>
 
       {/* STATS */}
