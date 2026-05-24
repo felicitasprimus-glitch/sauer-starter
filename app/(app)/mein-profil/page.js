@@ -4,9 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import PhotoUpload from "@/components/PhotoUpload";
+import SignOutButton from "@/components/SignOutButton";
+import { useLang } from "@/components/LanguageProvider";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function MeinProfilPage() {
   const supabase = createClient();
+  const { t } = useLang();
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -81,12 +85,12 @@ export default function MeinProfilPage() {
       .eq("id", user.id);
     setSaving(false);
     if (error) {
-      setMessage("Speichern fehlgeschlagen: " + error.message);
+      setMessage(t("prof.saveError") + error.message);
       return;
     }
     if (avatarPath) loadAvatar(avatarPath);
     setEditing(false);
-    setMessage("Profil gespeichert.");
+    setMessage(t("prof.saved"));
   }
 
   const initial = (displayName || (user && user.email) || "?")
@@ -98,7 +102,7 @@ export default function MeinProfilPage() {
     return (
       <div className="pb-6">
         <div className="rounded-[24px] border border-line bg-white p-6 text-center text-sm text-muted shadow-card">
-          Laedt ...
+          {t("dash.loading")}
         </div>
       </div>
     );
@@ -106,12 +110,15 @@ export default function MeinProfilPage() {
 
   return (
     <div className="pb-6">
-      <Link
-        href="/community"
-        className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-mauve-500"
-      >
-        ← Community
-      </Link>
+      <div className="mb-3 flex items-center justify-between">
+        <Link
+          href="/community"
+          className="inline-flex items-center gap-1 text-sm font-semibold text-mauve-500"
+        >
+          ← {t("nav.community")}
+        </Link>
+        <LanguageSwitcher variant="light" />
+      </div>
 
       {/* COVER + AVATAR */}
       <div
@@ -135,7 +142,7 @@ export default function MeinProfilPage() {
           </div>
         )}
         <h1 className="mt-2 font-display text-[26px] font-semibold text-brombeer">
-          {displayName || "Dein Name"}
+          {displayName || t("prof.yourName")}
         </h1>
         {bio ? (
           <p className="mx-auto mt-1 max-w-xs text-sm leading-relaxed text-muted">
@@ -148,13 +155,13 @@ export default function MeinProfilPage() {
             <div className="font-display text-xl font-semibold text-ink">
               {breads.length}
             </div>
-            <div className="text-[11px] text-muted">Brote</div>
+            <div className="text-[11px] text-muted">{t("nav.brote")}</div>
           </div>
           <div className="text-center">
             <div className="font-display text-xl font-semibold text-ink">
               {herzchen}
             </div>
-            <div className="text-[11px] text-muted">Herzchen</div>
+            <div className="text-[11px] text-muted">{t("comm.statHearts")}</div>
           </div>
         </div>
       </div>
@@ -169,7 +176,7 @@ export default function MeinProfilPage() {
       {editing ? (
         <div className="mt-5 rounded-[24px] border border-line bg-white p-5 shadow-card">
           <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-mauve-700">
-            Profilfoto
+            {t("prof.photo")}
           </p>
           {user ? (
             <PhotoUpload
@@ -181,24 +188,24 @@ export default function MeinProfilPage() {
           ) : null}
 
           <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-widest text-mauve-700">
-            Name
+            {t("prof.name")}
           </p>
           <input
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Dein Anzeigename"
+            placeholder={t("prof.namePlaceholder")}
             className="w-full rounded-xl border border-line bg-cream-50 px-4 py-3 text-base text-ink focus:border-mauve-500 focus:outline-none"
           />
 
           <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-widest text-mauve-700">
-            Ueber mich
+            {t("prof.about")}
           </p>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={3}
-            placeholder="Erzaehl ein bisschen ueber dich und dein Backen ..."
+            placeholder={t("prof.bioPlaceholder")}
             className="w-full resize-none rounded-xl border border-line bg-cream-50 px-4 py-3 text-base text-ink focus:border-mauve-500 focus:outline-none"
           />
 
@@ -209,14 +216,14 @@ export default function MeinProfilPage() {
               disabled={saving}
               className="flex-1 rounded-2xl bg-mauve-500 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
             >
-              {saving ? "Speichert ..." : "Speichern"}
+              {saving ? t("prof.saving") : t("prof.save")}
             </button>
             <button
               type="button"
               onClick={() => setEditing(false)}
               className="rounded-2xl border border-line bg-white px-5 py-3 text-sm font-semibold text-muted"
             >
-              Abbrechen
+              {t("prof.cancel")}
             </button>
           </div>
         </div>
@@ -229,25 +236,23 @@ export default function MeinProfilPage() {
           }}
           className="mt-5 w-full rounded-2xl border border-altrosa bg-cream-100 px-5 py-3 text-sm font-semibold text-mauve-500"
         >
-          Profil bearbeiten
+          {t("prof.edit")}
         </button>
       )}
 
       {/* MEINE BROTE */}
       <h2 className="mb-3 mt-7 font-display text-[19px] font-semibold text-brombeer">
-        Meine Brote
+        {t("prof.myBreads")}
       </h2>
       {breads.length === 0 ? (
         <div className="rounded-[24px] border border-line bg-white p-8 text-center shadow-card">
           <p className="text-4xl">🍞</p>
-          <p className="mt-3 text-sm text-muted">
-            Du hast noch kein Brot in der Community geteilt.
-          </p>
+          <p className="mt-3 text-sm text-muted">{t("prof.noOwnBreads")}</p>
           <Link
             href="/community/teilen"
             className="mt-5 inline-block rounded-2xl bg-mauve-500 px-6 py-3 text-sm font-semibold text-white"
           >
-            Brot teilen
+            {t("prof.shareBread")}
           </Link>
         </div>
       ) : (
@@ -283,6 +288,10 @@ export default function MeinProfilPage() {
           ))}
         </div>
       )}
+
+      <div className="mt-8 border-t border-line pt-6 text-center">
+        <SignOutButton />
+      </div>
     </div>
   );
 }
