@@ -8,6 +8,21 @@ export const dynamic = "force-dynamic";
 export default async function BrotePage() {
   const supabase = createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let initial = "S";
+  if (user) {
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("display_name")
+      .eq("id", user.id)
+      .single();
+    const base = (profile && profile.display_name) || user.email || "S";
+    initial = base.trim().charAt(0).toUpperCase();
+  }
+
   const { data: brote } = await supabase
     .from("brote")
     .select("*")
@@ -21,56 +36,74 @@ export default async function BrotePage() {
   const photoUrls = await getSignedPhotoUrls(photoPaths);
 
   return (
-    <main className="px-5 pt-6">
-      <header className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm text-cocoa-700/70">Mein</p>
-          <h1 className="font-display text-3xl font-medium tracking-tight text-cocoa-900">
-            Brot-{" "}
-            <span className="italic text-terra-600 underline-wobble">
-              Tagebuch
-            </span>
-          </h1>
+    <div className="pb-6">
+      {/* TOP BAR */}
+      <div className="mb-4 flex items-center justify-between">
+        <span className="text-[10px] font-semibold uppercase tracking-[3px] text-mauve-700">
+          Sauer · macht · krustig
+        </span>
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-altrosa font-display text-base font-bold text-brombeer">
+          {initial}
         </div>
-      </header>
+      </div>
 
-      <section className="mt-6">
-        {brote && brote.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3">
-            {brote.map((b) => (
-              <BrotCard
-                key={b.id}
-                brot={b}
-                photoUrl={b.photo_path ? photoUrls[b.photo_path] : null}
-                starterName={b.starter_id ? starterMap[b.starter_id] : null}
-              />
-            ))}
-            <Link
-              href="/brote/new"
-              className="flex aspect-[4/3] items-center justify-center rounded-3xl border-2 border-dashed border-mauve-500/30 bg-cream-200/30 transition-colors hover:border-terra-500/50 hover:bg-cream-200/60"
-            >
-              <span className="text-center font-display text-cocoa-800">
-                <span className="text-3xl">+</span>
-                <br />
-                <span className="text-sm">Brot eintragen</span>
-              </span>
-            </Link>
-          </div>
-        ) : (
-          <div className="rounded-3xl border border-mauve-500/15 bg-cream-50 p-8 text-center shadow-soft">
-            <div className="mb-3 text-5xl animate-bubble">🍞</div>
-            <h2 className="font-display text-2xl font-medium text-cocoa-900">
-              Noch kein Brot im Tagebuch
-            </h2>
-            <p className="mt-1 text-sm text-cocoa-700/70">
-              Halte fest, was du gebacken hast — mit Foto, Bewertung und Notizen.
-            </p>
-            <Link href="/brote/new" className="btn-primary mt-5">
-              Erstes Brot eintragen
-            </Link>
-          </div>
-        )}
-      </section>
-    </main>
+      {/* HERO BANNER (zeigt Verlauf, solange kein brote-hero.jpg da ist) */}
+      <div
+        className="mb-4 h-[180px] overflow-hidden rounded-[24px]"
+        style={{
+          backgroundImage:
+            "url(/brote-hero.jpg), linear-gradient(135deg, #8b6a7d 0%, #5a3f56 100%)",
+          backgroundSize: "cover, cover",
+          backgroundPosition: "center, center",
+        }}
+      />
+
+      {/* TITEL */}
+      <div className="mb-5 text-center">
+        <h1 className="font-display text-[30px] font-semibold text-brombeer">
+          Mein Brot-Tagebuch
+        </h1>
+        <p className="mt-1 text-[13px] text-muted">
+          Fortschritte festhalten & besser werden.
+        </p>
+      </div>
+
+      {/* LISTE */}
+      {brote && brote.length > 0 ? (
+        <div className="space-y-3.5">
+          {brote.map((b) => (
+            <BrotCard
+              key={b.id}
+              brot={b}
+              photoUrl={b.photo_path ? photoUrls[b.photo_path] : null}
+              starterName={b.starter_id ? starterMap[b.starter_id] : null}
+            />
+          ))}
+          <Link
+            href="/brote/new"
+            className="flex items-center justify-center gap-2 rounded-[22px] border-[1.6px] border-dashed border-altrosa px-4 py-4 text-sm font-semibold text-mauve-500"
+            style={{ background: "rgba(221,188,198,0.10)" }}
+          >
+            + Neues Brot eintragen
+          </Link>
+        </div>
+      ) : (
+        <div className="rounded-[24px] border border-line bg-white p-8 text-center shadow-card">
+          <div className="text-4xl">🍞</div>
+          <h2 className="mt-3 font-display text-2xl font-semibold text-ink">
+            Noch kein Brot im Tagebuch
+          </h2>
+          <p className="mt-2 text-sm text-muted">
+            Halte fest, was du gebacken hast - mit Foto, Bewertung und Notizen.
+          </p>
+          <Link
+            href="/brote/new"
+            className="mt-5 inline-block rounded-2xl bg-mauve-500 px-6 py-3 text-sm font-semibold text-white"
+          >
+            Erstes Brot eintragen
+          </Link>
+        </div>
+      )}
+    </div>
   );
 }
