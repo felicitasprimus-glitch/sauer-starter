@@ -5,9 +5,12 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import NotificationBell from "@/components/NotificationBell";
 import ProfileAvatar from "@/components/ProfileAvatar";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useLang } from "@/components/LanguageProvider";
 
 export default function CommunityPage() {
   const supabase = createClient();
+  const { t } = useLang();
   const [user, setUser] = useState(null);
   const [myDisplayName, setMyDisplayName] = useState("");
   const [posts, setPosts] = useState([]);
@@ -43,13 +46,13 @@ export default function CommunityPage() {
       const res = await fetch("/api/community-feed");
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Feed konnte nicht geladen werden");
+        setError(data.error || t("comm.feedError"));
         setLoading(false);
         return;
       }
       setPosts(data.posts || []);
     } catch (err) {
-      setError(err.message || "Etwas ist schiefgelaufen");
+      setError(err.message || t("comm.genericError"));
     }
     setLoading(false);
   }
@@ -107,7 +110,7 @@ export default function CommunityPage() {
                   {
                     id: data.id,
                     text,
-                    autor: myDisplayName || "Du",
+                    autor: myDisplayName || t("comm.you"),
                     istEigener: true,
                     createdAt: data.created_at,
                   },
@@ -142,6 +145,7 @@ export default function CommunityPage() {
           <span className="text-mauve-500">krustig</span>
         </span>
         <div className="flex items-center gap-2">
+          <LanguageSwitcher variant="light" />
           <NotificationBell />
           <ProfileAvatar />
         </div>
@@ -169,13 +173,13 @@ export default function CommunityPage() {
             className="font-display text-[30px] font-semibold leading-tight text-white"
             style={{ textShadow: "0 2px 14px rgba(62,44,57,0.45)" }}
           >
-            Unsere Community
+            {t("comm.heroTitle")}
           </h1>
           <p
             className="mt-1 text-[13px] text-white/90"
             style={{ textShadow: "0 1px 8px rgba(62,44,57,0.4)" }}
           >
-            Teile deine Brote und lass dich inspirieren.
+            {t("comm.heroSubtitle")}
           </p>
         </div>
       </div>
@@ -185,12 +189,12 @@ export default function CommunityPage() {
         href="/community/teilen"
         className="mb-6 flex items-center justify-center gap-2 rounded-2xl bg-mauve-500 px-5 py-4 text-[15px] font-semibold text-white"
       >
-        🥖 Eigenes Brot teilen
+        🥖 {t("comm.share")}
       </Link>
 
       {/* ENTDECKEN */}
       <h2 className="mb-3 font-display text-[21px] font-semibold text-brombeer">
-        Entdecken
+        {t("comm.discover")}
       </h2>
       <div className="mb-6 grid grid-cols-2 gap-3">
         <Link
@@ -204,10 +208,10 @@ export default function CommunityPage() {
             🏆
           </div>
           <h3 className="mt-3 font-display text-base font-semibold text-ink">
-            Bestenliste
+            {t("comm.leaderboard")}
           </h3>
           <p className="mt-0.5 text-xs leading-snug text-muted">
-            Sieh dir die beliebtesten Brote der Community an.
+            {t("comm.leaderboardDesc")}
           </p>
         </Link>
 
@@ -222,10 +226,10 @@ export default function CommunityPage() {
             🎯
           </div>
           <h3 className="mt-3 font-display text-base font-semibold text-ink">
-            Challenges
+            {t("comm.challenges")}
           </h3>
           <p className="mt-0.5 text-xs leading-snug text-muted">
-            Nimm teil und sammle Punkte & Abzeichen.
+            {t("comm.challengesDesc")}
           </p>
         </Link>
 
@@ -240,10 +244,10 @@ export default function CommunityPage() {
             💬
           </div>
           <h3 className="mt-3 font-display text-base font-semibold text-ink">
-            Neueste Beitraege
+            {t("comm.latest")}
           </h3>
           <p className="mt-0.5 text-xs leading-snug text-muted">
-            Was gibt es Neues in der Community?
+            {t("comm.latestDesc")}
           </p>
         </a>
 
@@ -258,10 +262,10 @@ export default function CommunityPage() {
             👥
           </div>
           <h3 className="mt-3 font-display text-base font-semibold text-ink">
-            Mitglieder
+            {t("comm.members")}
           </h3>
           <p className="mt-0.5 text-xs leading-snug text-muted">
-            Werde Teil unserer Community.
+            {t("comm.membersDesc")}
           </p>
         </Link>
       </div>
@@ -274,21 +278,21 @@ export default function CommunityPage() {
             <div className="mt-1 font-display text-2xl font-semibold text-brombeer">
               {posts.length}
             </div>
-            <div className="text-[11px] text-muted">Brote geteilt</div>
+            <div className="text-[11px] text-muted">{t("comm.statBreads")}</div>
           </div>
           <div className="border-x text-center" style={{ borderColor: "#ece0e6" }}>
             <div className="text-2xl">👥</div>
             <div className="mt-1 font-display text-2xl font-semibold text-brombeer">
               {new Set(posts.map((p) => p.autor)).size}
             </div>
-            <div className="text-[11px] text-muted">Baeckerinnen</div>
+            <div className="text-[11px] text-muted">{t("comm.statBakers")}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl">❤️</div>
             <div className="mt-1 font-display text-2xl font-semibold text-brombeer">
               {posts.reduce((s, p) => s + (p.likeCount || 0), 0)}
             </div>
-            <div className="text-[11px] text-muted">Herzchen</div>
+            <div className="text-[11px] text-muted">{t("comm.statHearts")}</div>
           </div>
         </div>
       )}
@@ -298,12 +302,12 @@ export default function CommunityPage() {
         id="aktuelles"
         className="mb-3 font-display text-[21px] font-semibold text-brombeer"
       >
-        Aktuelles aus der Community
+        {t("comm.latestHeading")}
       </h2>
 
       {loading ? (
         <div className="rounded-[24px] border border-line bg-white p-6 text-center text-sm text-muted shadow-card">
-          Laedt Community-Feed ...
+          {t("comm.loadingFeed")}
         </div>
       ) : error ? (
         <div
@@ -316,10 +320,10 @@ export default function CommunityPage() {
         <div className="rounded-[24px] border border-line bg-white p-8 text-center shadow-card">
           <p className="text-4xl">🥖</p>
           <h3 className="mt-3 font-display text-2xl font-semibold text-ink">
-            Noch keine Brote geteilt
+            {t("comm.emptyTitle")}
           </h3>
           <p className="mt-2 text-sm text-muted">
-            Sei die Erste! Teile ein Brot aus deinem Tagebuch.
+            {t("comm.emptyText")}
           </p>
         </div>
       ) : (
@@ -341,7 +345,7 @@ export default function CommunityPage() {
                   <h3 className="font-display-italic text-2xl text-cocoa-900">
                     {post.name}
                   </h3>
-                  <p className="mini-label mt-1">von {post.autor}</p>
+                  <p className="mini-label mt-1">{t("comm.by")} {post.autor}</p>
                 </div>
                 {post.krumeScore && (
                   <div className="flex-shrink-0 text-center">
@@ -349,7 +353,7 @@ export default function CommunityPage() {
                       {post.krumeScore}/10
                     </div>
                     <div className="text-[10px] uppercase tracking-widest text-mauve-700">
-                      Krume
+                      {t("brote.crumb")}
                     </div>
                   </div>
                 )}
@@ -370,14 +374,14 @@ export default function CommunityPage() {
                     }
                     className="text-mini font-semibold uppercase tracking-widest text-gold-700"
                   >
-                    {openRezept === post.id ? "Rezept schliessen" : "Rezept ansehen"}
+                    {openRezept === post.id ? t("comm.recipeClose") : t("comm.recipeOpen")}
                   </button>
                   {openRezept === post.id && (
                     <div className="mt-2 border-t border-cream-300 pt-3">
                       {post.rezeptFotoUrl && (
                         <img
                           src={post.rezeptFotoUrl}
-                          alt="Rezept"
+                          alt={t("comm.recipe")}
                           className="mb-3 w-full object-cover"
                         />
                       )}
@@ -438,7 +442,7 @@ export default function CommunityPage() {
                 </button>
 
                 {post.isOwn && (
-                  <span className="ml-auto chip">Dein Brot</span>
+                  <span className="ml-auto chip">{t("comm.yourBread")}</span>
                 )}
               </div>
 
@@ -447,7 +451,7 @@ export default function CommunityPage() {
                 <div className="mt-3 space-y-3 border-t border-cream-300 pt-3">
                   {post.kommentare.length === 0 ? (
                     <p className="text-xs text-cocoa-700/60">
-                      Noch keine Kommentare. Schreib den ersten!
+                      {t("comm.noComments")}
                     </p>
                   ) : (
                     post.kommentare.map((komm) => (
@@ -462,7 +466,7 @@ export default function CommunityPage() {
                               onClick={() => deleteKommentar(post, komm)}
                               className="text-[10px] text-cocoa-700/50 hover:text-terra-600"
                             >
-                              loeschen
+                              {t("comm.delete")}
                             </button>
                           )}
                         </div>
@@ -474,7 +478,7 @@ export default function CommunityPage() {
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="Kommentar schreiben ..."
+                      placeholder={t("comm.commentPlaceholder")}
                       value={kommentarDraft[post.id] || ""}
                       onChange={(e) =>
                         setKommentarDraft({
@@ -493,13 +497,17 @@ export default function CommunityPage() {
                       disabled={!(kommentarDraft[post.id] || "").trim()}
                       className="btn-primary whitespace-nowrap"
                     >
-                      Senden
+                      {t("comm.send")}
                     </button>
                   </div>
 
                   {!myDisplayName && (
                     <p className="text-[10px] text-cocoa-700/60">
-                      Tipp: Leg unter <Link href="/community/teilen" className="underline">Teilen</Link> einen Anzeigenamen fest, damit dein Name beim Kommentar erscheint.
+                      {t("comm.nameTip").split("{link}")[0]}
+                      <Link href="/community/teilen" className="underline">
+                        {t("comm.nameTipLink")}
+                      </Link>
+                      {t("comm.nameTip").split("{link}")[1]}
                     </p>
                   )}
                 </div>
