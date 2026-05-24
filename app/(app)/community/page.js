@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import CommunityDashboard from "@/components/CommunityDashboard";
 
 export default function CommunityPage() {
   const supabase = createClient();
@@ -132,65 +131,172 @@ export default function CommunityPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
-      <div>
-        {/* HERO BANNER (zeigt Verlauf, solange kein community-hero.jpg da ist) */}
+    <div className="pb-6">
+      {/* TOP-LEISTE */}
+      <div className="mb-3">
+        <span className="font-display text-[19px] text-brombeer">
+          sauer
+          <span className="text-muted">.macht.</span>
+          <span className="text-mauve-500">krustig</span>
+        </span>
+      </div>
+
+      {/* HERO mit Text drauf (Verlauf-Fallback ohne Bild) */}
+      <div
+        className="relative mb-5 h-[230px] overflow-hidden rounded-[24px]"
+        style={{
+          backgroundImage:
+            "url(/community-hero.jpg), linear-gradient(135deg, #8b6a7d 0%, #5a3f56 100%)",
+          backgroundSize: "cover, cover",
+          backgroundPosition: "center, center",
+        }}
+      >
         <div
-          className="h-[170px] overflow-hidden rounded-[24px]"
+          className="absolute inset-0"
           style={{
-            backgroundImage:
-              "url(/community-hero.jpg), linear-gradient(135deg, #8b6a7d 0%, #5a3f56 100%)",
-            backgroundSize: "cover, cover",
-            backgroundPosition: "center, center",
+            background:
+              "linear-gradient(180deg, rgba(62,44,57,0.05) 0%, rgba(62,44,57,0.15) 45%, rgba(62,44,57,0.75) 100%)",
           }}
         />
-        <div className="mt-4 text-center">
-          <h1 className="font-display text-[30px] font-semibold text-brombeer">
-            Community
+        <div className="absolute bottom-5 left-5 right-5 z-10">
+          <h1
+            className="font-display text-[30px] font-semibold leading-tight text-white"
+            style={{ textShadow: "0 2px 14px rgba(62,44,57,0.45)" }}
+          >
+            Unsere Community
           </h1>
-          <p className="mx-auto mt-1 max-w-xs text-[13px] leading-relaxed text-muted">
+          <p
+            className="mt-1 text-[13px] text-white/90"
+            style={{ textShadow: "0 1px 8px rgba(62,44,57,0.4)" }}
+          >
             Teile deine Brote und lass dich inspirieren.
           </p>
         </div>
       </div>
 
-      <Link href="/community/teilen" className="btn-primary block text-center">
-        Eigenes Brot teilen
-      </Link>
-
+      {/* TEILEN-BUTTON */}
       <Link
-        href="/community/bestenliste"
-        className="btn-secondary block text-center"
+        href="/community/teilen"
+        className="mb-6 flex items-center justify-center gap-2 rounded-2xl bg-mauve-500 px-5 py-4 text-[15px] font-semibold text-white"
       >
-        🏆 Bestenliste ansehen
+        🥖 Eigenes Brot teilen
       </Link>
 
-      <Link
-        href="/community/challenge"
-        className="btn-secondary block text-center"
-      >
-        🎯 Challenge ansehen
-      </Link>
+      {/* ENTDECKEN */}
+      <h2 className="mb-3 font-display text-[21px] font-semibold text-brombeer">
+        Entdecken
+      </h2>
+      <div className="mb-6 grid grid-cols-2 gap-3">
+        <Link
+          href="/community/bestenliste"
+          className="rounded-[20px] border border-line bg-white p-4 shadow-card"
+        >
+          <div
+            className="flex h-11 w-11 items-center justify-center rounded-full text-xl"
+            style={{ background: "#F6ECD5" }}
+          >
+            🏆
+          </div>
+          <h3 className="mt-3 font-display text-base font-semibold text-ink">
+            Bestenliste
+          </h3>
+          <p className="mt-0.5 text-xs leading-snug text-muted">
+            Sieh dir die beliebtesten Brote der Community an.
+          </p>
+        </Link>
 
+        <Link
+          href="/community/challenge"
+          className="rounded-[20px] border border-line bg-white p-4 shadow-card"
+        >
+          <div
+            className="flex h-11 w-11 items-center justify-center rounded-full text-xl"
+            style={{ background: "#F6E2E2" }}
+          >
+            🎯
+          </div>
+          <h3 className="mt-3 font-display text-base font-semibold text-ink">
+            Challenges
+          </h3>
+          <p className="mt-0.5 text-xs leading-snug text-muted">
+            Nimm teil und sammle Punkte & Abzeichen.
+          </p>
+        </Link>
+
+        <a
+          href="#aktuelles"
+          className="col-span-2 flex items-center gap-3 rounded-[20px] border border-line bg-white p-4 shadow-card"
+        >
+          <div
+            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-xl"
+            style={{ background: "#F1EAEF" }}
+          >
+            💬
+          </div>
+          <div>
+            <h3 className="font-display text-base font-semibold text-ink">
+              Neueste Beitraege
+            </h3>
+            <p className="mt-0.5 text-xs leading-snug text-muted">
+              Was gibt es Neues in der Community?
+            </p>
+          </div>
+        </a>
+      </div>
+
+      {/* STATS */}
       {!loading && !error && posts.length > 0 && (
-        <CommunityDashboard posts={posts} />
+        <div className="mb-6 grid grid-cols-3 rounded-[20px] border border-line bg-white p-4 shadow-card">
+          <div className="text-center">
+            <div className="text-2xl">🍞</div>
+            <div className="mt-1 font-display text-2xl font-semibold text-brombeer">
+              {posts.length}
+            </div>
+            <div className="text-[11px] text-muted">Brote geteilt</div>
+          </div>
+          <div className="border-x text-center" style={{ borderColor: "#ece0e6" }}>
+            <div className="text-2xl">👥</div>
+            <div className="mt-1 font-display text-2xl font-semibold text-brombeer">
+              {new Set(posts.map((p) => p.autor)).size}
+            </div>
+            <div className="text-[11px] text-muted">Baeckerinnen</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl">❤️</div>
+            <div className="mt-1 font-display text-2xl font-semibold text-brombeer">
+              {posts.reduce((s, p) => s + (p.likeCount || 0), 0)}
+            </div>
+            <div className="text-[11px] text-muted">Herzchen</div>
+          </div>
+        </div>
       )}
 
+      {/* AKTUELLES */}
+      <h2
+        id="aktuelles"
+        className="mb-3 font-display text-[21px] font-semibold text-brombeer"
+      >
+        Aktuelles aus der Community
+      </h2>
+
       {loading ? (
-        <div className="card text-center text-sm text-cocoa-700">
+        <div className="rounded-[24px] border border-line bg-white p-6 text-center text-sm text-muted shadow-card">
           Laedt Community-Feed ...
         </div>
       ) : error ? (
-        <div className="border border-terra-500/40 bg-terra-400/10 px-4 py-3 text-sm text-terra-700">
+        <div
+          className="rounded-[20px] border px-4 py-3 text-sm"
+          style={{ borderColor: "#e6c9c4", background: "#f7e3e1", color: "#B0524A" }}
+        >
           {error}
         </div>
       ) : posts.length === 0 ? (
-        <div className="card text-center">
+        <div className="rounded-[24px] border border-line bg-white p-8 text-center shadow-card">
           <p className="text-4xl">🥖</p>
-          <h2 className="mt-3 font-display-italic text-2xl">
+          <h3 className="mt-3 font-display text-2xl font-semibold text-ink">
             Noch keine Brote geteilt
-          </h2>
-          <p className="mt-2 text-sm text-cocoa-700/70">
+          </h3>
+          <p className="mt-2 text-sm text-muted">
             Sei die Erste! Teile ein Brot aus deinem Tagebuch.
           </p>
         </div>
