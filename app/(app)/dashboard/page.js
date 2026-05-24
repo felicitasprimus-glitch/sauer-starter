@@ -149,20 +149,17 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="absolute bottom-5 left-5 right-5 z-10">
-          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[3px] text-white/90">
-            Sauer · macht · krustig
-          </div>
           <h1
             className="font-display text-[30px] font-semibold leading-[1.05] text-white"
             style={{ textShadow: "0 2px 14px rgba(62,44,57,0.45)" }}
           >
-            {t("dash.title")}
+            {t("dash.welcomeTitle")}
           </h1>
           <p
             className="mt-1 text-[13px] text-white/90"
             style={{ textShadow: "0 1px 8px rgba(62,44,57,0.4)" }}
           >
-            {t("dash.subtitle")}
+            {t("dash.welcomeSubtitle")}
           </p>
         </div>
       </div>
@@ -172,6 +169,11 @@ export default function DashboardPage() {
         <h2 className="font-display text-[21px] font-semibold text-brombeer">
           {t("dash.yourStarters")}
         </h2>
+        {!loading && startersWithStatus.length > 0 ? (
+          <p className="mt-0.5 text-xs text-muted">
+            {t("dash.activeStarters").replace("{n}", startersWithStatus.length)}
+          </p>
+        ) : null}
       </div>
 
       {/* LISTE */}
@@ -298,6 +300,64 @@ export default function DashboardPage() {
             {t(tipKey)}
           </p>
         </div>
+      </div>
+
+      {/* SCHNELLZUGRIFF */}
+      <h2 className="mb-3 mt-6 font-display text-[21px] font-semibold text-brombeer">
+        {t("dash.quickTitle")}
+      </h2>
+      <div className="grid grid-cols-3 gap-3">
+        <Link
+          href="/krume"
+          className="rounded-[20px] border border-line bg-white p-3.5 text-center shadow-card"
+        >
+          <div
+            className="mx-auto flex h-10 w-10 items-center justify-center rounded-full text-lg"
+            style={{ background: "#F1EAEF" }}
+          >
+            🔍
+          </div>
+          <div className="mt-2 font-display text-[14px] font-semibold text-ink">
+            {t("dash.kiCheck")}
+          </div>
+          <div className="mt-0.5 text-[10px] leading-snug text-muted">
+            {t("dash.kiCheckDesc")}
+          </div>
+        </Link>
+        <Link
+          href="/community"
+          className="rounded-[20px] border border-line bg-white p-3.5 text-center shadow-card"
+        >
+          <div
+            className="mx-auto flex h-10 w-10 items-center justify-center rounded-full text-lg"
+            style={{ background: "#F6E2E2" }}
+          >
+            💬
+          </div>
+          <div className="mt-2 font-display text-[14px] font-semibold text-ink">
+            {t("nav.community")}
+          </div>
+          <div className="mt-0.5 text-[10px] leading-snug text-muted">
+            {t("dash.communityDesc")}
+          </div>
+        </Link>
+        <Link
+          href="/sos"
+          className="rounded-[20px] border border-line bg-white p-3.5 text-center shadow-card"
+        >
+          <div
+            className="mx-auto flex h-10 w-10 items-center justify-center rounded-full text-lg"
+            style={{ background: "#F7E3E1" }}
+          >
+            🆘
+          </div>
+          <div className="mt-2 font-display text-[14px] font-semibold text-ink">
+            {t("dash.sosHelp")}
+          </div>
+          <div className="mt-0.5 text-[10px] leading-snug text-muted">
+            {t("dash.sosHelpDesc")}
+          </div>
+        </Link>
       </div>
     </div>
   );
