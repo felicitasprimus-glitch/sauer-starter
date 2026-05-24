@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getStarterFeedingStatus, formatTimeAgo } from "@/lib/feedingStatus";
 import { useLang } from "@/components/LanguageProvider";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import ProfileAvatar from "@/components/ProfileAvatar";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -106,10 +107,6 @@ export default function DashboardPage() {
   }));
 
   const greeting = getGreeting();
-  const initial = (displayName || (user && user.email) || "S")
-    .trim()
-    .charAt(0)
-    .toUpperCase();
   const firstName = displayName ? displayName.split(" ")[0] : "";
 
   const _now = new Date();
@@ -147,9 +144,7 @@ export default function DashboardPage() {
           </span>
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
-            <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white/70 bg-altrosa font-display text-base font-bold text-brombeer">
-              {initial}
-            </div>
+            <ProfileAvatar onDark />
           </div>
         </div>
         <div className="absolute bottom-5 left-5 right-5 z-10">

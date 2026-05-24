@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-export default function ProfileAvatar() {
+export default function ProfileAvatar({ onDark = false }) {
   const supabase = createClient();
   const [initial, setInitial] = useState("");
   const [url, setUrl] = useState(null);
@@ -38,17 +38,26 @@ export default function ProfileAvatar() {
     }
   }
 
+  const sizeClass = onDark ? "h-9 w-9" : "h-10 w-10";
+  const border = onDark ? "2px solid rgba(255,255,255,0.7)" : "2px solid #ece0e6";
+
   return (
     <Link href="/mein-profil" aria-label="Mein Profil">
       {url ? (
         <img
           src={url}
           alt="Profil"
-          className="h-10 w-10 rounded-full object-cover"
-          style={{ border: "2px solid #ece0e6" }}
+          className={sizeClass + " rounded-full object-cover"}
+          style={{ border }}
         />
       ) : (
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-altrosa font-display text-base font-bold text-brombeer">
+        <div
+          className={
+            sizeClass +
+            " flex items-center justify-center rounded-full bg-altrosa font-display text-base font-bold text-brombeer"
+          }
+          style={{ border }}
+        >
           {initial || "?"}
         </div>
       )}
