@@ -416,13 +416,25 @@ export default function KrumePage() {
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <p className="brand-mark">Sauer macht krustig</p>
-        <h1 className="font-display-italic text-display-lg mt-2">Krumenleser</h1>
-        <p className="mt-3 text-sm leading-relaxed text-cocoa-700/80">
-          Der <em>KI-Baecker</em> analysiert deine Krume und gibt dir eine
-          ehrliche Einschaetzung — wie ein erfahrener Kollege, der ueber die
-          Schulter schaut.
-        </p>
+        {/* HERO BANNER (zeigt Verlauf, solange kein krume-hero.jpg da ist) */}
+        <div
+          className="h-[170px] overflow-hidden rounded-[24px]"
+          style={{
+            backgroundImage:
+              "url(/krume-hero.jpg), linear-gradient(135deg, #8b6a7d 0%, #5a3f56 100%)",
+            backgroundSize: "cover, cover",
+            backgroundPosition: "center, center",
+          }}
+        />
+        <div className="mt-4 text-center">
+          <h1 className="font-display text-[30px] font-semibold text-brombeer">
+            Krumenleser
+          </h1>
+          <p className="mx-auto mt-1 max-w-xs text-[13px] leading-relaxed text-muted">
+            Verstehe, was dein Brot dir sagen will - der KI-Baecker schaut dir
+            ueber die Schulter.
+          </p>
+        </div>
       </div>
 
       <div className="border border-honey-500/40 bg-honey-500/10 px-4 py-3">
