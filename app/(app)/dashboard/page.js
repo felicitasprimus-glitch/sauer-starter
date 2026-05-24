@@ -112,7 +112,11 @@ export default function DashboardPage() {
     .toUpperCase();
   const firstName = displayName ? displayName.split(" ")[0] : "";
 
-  const tipKey = "tip." + ((new Date().getDate() % 5) + 1);
+  const _now = new Date();
+  const _dayOfYear = Math.floor(
+    (_now - new Date(_now.getFullYear(), 0, 0)) / 86400000
+  );
+  const tipKey = "tip." + ((_dayOfYear % 20) + 1);
 
   return (
     <div className="pb-6">
