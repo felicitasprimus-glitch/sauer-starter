@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getProblems } from "@/lib/fehlerfinder-data";
 import { useLang } from "@/components/LanguageProvider";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 function FehlerfinderInner() {
   const { t, lang } = useLang();
@@ -61,6 +62,9 @@ function FehlerfinderInner() {
   if (!selectedProblem && !showGefaessTest) {
     return (
       <div className="space-y-6 pb-8">
+        <div className="flex justify-end">
+          <LanguageSwitcher variant="light" />
+        </div>
         <div className="text-center">
           <h1 className="font-display text-3xl text-cocoa-900">{t("ff.title")}</h1>
           <p className="mt-2 text-sm text-cocoa-700/70">
