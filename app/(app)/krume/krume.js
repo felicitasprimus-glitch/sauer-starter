@@ -416,7 +416,8 @@ export default function KrumePage() {
   const bigDisagreement = scoreDiff >= 3;
 
   const matchedProblem = result ? findProblemByDiagnose(
-    `${result.diagnose || ""} ${result.analysis_text || ""} ${userKrume || ""}`
+    `${result.diagnose || ""} ${result.analysis_text || ""} ${userKrume || ""}`,
+    lang
   ) : null;
 
   return (

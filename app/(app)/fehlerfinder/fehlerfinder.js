@@ -2,9 +2,12 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { FEHLERFINDER_PROBLEMS } from "@/lib/fehlerfinder-data";
+import { getProblems } from "@/lib/fehlerfinder-data";
+import { useLang } from "@/components/LanguageProvider";
 
 function FehlerfinderInner() {
+  const { t, lang } = useLang();
+  const problems = getProblems(lang);
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialProblemId = searchParams.get("problem")
@@ -23,7 +26,7 @@ function FehlerfinderInner() {
     }
   }, [initialProblemId]);
 
-  const selectedProblem = FEHLERFINDER_PROBLEMS.find((p) => p.id === problemId) || null;
+  const selectedProblem = problems.find((p) => p.id === problemId) || null;
   const selectedUrsache =
     selectedProblem && ursacheIdx !== null ? selectedProblem.ursachen[ursacheIdx] : null;
 
@@ -59,17 +62,17 @@ function FehlerfinderInner() {
     return (
       <div className="space-y-6 pb-8">
         <div className="text-center">
-          <h1 className="font-display text-3xl text-cocoa-900">Fehlerfinder</h1>
+          <h1 className="font-display text-3xl text-cocoa-900">{t("ff.title")}</h1>
           <p className="mt-2 text-sm text-cocoa-700/70">
-            Dein Brot hat nicht geklappt? Tippe dein Symptom an — wir finden die Ursache.
+            {t("ff.intro")}
           </p>
           <p className="mt-1 text-[10px] uppercase tracking-wider text-mauve-700">
-            12 Symptome · 57 Loesungen
+            {t("ff.count")}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          {FEHLERFINDER_PROBLEMS.map((p) => (
+          {problems.map((p) => (
             <button
               key={p.id}
               type="button"
@@ -93,7 +96,7 @@ function FehlerfinderInner() {
       return (
         <div className="space-y-4 pb-8">
           <div className="text-center">
-            <h1 className="font-display text-2xl text-cocoa-900">Deine Empfehlung</h1>
+            <h1 className="font-display text-2xl text-cocoa-900">{t("ff.recommendation")}</h1>
           </div>
 
           <div className="card text-center">
@@ -102,7 +105,7 @@ function FehlerfinderInner() {
                 <div className="text-4xl">🔥</div>
                 <h2 className="mt-2 font-display text-xl text-cocoa-900">Ofenmeister</h2>
                 <p className="mt-2 text-sm leading-relaxed text-cocoa-800">
-                  Nimm den Ofenmeister — er verzeiht mehr Fehler und liefert konstant gute Ergebnisse.
+                  {t("ff.ofenmeisterText")}
                 </p>
                 <a
                   className="btn-primary mt-4 inline-block w-full"
@@ -110,7 +113,7 @@ function FehlerfinderInner() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Ofenmeister ansehen
+                  {t("ff.viewOfenmeister")}
                 </a>
               </>
             ) : (
@@ -118,7 +121,7 @@ function FehlerfinderInner() {
                 <div className="text-4xl">🌸</div>
                 <h2 className="mt-2 font-display text-xl text-cocoa-900">Lilly</h2>
                 <p className="mt-2 text-sm leading-relaxed text-cocoa-800">
-                  Nimm die Lilly — perfekt fuer kleinere Mengen und den Einstieg.
+                  {t("ff.lillyText")}
                 </p>
                 <a
                   className="btn-primary mt-4 inline-block w-full"
@@ -126,7 +129,7 @@ function FehlerfinderInner() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Lilly ansehen
+                  {t("ff.viewLilly")}
                 </a>
               </>
             )}
@@ -140,7 +143,7 @@ function FehlerfinderInner() {
             }}
             className="btn-secondary w-full"
           >
-            Zurueck
+            {t("ff.back")}
           </button>
         </div>
       );
@@ -149,7 +152,7 @@ function FehlerfinderInner() {
     return (
       <div className="space-y-4 pb-8">
         <div className="text-center">
-          <h1 className="font-display text-2xl text-cocoa-900">Welches Gefaess passt zu dir?</h1>
+          <h1 className="font-display text-2xl text-cocoa-900">{t("ff.gefaessQ")}</h1>
         </div>
 
         <button
@@ -159,7 +162,7 @@ function FehlerfinderInner() {
         >
           <span className="text-3xl">🔥</span>
           <span className="text-sm font-semibold text-cocoa-900">
-            Ich will einfach sichere Ergebnisse
+            {t("ff.gefaessSafe")}
           </span>
         </button>
 
@@ -170,7 +173,7 @@ function FehlerfinderInner() {
         >
           <span className="text-3xl">🌸</span>
           <span className="text-sm font-semibold text-cocoa-900">
-            Ich backe kleinere Brote / will starten
+            {t("ff.gefaessSmall")}
           </span>
         </button>
 
@@ -179,7 +182,7 @@ function FehlerfinderInner() {
           onClick={() => setShowGefaessTest(false)}
           className="btn-secondary w-full"
         >
-          Zurueck
+          {t("ff.back")}
         </button>
       </div>
     );
@@ -194,14 +197,14 @@ function FehlerfinderInner() {
           onClick={backToHome}
           className="text-xs uppercase tracking-wider text-mauve-700 hover:text-cocoa-900"
         >
-          ← Zurueck zur Auswahl
+          ← {t("ff.backToSelection")}
         </button>
 
         <div className="text-center">
           <div className="text-5xl">{selectedProblem.emoji}</div>
           <h1 className="mt-2 font-display text-2xl text-cocoa-900">{selectedProblem.titel}</h1>
           <p className="mt-1 text-sm text-cocoa-700/70">
-            Was davon trifft am ehesten zu?
+            {t("ff.whichApplies")}
           </p>
         </div>
 
@@ -233,7 +236,7 @@ function FehlerfinderInner() {
         onClick={backToCauses}
         className="text-xs uppercase tracking-wider text-mauve-700 hover:text-cocoa-900"
       >
-        ← Andere Ursache
+        ← {t("ff.otherCause")}
       </button>
 
       <div className="text-center">
@@ -246,7 +249,7 @@ function FehlerfinderInner() {
       </div>
 
       <div className="card">
-        <p className="text-[10px] uppercase tracking-wider text-mauve-700">Warum</p>
+        <p className="text-[10px] uppercase tracking-wider text-mauve-700">{t("ff.why")}</p>
         <p className="mt-1 text-sm leading-relaxed text-cocoa-800">
           {selectedUrsache.warum}
         </p>
@@ -255,7 +258,7 @@ function FehlerfinderInner() {
       <div className="rounded-2xl border-2 border-terra-500/50 bg-terra-500/5 p-4 shadow-soft">
         <div className="text-center">
           <span className="inline-block rounded-full bg-terra-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-cream-50">
-            Loesung
+            {t("ff.solution")}
           </span>
         </div>
         <p className="mt-3 text-sm leading-relaxed text-cocoa-900">
@@ -267,10 +270,10 @@ function FehlerfinderInner() {
         <div className="space-y-3">
           <div className="card">
             <p className="text-[10px] uppercase tracking-wider text-mauve-700">
-              Mit dem richtigen Gefaess
+              {t("ff.withGefaess")}
             </p>
             <p className="mt-2 text-sm italic leading-relaxed text-cocoa-800">
-              Hier hilft ein verlaessliches Backgefaess, weil dein Brot gleichmaessiger ausbacken kann.
+              {t("ff.gefaessHelp")}
             </p>
 
             <div className="mt-3 space-y-2">
@@ -280,7 +283,7 @@ function FehlerfinderInner() {
                 rel="noopener noreferrer"
                 className="btn-primary block w-full text-center"
               >
-                🔥 Ofenmeister — fuer beste Ergebnisse
+                🔥 {t("ff.ofenmeisterBtn")}
               </a>
               <a
                 href="https://www.pamperedchef.eu/pws/FelicitasReitmeier/eventstore428480/DEO/catalog/Stoneware/Mini%20Deep%20Covered%20Baker-2023"
@@ -288,27 +291,27 @@ function FehlerfinderInner() {
                 rel="noopener noreferrer"
                 className="btn-secondary block w-full text-center"
               >
-                🌸 Lilly — fuer kleinere Brote
+                🌸 {t("ff.lillyBtn")}
               </a>
               <button
                 type="button"
                 onClick={() => setShowGefaessTest(true)}
                 className="btn-secondary block w-full"
               >
-                Welches Gefaess passt zu mir?
+                {t("ff.whichGefaess")}
               </button>
             </div>
           </div>
 
           <div className="card border-honey-500/40 bg-honey-500/10">
             <p className="text-[10px] uppercase tracking-wider text-cocoa-800">
-              Wichtig danach
+              {t("ff.importantAfter")}
             </p>
             <p className="mt-1 text-sm font-semibold italic text-cocoa-900">
-              Stoneware nie direkt auf die Arbeitsplatte
+              {t("ff.stonewareTitle")}
             </p>
             <p className="mt-1 text-sm leading-relaxed text-cocoa-800">
-              Stell sie immer auf ein Abkuehlgitter, damit dein Brot nicht nachfeuchtet und deine Stoneware keinen Schaden nimmt.
+              {t("ff.stonewareText")}
             </p>
             <a
               href="https://www.pamperedchef.eu/pws/FelicitasReitmeier/store/DEO/catalog/Backen/Kuchengitter"
@@ -316,7 +319,7 @@ function FehlerfinderInner() {
               rel="noopener noreferrer"
               className="btn-secondary mt-3 block w-full text-center"
             >
-              Abkuehlgitter ansehen
+              {t("ff.viewRack")}
             </a>
           </div>
         </div>
@@ -324,10 +327,10 @@ function FehlerfinderInner() {
 
       <div className="space-y-2 pt-2">
         <button type="button" onClick={backToCauses} className="btn-primary w-full">
-          Andere Ursache pruefen
+          {t("ff.checkOtherCause")}
         </button>
         <button type="button" onClick={backToHome} className="btn-secondary w-full">
-          Neues Problem
+          {t("ff.newProblem")}
         </button>
       </div>
     </div>
@@ -336,7 +339,7 @@ function FehlerfinderInner() {
 
 export default function FehlerfinderPage() {
   return (
-    <Suspense fallback={<div className="p-4 text-center text-cocoa-700">Laedt ...</div>}>
+    <Suspense fallback={<div className="p-4 text-center text-cocoa-700">…</div>}>
       <FehlerfinderInner />
     </Suspense>
   );
