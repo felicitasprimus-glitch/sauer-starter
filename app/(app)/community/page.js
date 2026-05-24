@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function CommunityPage() {
   const supabase = createClient();
@@ -133,12 +134,13 @@ export default function CommunityPage() {
   return (
     <div className="pb-6">
       {/* TOP-LEISTE */}
-      <div className="mb-3">
+      <div className="mb-3 flex items-center justify-between">
         <span className="font-display text-[19px] text-brombeer">
           sauer
           <span className="text-muted">.macht.</span>
           <span className="text-mauve-500">krustig</span>
         </span>
+        <NotificationBell />
       </div>
 
       {/* HERO mit Text drauf (Verlauf-Fallback ohne Bild) */}
