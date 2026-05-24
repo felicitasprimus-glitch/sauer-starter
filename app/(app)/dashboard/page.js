@@ -4,20 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getStarterFeedingStatus, formatTimeAgo } from "@/lib/feedingStatus";
-
-const TIPPS = [
-  "Dein Starter riecht leicht nach Essig? Dann hat er Hunger - fuettere ihn 1:5:5 und stell ihn warm.",
-  "Ein warmer Ort (24-26 Grad) zaubert deinem Starter neue Kraft.",
-  "Blasen an der Oberflaeche sind ein gutes Zeichen - dein Starter ist aktiv.",
-  "Zum Backen den Starter 4-6 Std vorher zur Hochform fuettern.",
-  "Fluessigkeit oben (Hooch)? Einfach abgiessen und normal weiterfuettern.",
-];
+import { useLang } from "@/components/LanguageProvider";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 function getGreeting() {
   const h = new Date().getHours();
-  if (h < 11) return { text: "Guten Morgen", emoji: "☀️" };
-  if (h < 18) return { text: "Guten Tag", emoji: "🌤️" };
-  return { text: "Guten Abend", emoji: "🌙" };
+  if (h < 11) return { key: "greet.morning", emoji: "☀️" };
+  if (h < 18) return { key: "greet.day", emoji: "🌤️" };
+  return { key: "greet.evening", emoji: "🌙" };
 }
 
 function pillStyle(color) {
@@ -27,20 +21,14 @@ function pillStyle(color) {
   return { bg: "#F1EAEF", fg: "#9A8290" };
 }
 
-function pillText(status) {
+function pillKey(status) {
   if (!status) return "";
-  if (status.hasNeverBeenFed) return "Noch nie gefuettert";
-  if (status.isOverdue) return "Dringend fuettern";
-  if (status.isDue) return "Hat Hunger";
-  if (status.isComingUp) return "Bald fuettern";
-  if (status.inFridge) return "Im Kuehlschrank";
-  return "Aktiv & blubbert";
-}
-
-function jarImage(status) {
-  const c = status && status.statusColor;
-  if (c === "warning" || c === "danger") return "/starter-hungrig.png";
-  return "/starter-peak.png";
+  if (status.hasNeverBeenFed) return "pill.neverFed";
+  if (status.isOverdue) return "pill.urgent";
+  if (status.isDue) return "pill.hungry";
+  if (status.isComingUp) return "pill.soon";
+  if (status.inFridge) return "pill.fridge";
+  return "pill.active";
 }
 
 function meterPercent(status) {
@@ -49,19 +37,26 @@ function meterPercent(status) {
   return Math.min(100, Math.max(6, Math.round(p)));
 }
 
-function nextLabel(status) {
+function nextLabel(status, t) {
   if (!status) return "";
-  if (status.hasNeverBeenFed) return "jetzt anfangen";
-  if (status.needsAttention) return "jetzt faellig";
+  if (status.hasNeverBeenFed) return t("next.start");
+  if (status.needsAttention) return t("next.due");
   if (status.inFridge) {
     const d = Math.max(0, Math.floor(status.hoursUntilFeed / 24));
-    return "in " + d + " Tagen";
+    return t("next.inDays").replace("{n}", d);
   }
-  return "in " + Math.max(0, Math.round(status.hoursUntilFeed)) + " Std";
+  return t("next.inHours").replace("{n}", Math.max(0, Math.round(status.hoursUntilFeed)));
+}
+
+function jarImage(status) {
+  const c = status && status.statusColor;
+  if (c === "warning" || c === "danger") return "/starter-hungrig.png";
+  return "/starter-peak.png";
 }
 
 export default function DashboardPage() {
   const supabase = createClient();
+  const { t } = useLang();
   const [user, setUser] = useState(null);
   const [displayName, setDisplayName] = useState("");
   const [starters, setStarters] = useState([]);
@@ -117,7 +112,7 @@ export default function DashboardPage() {
     .toUpperCase();
   const firstName = displayName ? displayName.split(" ")[0] : "";
 
-  const tipp = TIPPS[new Date().getDate() % TIPPS.length];
+  const tipKey = "tip." + ((new Date().getDate() % 5) + 1);
 
   return (
     <div className="pb-6">
@@ -138,16 +133,19 @@ export default function DashboardPage() {
               "linear-gradient(180deg, rgba(62,44,57,0.10) 0%, rgba(62,44,57,0.20) 45%, rgba(62,44,57,0.78) 100%)",
           }}
         />
-        <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between px-5 pt-5">
+        <div className="absolute left-0 right-0 top-0 z-10 flex items-start justify-between px-5 pt-5">
           <span
             className="text-[13px] font-medium text-white/90"
             style={{ textShadow: "0 1px 6px rgba(62,44,57,0.5)" }}
           >
-            {greeting.text}
+            {t(greeting.key)}
             {firstName ? ", " + firstName : ""} {greeting.emoji}
           </span>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white/70 bg-altrosa font-display text-base font-bold text-brombeer">
-            {initial}
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white/70 bg-altrosa font-display text-base font-bold text-brombeer">
+              {initial}
+            </div>
           </div>
         </div>
         <div className="absolute bottom-5 left-5 right-5 z-10">
@@ -158,13 +156,13 @@ export default function DashboardPage() {
             className="font-display text-[30px] font-semibold leading-[1.05] text-white"
             style={{ textShadow: "0 2px 14px rgba(62,44,57,0.45)" }}
           >
-            Starter-Werkstatt
+            {t("dash.title")}
           </h1>
           <p
             className="mt-1 text-[13px] text-white/90"
             style={{ textShadow: "0 1px 8px rgba(62,44,57,0.4)" }}
           >
-            Deine lebendigen Mitbewohner
+            {t("dash.subtitle")}
           </p>
         </div>
       </div>
@@ -172,29 +170,27 @@ export default function DashboardPage() {
       {/* SECTION HEADER */}
       <div className="mb-3.5 px-1">
         <h2 className="font-display text-[21px] font-semibold text-brombeer">
-          Deine Starter
+          {t("dash.yourStarters")}
         </h2>
       </div>
 
       {/* LISTE */}
       {loading ? (
         <div className="rounded-[24px] border border-line bg-white p-6 text-center text-sm text-muted shadow-card">
-          Laedt ...
+          {t("dash.loading")}
         </div>
       ) : startersWithStatus.length === 0 ? (
         <div className="rounded-[24px] border border-line bg-white p-8 text-center shadow-card">
           <p className="text-4xl">🌾</p>
           <h3 className="mt-3 font-display text-2xl font-semibold text-ink">
-            Noch kein Starter
+            {t("dash.noStarterTitle")}
           </h3>
-          <p className="mt-2 text-sm text-muted">
-            Leg deinen ersten Sauerteig-Starter an.
-          </p>
+          <p className="mt-2 text-sm text-muted">{t("dash.noStarterText")}</p>
           <Link
             href="/starter/new"
             className="mt-5 inline-block rounded-2xl bg-mauve-500 px-6 py-3 text-sm font-semibold text-white"
           >
-            Starter anlegen
+            {t("dash.createStarter")}
           </Link>
         </div>
       ) : (
@@ -203,8 +199,9 @@ export default function DashboardPage() {
             const ps = pillStyle(s.status && s.status.statusColor);
             const sub =
               s.status && s.status.hasNeverBeenFed
-                ? "noch nie gefuettert"
-                : "zuletzt gefuettert " +
+                ? t("card.neverFed")
+                : t("card.lastFed") +
+                  " " +
                   formatTimeAgo(s.status && s.status.hoursSinceLastFeeding);
             const attention = s.status && s.status.needsAttention;
             return (
@@ -234,7 +231,7 @@ export default function DashboardPage() {
                         className="mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
                         style={{ background: ps.bg, color: ps.fg }}
                       >
-                        ● {pillText(s.status)}
+                        ● {t(pillKey(s.status))}
                       </span>
                     </div>
                   </Link>
@@ -247,14 +244,14 @@ export default function DashboardPage() {
                         : "border-[1.5px] border-altrosa bg-cream-100 text-mauve-500")
                     }
                   >
-                    Fuettern
+                    {t("card.feed")}
                   </Link>
                 </div>
 
                 <div className="mt-3.5">
                   <div className="mb-1.5 flex justify-between text-[11px] text-muted">
-                    <span>Naechste Fuetterung</span>
-                    <span>{nextLabel(s.status)}</span>
+                    <span>{t("next.label")}</span>
+                    <span>{nextLabel(s.status, t)}</span>
                   </div>
                   <div
                     className="h-[7px] overflow-hidden rounded-full"
@@ -281,7 +278,7 @@ export default function DashboardPage() {
         className="mt-3.5 flex items-center justify-center gap-2 rounded-[22px] border-[1.6px] border-dashed border-altrosa px-4 py-4 text-sm font-semibold text-mauve-500"
         style={{ background: "rgba(221,188,198,0.10)" }}
       >
-        + Neuen Starter anlegen
+        + {t("dash.addNew")}
       </Link>
 
       {/* TIPP DES TAGES */}
@@ -292,13 +289,13 @@ export default function DashboardPage() {
         <span className="text-[22px]">🫧</span>
         <div>
           <h3 className="font-display text-[15px] font-semibold text-brombeer">
-            Tipp des Tages
+            {t("tip.title")}
           </h3>
           <p
             className="mt-0.5 text-[12.5px] leading-[1.45]"
             style={{ color: "#7C6A52" }}
           >
-            {tipp}
+            {t(tipKey)}
           </p>
         </div>
       </div>
