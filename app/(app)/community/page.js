@@ -134,12 +134,24 @@ export default function CommunityPage() {
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <p className="brand-mark">Sauer macht krustig</p>
-        <h1 className="font-display-italic text-display-lg mt-2">Community</h1>
-        <p className="mt-3 text-sm leading-relaxed text-cocoa-700/80">
-          Was die anderen so backen. Lass dich inspirieren — und teile
-          deine eigenen Brote mit.
-        </p>
+        {/* HERO BANNER (zeigt Verlauf, solange kein community-hero.jpg da ist) */}
+        <div
+          className="h-[170px] overflow-hidden rounded-[24px]"
+          style={{
+            backgroundImage:
+              "url(/community-hero.jpg), linear-gradient(135deg, #8b6a7d 0%, #5a3f56 100%)",
+            backgroundSize: "cover, cover",
+            backgroundPosition: "center, center",
+          }}
+        />
+        <div className="mt-4 text-center">
+          <h1 className="font-display text-[30px] font-semibold text-brombeer">
+            Community
+          </h1>
+          <p className="mx-auto mt-1 max-w-xs text-[13px] leading-relaxed text-muted">
+            Teile deine Brote und lass dich inspirieren.
+          </p>
+        </div>
       </div>
 
       <Link href="/community/teilen" className="btn-primary block text-center">
@@ -262,8 +274,8 @@ export default function CommunityPage() {
                     width="20"
                     height="20"
                     viewBox="0 0 24 24"
-                    fill={post.likedByMe ? "#c87f63" : "none"}
-                    stroke={post.likedByMe ? "#c87f63" : "#7a5e75"}
+                    fill={post.likedByMe ? "#8b6a7d" : "none"}
+                    stroke={post.likedByMe ? "#8b6a7d" : "#9a8290"}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -285,7 +297,7 @@ export default function CommunityPage() {
                     height="20"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#7a5e75"
+                    stroke="#9a8290"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
