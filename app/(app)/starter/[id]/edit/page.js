@@ -12,6 +12,7 @@ export default function StarterEditPage({ params }) {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
@@ -75,6 +76,35 @@ export default function StarterEditPage({ params }) {
     }
 
     router.push(`/starter/${starterId}`);
+  }
+
+  async function handleDelete() {
+    const sure = window.confirm(
+      "Willst du diesen Starter wirklich loeschen? Alle Fuetterungen und Fotos dazu werden ebenfalls geloescht. Das laesst sich nicht rueckgaengig machen."
+    );
+    if (!sure) return;
+
+    setError("");
+    setDeleting(true);
+
+    try {
+      const res = await fetch("/api/starter-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ starterId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Loeschen fehlgeschlagen.");
+        setDeleting(false);
+        return;
+      }
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err) {
+      setError("Loeschen fehlgeschlagen.");
+      setDeleting(false);
+    }
   }
 
   if (loading) {
@@ -241,6 +271,21 @@ export default function StarterEditPage({ params }) {
           </button>
         </div>
       </form>
+
+      <div className="card border-terra-500/30">
+        <p className="label text-terra-700">Gefahrenzone</p>
+        <p className="mt-1 text-xs text-cocoa-700/70">
+          Den Starter und alle zugehoerigen Fuetterungen und Fotos dauerhaft loeschen.
+        </p>
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={deleting}
+          className="mt-3 w-full border border-terra-500 px-4 py-2 text-sm font-semibold text-terra-700 transition hover:bg-terra-500 hover:text-cream-50 disabled:opacity-60"
+        >
+          {deleting ? "Loescht ..." : "Starter loeschen"}
+        </button>
+      </div>
     </div>
   );
 }
