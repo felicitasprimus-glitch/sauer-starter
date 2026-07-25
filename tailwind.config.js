@@ -62,7 +62,7 @@ module.exports = {
       },
       fontFamily: {
         display: ['"Playfair Display"', "Georgia", "serif"],
-        body: ['"Inter"', '"Helvetica Neue"', "sans-serif"],
+        body: ['"Lora"', "Georgia", "serif"],
         script: ["Allura", "cursive"],
       },
       fontSize: {
