@@ -134,28 +134,29 @@ export default function DashboardPage() {
               "linear-gradient(180deg, rgba(62,44,57,0.10) 0%, rgba(62,44,57,0.20) 45%, rgba(62,44,57,0.78) 100%)",
           }}
         />
-        <div className="absolute left-0 right-0 top-0 z-10 flex items-start justify-between px-5 pt-5">
-          <span
-            className="text-[13px] font-medium text-white/90"
-            style={{ textShadow: "0 1px 6px rgba(62,44,57,0.5)" }}
-          >
-            {t(greeting.key)}
-            {firstName ? ", " + firstName : ""} {greeting.emoji}
-          </span>
+        <div className="absolute left-0 right-0 top-0 z-10 flex items-start justify-end px-5 pt-5">
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
             <ProfileAvatar onDark />
           </div>
         </div>
         <div className="absolute bottom-5 left-5 right-5 z-10">
+          <p
+            className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/85"
+            style={{ textShadow: "0 1px 8px rgba(62,44,57,0.5)" }}
+          >
+            {t("dash.welcomeEyebrow")}
+          </p>
           <h1
-            className="font-display text-[30px] font-semibold leading-[1.05] text-white"
+            className="font-display text-[32px] font-semibold leading-[1.04] text-white"
             style={{ textShadow: "0 2px 14px rgba(62,44,57,0.45)" }}
           >
-            {t("dash.welcomeTitle")}
+            {t(greeting.key)}
+            {firstName ? ", " + firstName : ""}{" "}
+            <span className="text-white/90">&#9825;</span>
           </h1>
           <p
-            className="mt-1 text-[13px] text-white/90"
+            className="mt-1.5 text-[13px] text-white/90"
             style={{ textShadow: "0 1px 8px rgba(62,44,57,0.4)" }}
           >
             {t("dash.welcomeSubtitle")}
