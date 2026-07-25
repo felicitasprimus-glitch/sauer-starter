@@ -40,6 +40,8 @@ export async function GET() {
     // Likes laden
     const likesByBrot = {};
     const likedByMe = {};
+    const likeUsersByBrot = {};
+    const likeUserIds = [];
     if (brotIds.length > 0) {
       const { data: likes } = await admin
         .from("brot_likes")
@@ -48,6 +50,9 @@ export async function GET() {
       (likes || []).forEach((l) => {
         likesByBrot[l.brot_id] = (likesByBrot[l.brot_id] || 0) + 1;
         if (l.user_id === user.id) likedByMe[l.brot_id] = true;
+        if (!likeUsersByBrot[l.brot_id]) likeUsersByBrot[l.brot_id] = [];
+        likeUsersByBrot[l.brot_id].push(l.user_id);
+        likeUserIds.push(l.user_id);
       });
     }
 
@@ -72,6 +77,7 @@ export async function GET() {
       ...new Set([
         ...(brote || []).map((b) => b.user_id),
         ...kommentarUserIds,
+        ...likeUserIds,
       ]),
     ];
     const nameMap = {};
@@ -125,6 +131,9 @@ export async function GET() {
         isOwn: b.user_id === user.id,
         likeCount: likesByBrot[b.id] || 0,
         likedByMe: likedByMe[b.id] || false,
+        likedBy: (likeUsersByBrot[b.id] || []).map(
+          (uid) => nameMap[uid] || "Anonym"
+        ),
         kommentare: komms,
       });
     }
