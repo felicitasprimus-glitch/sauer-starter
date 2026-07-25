@@ -141,12 +141,6 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="absolute bottom-5 left-5 right-5 z-10">
-          <p
-            className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/85"
-            style={{ textShadow: "0 1px 8px rgba(62,44,57,0.5)" }}
-          >
-            {t("dash.welcomeEyebrow")}
-          </p>
           <h1
             className="font-display text-[32px] font-semibold leading-[1.04] text-white"
             style={{ textShadow: "0 2px 14px rgba(62,44,57,0.45)" }}
