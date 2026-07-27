@@ -1,67 +1,159 @@
-import { createClient } from "@supabase/supabase-js";
+"use client";
 
-export async function POST(request) {
-  try {
-    const { name, email, password } = await request.json();
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-    if (!name || !email || !password) {
-      return Response.json(
-        { error: "Name, Email und Passwort sind Pflicht." },
-        { status: 400 }
-      );
-    }
+export default function RegisterPage() {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-    // Admin-Client mit Service-Role-Key fuer User-Anlage
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      {
-        auth: { autoRefreshToken: false, persistSession: false },
-      }
-    );
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    // User in Supabase Auth anlegen (mit auto-confirm)
-    const { data: newUser, error: signUpError } = await supabaseAdmin.auth.admin.createUser({
-      email: email,
-      password: password,
-      email_confirm: true,
-    });
-
-    if (signUpError) {
-      return Response.json({ error: signUpError.message }, { status: 400 });
-    }
-
-    if (!newUser?.user) {
-      return Response.json({ error: "User konnte nicht angelegt werden." }, { status: 500 });
-    }
-
-    const isAdmin = email === "felicitas.primus@gmail.com";
-
-    // user_profile anlegen (dauerhafter Zugang, mit Anzeigename)
-    const { error: profileError } = await supabaseAdmin
-      .from("user_profiles")
-      .upsert({
-        id: newUser.user.id,
-        email: email,
-        display_name: name,
-        is_admin: isAdmin,
-        access_expires_at: null,
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          password,
+        }),
       });
 
-    if (profileError) {
-      console.error("Profile error:", profileError);
-      // User existiert schon in auth, aber Profile-Anlage fehlgeschlagen
-      // Trotzdem ok zurueckgeben
-    }
+      const data = await res.json();
 
-    return Response.json({
-      success: true,
-      message: "Registrierung erfolgreich. Du kannst dich jetzt einloggen.",
-    });
-  } catch (err) {
-    return Response.json(
-      { error: err.message || "Etwas ist schiefgelaufen" },
-      { status: 500 }
+      if (!res.ok) {
+        setError(data.error || "Registrierung fehlgeschlagen.");
+        setLoading(false);
+        return;
+      }
+
+      setSuccess(true);
+      setLoading(false);
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 2500);
+    } catch (err) {
+      setError("Netzwerkfehler. Versuch es nochmal.");
+      setLoading(false);
+    }
+  }
+
+  if (success) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="card w-full max-w-sm text-center">
+          <div className="text-5xl">🥖</div>
+          <h1 className="mt-3 font-display text-2xl text-cocoa-900">
+            Willkommen!
+          </h1>
+          <p className="mt-2 text-sm text-cocoa-700">
+            Registrierung erfolgreich. Du wirst gleich zum Login weitergeleitet.
+          </p>
+        </div>
+      </div>
     );
   }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-sm space-y-5">
+        <div className="text-center">
+          <div className="text-4xl">🍞</div>
+          <h1 className="mt-2 font-display text-3xl text-cocoa-900">
+            Konto erstellen
+          </h1>
+          <p className="mt-1 text-sm text-cocoa-700/70">
+            Sauer macht krustig
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="card space-y-4">
+          <div>
+            <label className="label" htmlFor="reg-name">
+              Dein Name
+            </label>
+            <input
+              id="reg-name"
+              type="text"
+              required
+              className="input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="z.B. Felicitas"
+            />
+          </div>
+
+          <div>
+            <label className="label" htmlFor="reg-email">
+              Email
+            </label>
+            <input
+              id="reg-email"
+              type="email"
+              required
+              className="input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="deine@email.de"
+            />
+          </div>
+
+          <div>
+            <label className="label" htmlFor="reg-password">
+              Passwort waehlen
+            </label>
+            <input
+              id="reg-password"
+              type="password"
+              required
+              minLength={6}
+              className="input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Mindestens 6 Zeichen"
+            />
+          </div>
+
+          {error && (
+            <div className="rounded-2xl border border-terra-500/40 bg-terra-500/10 px-3 py-2 text-xs text-terra-700">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary w-full"
+          >
+            {loading ? "Wird angelegt ..." : "Konto erstellen"}
+          </button>
+        </form>
+
+        <div className="text-center text-xs text-cocoa-700/70">
+          Schon ein Konto?{" "}
+          <Link href="/login" className="font-semibold text-mauve-700 hover:text-cocoa-900">
+            Hier einloggen
+          </Link>
+        </div>
+
+        <div className="rounded-2xl border border-mauve-500/30 bg-cream-50 px-4 py-3">
+          <p className="text-[10px] leading-relaxed text-cocoa-700/70">
+            Mit deinem Konto hast du Zugriff auf dein persoenliches
+            Starter-Tagebuch, deine Brote und die Community.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
