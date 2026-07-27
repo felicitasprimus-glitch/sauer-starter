@@ -2,20 +2,12 @@ import { createClient } from "@supabase/supabase-js";
 
 export async function POST(request) {
   try {
-    const { email, password, masterPassword } = await request.json();
+    const { name, email, password } = await request.json();
 
-    if (!email || !password || !masterPassword) {
+    if (!name || !email || !password) {
       return Response.json(
-        { error: "Email, Passwort und Aktivierungs-Code sind Pflicht." },
+        { error: "Name, Email und Passwort sind Pflicht." },
         { status: 400 }
-      );
-    }
-
-    // Master-Passwort pruefen
-    if (masterPassword !== process.env.MASTER_PASSWORD) {
-      return Response.json(
-        { error: "Aktivierungs-Code ist nicht korrekt." },
-        { status: 401 }
       );
     }
 
@@ -43,19 +35,17 @@ export async function POST(request) {
       return Response.json({ error: "User konnte nicht angelegt werden." }, { status: 500 });
     }
 
-    // user_profile anlegen mit 90 Tage Zugang
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 90);
-
     const isAdmin = email === "felicitas.primus@gmail.com";
 
+    // user_profile anlegen (dauerhafter Zugang, mit Anzeigename)
     const { error: profileError } = await supabaseAdmin
       .from("user_profiles")
       .upsert({
         id: newUser.user.id,
         email: email,
+        display_name: name,
         is_admin: isAdmin,
-        access_expires_at: isAdmin ? null : expiresAt.toISOString(),
+        access_expires_at: null,
       });
 
     if (profileError) {
