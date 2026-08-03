@@ -9,39 +9,31 @@ export default async function AppLayout({ children }) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Nicht eingeloggt -> Login
+  // Nicht angemeldet -> Startseite (legt automatisch anonymes Konto an)
   if (!user) {
-    redirect("/login");
+    redirect("/");
   }
 
-  // Profil mit Ablauf-Datum holen
+  // Profil holen
   const { data: profile } = await supabase
     .from("user_profiles")
     .select("is_admin, access_expires_at")
     .eq("id", user.id)
     .single();
 
-  // Wenn kein Profil existiert: erst mal anlegen mit 90 Tagen ab heute
+  // Wenn kein Profil existiert: dauerhaft anlegen (kein Ablauf) + Anzeigename
   if (!profile) {
     const isAdmin = user.email === "felicitas.primus@gmail.com";
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 90);
-
     await supabase.from("user_profiles").insert({
       id: user.id,
-      email: user.email,
+      email: user.email || null,
+      display_name: "Baeckerin " + Math.floor(1000 + Math.random() * 9000),
       is_admin: isAdmin,
-      access_expires_at: isAdmin ? null : expiresAt.toISOString(),
+      access_expires_at: null,
     });
-    // Beim ersten Mal durchlassen
-  } else if (!profile.is_admin && profile.access_expires_at) {
-    // Ablauf pruefen (nur fuer Nicht-Admins)
-    const expires = new Date(profile.access_expires_at);
-    const now = new Date();
-    if (expires < now) {
-      redirect("/zugang-abgelaufen");
-    }
+    // durchlassen
   }
+  // Kein Ablauf-Check mehr: Zugang bleibt dauerhaft bestehen.
 
   return (
     <LanguageProvider>
