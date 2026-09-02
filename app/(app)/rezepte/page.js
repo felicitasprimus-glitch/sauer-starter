@@ -15,7 +15,7 @@ const GRUNDSTOCK = [
   },
   {
     "id": "g2",
-    "kategorie": "Brote",
+    "kategorie": "Gefüllte Brote",
     "name": "Pizza-Sauerteigbrot",
     "mehl_gramm": 500,
     "hydration": null,
@@ -24,7 +24,7 @@ const GRUNDSTOCK = [
   },
   {
     "id": "g3",
-    "kategorie": "Brote",
+    "kategorie": "Gefüllte Brote",
     "name": "Haselnuss-Apfel-Zimt-Brot",
     "mehl_gramm": 500,
     "hydration": null,
@@ -33,7 +33,7 @@ const GRUNDSTOCK = [
   },
   {
     "id": "g4",
-    "kategorie": "Brote",
+    "kategorie": "Gefüllte Brote",
     "name": "Walnuss-Feigen-Brot",
     "mehl_gramm": 500,
     "hydration": 66,
@@ -42,7 +42,7 @@ const GRUNDSTOCK = [
   },
   {
     "id": "g5",
-    "kategorie": "Brote",
+    "kategorie": "Gefüllte Brote",
     "name": "Jalapeño-Cheddar-Brot",
     "mehl_gramm": 500,
     "hydration": 68,
@@ -51,7 +51,7 @@ const GRUNDSTOCK = [
   },
   {
     "id": "g6",
-    "kategorie": "Brote",
+    "kategorie": "Gefüllte Brote",
     "name": "Dubai-Schokoladenbrot",
     "mehl_gramm": null,
     "hydration": null,
@@ -60,7 +60,7 @@ const GRUNDSTOCK = [
   },
   {
     "id": "g7",
-    "kategorie": "Brote",
+    "kategorie": "Gefüllte Brote",
     "name": "Kürbisbrot – Pumpkin Spice",
     "mehl_gramm": 1000,
     "hydration": 70,
@@ -539,6 +539,7 @@ export default function RezeptePage() {
   const [view, setView] = useState("list");
   const [detail, setDetail] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [openKats, setOpenKats] = useState({});
 
   const emptyForm = {
     name: "",
@@ -938,34 +939,132 @@ export default function RezeptePage() {
           <p className="mb-3 text-xs text-cocoa-700/60">
             Fertige Rezepte zum Ausprobieren – tippe zum Ansehen oder übernehmen.
           </p>
-          {[...new Set(GRUNDSTOCK.map((r) => r.kategorie || "Weitere"))].map(
-            (kat) => (
-              <div key={kat} className="mt-5">
-                <h3 className="mb-2 font-display text-lg text-terra-600">
-                  {kat}
-                </h3>
-                <div className="space-y-3">
-                  {GRUNDSTOCK.filter(
-                    (r) => (r.kategorie || "Weitere") === kat
-                  ).map((r) => (
+          <div className="mt-3 space-y-2">
+            {(() => {
+              const parse = (k) =>
+                k && k.startsWith("Discard · ")
+                  ? { g: "Discard", u: k.replace("Discard · ", "") }
+                  : { g: k || "Weitere", u: null };
+              const groups = [
+                ...new Set(GRUNDSTOCK.map((r) => parse(r.kategorie).g)),
+              ];
+              return groups.map((g) => {
+                const inGroup = GRUNDSTOCK.filter(
+                  (r) => parse(r.kategorie).g === g
+                );
+                const subs = [
+                  ...new Set(
+                    inGroup.map((r) => parse(r.kategorie).u).filter(Boolean)
+                  ),
+                ];
+                const openG = !!openKats[g];
+                return (
+                  <div key={g}>
                     <button
-                      key={r.id}
-                      onClick={() => {
-                        setDetail(r);
-                        setView("detail");
-                      }}
+                      onClick={() =>
+                        setOpenKats((p) => ({ ...p, [g]: !p[g] }))
+                      }
                       className="card flex w-full items-center justify-between text-left"
                     >
-                      <p className="font-display text-lg text-cocoa-900">
-                        {r.name}
-                      </p>
-                      <span className="text-cocoa-400">›</span>
+                      <span className="font-display text-lg text-cocoa-900">
+                        {g}
+                      </span>
+                      <span className="flex items-center gap-2 text-sm text-cocoa-700/60">
+                        {inGroup.length}
+                        <span
+                          className={
+                            "inline-block transition-transform " +
+                            (openG ? "rotate-90" : "")
+                          }
+                        >
+                          ›
+                        </span>
+                      </span>
                     </button>
-                  ))}
-                </div>
-              </div>
-            )
-          )}
+
+                    {openG && subs.length === 0 && (
+                      <div className="mb-2 mt-2 space-y-2 pl-2">
+                        {inGroup.map((r) => (
+                          <button
+                            key={r.id}
+                            onClick={() => {
+                              setDetail(r);
+                              setView("detail");
+                            }}
+                            className="card flex w-full items-center justify-between text-left"
+                          >
+                            <p className="font-display text-base text-cocoa-900">
+                              {r.name}
+                            </p>
+                            <span className="text-cocoa-400">›</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {openG && subs.length > 0 && (
+                      <div className="mb-2 mt-2 space-y-2 pl-2">
+                        {subs.map((u) => {
+                          const items = inGroup.filter(
+                            (r) => parse(r.kategorie).u === u
+                          );
+                          const key = g + "::" + u;
+                          const openU = !!openKats[key];
+                          return (
+                            <div key={u}>
+                              <button
+                                onClick={() =>
+                                  setOpenKats((p) => ({
+                                    ...p,
+                                    [key]: !p[key],
+                                  }))
+                                }
+                                className="card flex w-full items-center justify-between text-left"
+                              >
+                                <span className="font-display text-base text-terra-600">
+                                  {u}
+                                </span>
+                                <span className="flex items-center gap-2 text-xs text-cocoa-700/60">
+                                  {items.length}
+                                  <span
+                                    className={
+                                      "inline-block transition-transform " +
+                                      (openU ? "rotate-90" : "")
+                                    }
+                                  >
+                                    ›
+                                  </span>
+                                </span>
+                              </button>
+                              {openU && (
+                                <div className="mb-2 mt-2 space-y-2 pl-2">
+                                  {items.map((r) => (
+                                    <button
+                                      key={r.id}
+                                      onClick={() => {
+                                        setDetail(r);
+                                        setView("detail");
+                                      }}
+                                      className="card flex w-full items-center justify-between text-left"
+                                    >
+                                      <p className="font-display text-base text-cocoa-900">
+                                        {r.name}
+                                      </p>
+                                      <span className="text-cocoa-400">›</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              });
+            })()}
+          </div>
         </div>
       )}
     </div>
