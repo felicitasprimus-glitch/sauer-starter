@@ -576,6 +576,7 @@ export default function RezeptePage() {
   const [saving, setSaving] = useState(false);
   const [openKats, setOpenKats] = useState({});
   const [scale, setScale] = useState(1);
+  const [bpMsg, setBpMsg] = useState("");
 
   const emptyForm = {
     name: "",
@@ -693,14 +694,16 @@ export default function RezeptePage() {
       hydration: rec.hydration || null,
     };
     try {
-      if (window.parent && window.parent !== window) {
+      const embedded = window.parent && window.parent !== window;
+      if (embedded) {
         window.parent.postMessage(payload, "*");
+        setBpMsg("Gesendet (" + rec.mehl_gramm + " g) – Planer sollte sich öffnen …");
       } else {
-        window.alert(
-          "Den Backplan kannst du in der App nutzen – öffne die Rezepte dort über den Rezepte-Tab."
-        );
+        setBpMsg("Nicht in der App eingebettet – bitte über app.sauermachtkrustig.de öffnen.");
       }
-    } catch (e) {}
+    } catch (e) {
+      setBpMsg("Fehler beim Senden: " + (e && e.message));
+    }
   }
 
   const visibleRecipes =
@@ -820,6 +823,9 @@ export default function RezeptePage() {
           >
             🥖 Backplan erstellen
           </button>
+        )}
+        {bpMsg && (
+          <p style={{ marginTop: 8, fontSize: 12, color: TAUPE, textAlign: "center" }}>{bpMsg}</p>
         )}
 
         <div style={{ marginTop: 14 }}>
