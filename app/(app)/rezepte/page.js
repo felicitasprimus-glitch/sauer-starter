@@ -685,6 +685,24 @@ export default function RezeptePage() {
     setView("detail");
   }
 
+  function sendToBackplan(rec) {
+    const payload = {
+      type: "smk-backplan",
+      name: rec.name,
+      mehl: rec.mehl_gramm,
+      hydration: rec.hydration || null,
+    };
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage(payload, "*");
+      } else {
+        window.alert(
+          "Den Backplan kannst du in der App nutzen – öffne die Rezepte dort über den Rezepte-Tab."
+        );
+      }
+    } catch (e) {}
+  }
+
   const visibleRecipes =
     activeFolder === "alle"
       ? recipes
@@ -795,7 +813,16 @@ export default function RezeptePage() {
           </div>
         )}
 
-        <div style={{ marginTop: 22 }}>
+        {detail.mehl_gramm && (
+          <button
+            onClick={() => sendToBackplan(detail)}
+            style={{ width: "100%", marginTop: 18, background: "#fff", color: PLUM, border: "1px solid " + PLUM, borderRadius: 999, padding: "13px", fontFamily: SANS, fontWeight: 600, fontSize: 15, cursor: "pointer" }}
+          >
+            🥖 Backplan erstellen
+          </button>
+        )}
+
+        <div style={{ marginTop: 14 }}>
           {isGrund ? (
             <button
               onClick={() => copyGrundstock(detail)}
