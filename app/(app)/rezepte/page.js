@@ -618,6 +618,18 @@ export default function RezeptePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Wenn eingebettet (im Rezepte-Tab der App): Tagebuch-Leiste ausblenden
+  useEffect(() => {
+    try {
+      if (window.self !== window.top) {
+        const s = document.createElement("style");
+        s.textContent =
+          "nav.fixed{display:none!important}.pb-24{padding-bottom:1.25rem!important}";
+        document.head.appendChild(s);
+      }
+    } catch (e) {}
+  }, []);
+
   async function addFolder() {
     const name = window.prompt("Name des Ordners?");
     if (!name || !name.trim()) return;
