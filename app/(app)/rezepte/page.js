@@ -528,6 +528,32 @@ const GRUNDSTOCK = [
   }
 ];
 
+function smkFracVal(s) {
+  const map = { "½": 0.5, "⅓": 1 / 3, "⅔": 2 / 3, "¼": 0.25, "¾": 0.75, "⅛": 0.125 };
+  if (map[s] !== undefined) return map[s];
+  return parseFloat(s.replace(/\./g, "").replace(",", "."));
+}
+function smkFmtNum(v) {
+  if (!isFinite(v)) return "?";
+  let r = v >= 20 ? Math.round(v) : Math.round(v * 4) / 4;
+  return (Math.round(r * 100) / 100).toString().replace(".", ",");
+}
+function scaleZutaten(text, f) {
+  if (!text || f === 1) return text;
+  return text
+    .split("\n")
+    .map((line) => {
+      const m = line.match(
+        /^(\s*(?:ca\.\s*)?)([\d.,½⅓⅔¼¾⅛]+)(\s*[–-]\s*([\d.,½⅓⅔¼¾⅛]+))?(.*)$/
+      );
+      if (!m) return line;
+      let out = m[1] + smkFmtNum(smkFracVal(m[2]) * f);
+      if (m[4]) out += "–" + smkFmtNum(smkFracVal(m[4]) * f);
+      return out + m[5];
+    })
+    .join("\n");
+}
+
 export default function RezeptePage() {
   const supabase = createClient();
 
@@ -540,6 +566,7 @@ export default function RezeptePage() {
   const [detail, setDetail] = useState(null);
   const [saving, setSaving] = useState(false);
   const [openKats, setOpenKats] = useState({});
+  const [scale, setScale] = useState(1);
 
   const emptyForm = {
     name: "",
@@ -689,11 +716,39 @@ export default function RezeptePage() {
         )}
 
         {detail.zutaten && (
-          <div className="card mt-5">
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <span className="text-sm text-cocoa-700">Menge:</span>
+            {[0.5, 1, 1.5, 2, 3].map((f) => (
+              <button
+                key={f}
+                onClick={() => setScale(f)}
+                className={
+                  "rounded-full px-3 py-1.5 text-sm " +
+                  (scale === f
+                    ? "bg-cocoa-900 text-white"
+                    : "bg-white text-cocoa-800 border border-cocoa-200")
+                }
+              >
+                {f === 0.5 ? "½×" : String(f).replace(".", ",") + "×"}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {detail.zutaten && (
+          <div className="card mt-3">
             <h2 className="font-display text-xl text-cocoa-900">Zutaten</h2>
             <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-cocoa-800">
-              {detail.zutaten}
+              {scale === 1
+                ? detail.zutaten
+                : scaleZutaten(detail.zutaten, scale)}
             </p>
+            {scale !== 1 && (
+              <p className="mt-3 text-xs text-cocoa-700/60">
+                Nur die Mengen sind umgerechnet – Zeiten &amp; Temperaturen
+                bleiben gleich.
+              </p>
+            )}
           </div>
         )}
         {detail.schritte && (
@@ -905,7 +960,8 @@ export default function RezeptePage() {
             <button
               key={r.id}
               onClick={() => {
-                setDetail(r);
+                setScale(1);
+                                setDetail(r);
                 setView("detail");
               }}
               className="card flex w-full items-center justify-between text-left"
@@ -988,7 +1044,8 @@ export default function RezeptePage() {
                           <button
                             key={r.id}
                             onClick={() => {
-                              setDetail(r);
+                              setScale(1);
+                                setDetail(r);
                               setView("detail");
                             }}
                             className="card flex w-full items-center justify-between text-left"
@@ -1042,7 +1099,8 @@ export default function RezeptePage() {
                                     <button
                                       key={r.id}
                                       onClick={() => {
-                                        setDetail(r);
+                                        setScale(1);
+                                setDetail(r);
                                         setView("detail");
                                       }}
                                       className="card flex w-full items-center justify-between text-left"
