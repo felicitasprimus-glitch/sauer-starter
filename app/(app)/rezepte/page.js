@@ -624,7 +624,7 @@ export default function RezeptePage() {
       if (window.self !== window.top) {
         const s = document.createElement("style");
         s.textContent =
-          "nav.fixed{display:none!important}.pb-24{padding-bottom:1.25rem!important}";
+          "nav.fixed{display:none!important}.pb-24{padding-bottom:7rem!important}";
         document.head.appendChild(s);
       }
     } catch (e) {}
