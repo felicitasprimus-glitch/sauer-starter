@@ -699,22 +699,18 @@ export default function RezeptePage() {
   }
 
   function sendToBackplan(rec) {
-    const payload = {
-      type: "smk-backplan",
-      name: rec.name,
-      mehl: rec.mehl_gramm,
-      hydration: rec.hydration || null,
-    };
+    const mehl = rec.mehl_gramm || "";
+    const hyd = rec.hydration || "";
     try {
-      const embedded = window.parent && window.parent !== window;
-      if (embedded) {
-        window.parent.postMessage(payload, "*");
-        setBpMsg("Gesendet (" + rec.mehl_gramm + " g) – Planer sollte sich öffnen …");
+      if (window.top && window.top !== window) {
+        setBpMsg("Planer wird geöffnet …");
+        window.top.location.href =
+          "https://app.sauermachtkrustig.de/#bp=" + mehl + "," + hyd;
       } else {
-        setBpMsg("Nicht in der App eingebettet – bitte über app.sauermachtkrustig.de öffnen.");
+        setBpMsg("Den Backplan kannst du in der App nutzen (app.sauermachtkrustig.de).");
       }
     } catch (e) {
-      setBpMsg("Fehler beim Senden: " + (e && e.message));
+      setBpMsg("Konnte den Planer nicht öffnen.");
     }
   }
 
