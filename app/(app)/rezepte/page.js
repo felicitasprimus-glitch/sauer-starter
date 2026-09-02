@@ -701,11 +701,13 @@ export default function RezeptePage() {
   function sendToBackplan(rec) {
     const mehl = rec.mehl_gramm || "";
     const hyd = rec.hydration || "";
+    const url =
+      "https://app.sauermachtkrustig.de/?bp=" + mehl + "-" + hyd + "#bp=" + mehl + "," + hyd;
     try {
       if (window.top && window.top !== window) {
         setBpMsg("Planer wird geöffnet …");
-        window.top.location.href =
-          "https://app.sauermachtkrustig.de/#bp=" + mehl + "," + hyd;
+        // echtes Neuladen der Haupt-App erzwingen (query-Param aendert die URL wirklich)
+        window.top.location.replace(url);
       } else {
         setBpMsg("Den Backplan kannst du in der App nutzen (app.sauermachtkrustig.de).");
       }
