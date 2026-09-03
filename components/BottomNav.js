@@ -2,107 +2,120 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLang } from "@/components/LanguageProvider";
 
-const NAV_ITEMS = [
+const PLUM = "#6E3348";
+const MUTED = "#9a8290";
+
+function Ico({ active, children }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={active ? PLUM : MUTED}
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {children}
+    </svg>
+  );
+}
+
+const NAV = [
+  {
+    href: "/start",
+    label: "Start",
+    icon: (a) => (
+      <Ico active={a}>
+        <path d="M4 11 12 4l8 7" />
+        <path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" />
+        <path d="M10 20v-5h4v5" />
+      </Ico>
+    ),
+  },
   {
     href: "/dashboard",
-    labelKey: "nav.starter",
-    icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c87f63" : "#7a5e75"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 2h6l-1 7h-4z" />
-        <path d="M5 9h14l-1 11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z" />
-        <circle cx="12" cy="15" r="2" />
-      </svg>
+    label: "Tagebuch",
+    icon: (a) => (
+      <Ico active={a}>
+        <path d="M8.5 3h7M8 5.5h8" />
+        <path d="M8.5 5.5C8.5 7 7 8 7 10v8a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3v-8c0-2-1.5-3-1.5-4.5" />
+        <path d="M7.5 11.5h9" />
+      </Ico>
     ),
   },
   {
-    href: "/brote",
-    labelKey: "nav.brote",
-    icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c87f63" : "#7a5e75"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 7 Q 3 5, 5 5 L 8 5 L 9.5 3 L 14.5 3 L 16 5 L 19 5 Q 21 5, 21 7 L 21 17 Q 21 19, 19 19 L 5 19 Q 3 19, 3 17 Z" />
-      </svg>
+    href: "/rezepte",
+    label: "Rezepte",
+    icon: (a) => (
+      <Ico active={a}>
+        <path d="M4 13a8 5.5 0 0 1 16 0v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+        <path d="M9 9.5c-.8 1-1.2 2-1.2 3.4M13 8.8c-.8 1-1.2 2-1.2 3.4M17 9.5c-.8 1-1.2 2-1.2 3.4" />
+      </Ico>
     ),
   },
   {
-    href: "/krume",
-    labelKey: "nav.krume",
-    icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c87f63" : "#7a5e75"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="9" />
-        <circle cx="9" cy="10" r="1.2" fill={active ? "#c87f63" : "#7a5e75"} />
-        <circle cx="14" cy="9" r="1.5" fill={active ? "#c87f63" : "#7a5e75"} />
-        <circle cx="11" cy="14" r="1.8" fill={active ? "#c87f63" : "#7a5e75"} />
-        <circle cx="15" cy="14" r="1" fill={active ? "#c87f63" : "#7a5e75"} />
-      </svg>
+    href: "/wissen",
+    label: "Wissen",
+    icon: (a) => (
+      <Ico active={a}>
+        <path d="M12 6c-1.8-1.6-4.4-2-8-2v15c3.6 0 6.2.4 8 2 1.8-1.6 4.4-2 8-2V4c-3.6 0-6.2.4-8 2Z" />
+        <path d="M12 6v15" />
+      </Ico>
     ),
   },
   {
-    href: "/community",
-    labelKey: "nav.community",
-    icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c87f63" : "#7a5e75"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    ),
-  },
-  {
-    href: "/fehlerfinder",
-    labelKey: "nav.fehler",
-    icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c87f63" : "#7a5e75"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="7" />
-        <path d="m21 21-4.35-4.35" />
-        <path d="M11 8v3" />
-        <circle cx="11" cy="14" r="0.5" fill={active ? "#c87f63" : "#7a5e75"} />
-      </svg>
-    ),
-  },
-  {
-    href: "/sos",
-    labelKey: "nav.sos",
-    icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? "#c87f63" : "#7a5e75"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 9v4" />
-        <path d="M12 17h.01" />
-        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
-      </svg>
+    href: "/rechner",
+    label: "Rechner",
+    icon: (a) => (
+      <Ico active={a}>
+        <path d="M12 3v18M4 21h16" />
+        <path d="M12 5 5 8l-2 6a4 4 0 0 0 8 0L9 8" />
+        <path d="m12 5 7 3 2 6a4 4 0 0 1-8 0l2-6" />
+      </Ico>
     ),
   },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const { t } = useLang();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-mauve-500/20 bg-cream-50/95 backdrop-blur">
-      <div className="mx-auto flex max-w-md justify-around px-1 py-2">
-        {NAV_ITEMS.map((item) => {
-          const active = pathname === item.href || pathname?.startsWith(item.href + "/");
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-1 flex-col items-center gap-0.5 rounded-xl px-0.5 py-1.5 transition-all ${
-                active ? "bg-terra-500/10" : ""
-              }`}
-            >
-              {item.icon(active)}
-              <span
-                className={`whitespace-nowrap text-[9px] font-semibold ${
-                  active ? "text-terra-700" : "text-cocoa-700/70"
-                }`}
+    <nav className="fixed bottom-0 left-0 right-0 z-50">
+      <div className="mx-auto max-w-md">
+        <div className="m-2 flex justify-around rounded-[26px] border border-cocoa-200/40 bg-cream-50/95 px-2 py-2 shadow-lg backdrop-blur">
+          {NAV.map((item) => {
+            const active =
+              pathname === item.href ||
+              (item.href !== "/start" && pathname?.startsWith(item.href + "/"));
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex flex-1 flex-col items-center gap-0.5 py-1"
               >
-                {t(item.labelKey)}
-              </span>
-            </Link>
-          );
-        })}
+                {item.icon(active)}
+                <span
+                  className="text-[10px] font-semibold"
+                  style={{ color: active ? PLUM : MUTED }}
+                >
+                  {item.label}
+                </span>
+                <span
+                  style={{
+                    width: 16,
+                    height: 2,
+                    borderRadius: 2,
+                    marginTop: 1,
+                    background: active ? PLUM : "transparent",
+                  }}
+                />
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );
