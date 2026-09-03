@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 const HOME_HTML = `
     <div class="topbar rv">
@@ -13,7 +14,7 @@ const HOME_HTML = `
       <div class="hero-veil"></div>
       <div class="hero-inner">
         <div class="hi">Guten Morgen,</div>
-        <div class="name">Felicitas <span class="hrt">&#9825;</span></div>
+        <div class="name"><span class="hrt">&#9825;</span></div>
         <p class="hsub">Bereit für deinen Backmoment heute?</p>
         <button class="hcta" data-nav="starter">
         <div class="lock-badge"><svg class="lk"><use href="#i-lock"/></svg><svg class="cr"><use href="#i-crown"/></svg></div>Tagebuch öffnen <svg><use href="#i-arrow"/></svg></button>
@@ -315,6 +316,34 @@ function CookTracker() {
 export default function StartPage() {
   const router = useRouter();
   const ref = useRef(null);
+  const supabase = createClient();
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        let nm = (user && user.user_metadata && user.user_metadata.display_name) || "";
+        if (!nm && user) {
+          const { data } = await supabase.from("user_profiles").select("display_name").eq("id", user.id).single();
+          nm = (data && data.display_name) || "";
+        }
+        if (cancelled) return;
+        const hrs = new Date().getHours();
+        const greet = hrs < 11 ? "Guten Morgen," : hrs < 18 ? "Hallo," : "Guten Abend,";
+        const hiEl = document.querySelector(".hero-inner .hi");
+        if (hiEl) hiEl.textContent = greet;
+        const nameEl = document.querySelector(".hero-inner .name");
+        if (nameEl) {
+          const heart = nameEl.querySelector(".hrt");
+          nameEl.textContent = (nm || "Willkommen") + " ";
+          if (heart) nameEl.appendChild(heart);
+        }
+      } catch (e) {}
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     function esc(s) {
