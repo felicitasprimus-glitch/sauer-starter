@@ -158,6 +158,45 @@ const ROUTES = {
   brotwerkstatt: "/brotbackplaner", rechner: "/rechner",
 };
 
+function TimerTracker() {
+  const [timer, setTimer] = useState(null);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    function load() {
+      try {
+        const raw = localStorage.getItem("smk-active-timer");
+        setTimer(raw ? JSON.parse(raw) : null);
+      } catch (e) { setTimer(null); }
+    }
+    load();
+    const iv = setInterval(() => { load(); setNow(Date.now()); }, 1000);
+    window.addEventListener("focus", load);
+    return () => { clearInterval(iv); window.removeEventListener("focus", load); };
+  }, []);
+  function clear() {
+    try { localStorage.removeItem("smk-active-timer"); } catch (e) {}
+    setTimer(null);
+  }
+  if (!timer || !timer.endTime) return null;
+  const left = Math.max(0, Math.round((timer.endTime - now) / 1000));
+  const done = left <= 0;
+  const mm = Math.floor(left / 60);
+  const ss = left % 60;
+  const timeStr = mm + ":" + String(ss).padStart(2, "0");
+  return (
+    <div style={{ margin: "12px 18px 0", background: done ? "linear-gradient(150deg,#C08A5A,#8E4A3A)" : "linear-gradient(150deg,#6E5266,#4A3447)", color: "#fff", borderRadius: 22, padding: "16px 18px", boxShadow: "0 14px 30px -16px rgba(74,52,71,.6)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 19, fontWeight: 600 }}>⏱ {timer.name}</span>
+        <button onClick={clear} style={{ background: "rgba(255,255,255,.18)", border: "none", color: "#fff", fontSize: 12, padding: "5px 11px", borderRadius: 999, cursor: "pointer" }}>Schließen</button>
+      </div>
+      <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontVariantNumeric: "tabular-nums", fontSize: 46, fontWeight: 700, textAlign: "center", letterSpacing: "-1px", margin: "6px 0 2px" }}>
+        {done ? "Fertig! 🔔" : timeStr}
+      </div>
+      <div style={{ textAlign: "center", fontSize: 12, opacity: 0.85 }}>{done ? "Timer abgelaufen" : "läuft …"}</div>
+    </div>
+  );
+}
+
 function CookTracker() {
   const [cook, setCook] = useState(null);
   useEffect(() => {
@@ -259,6 +298,7 @@ export default function StartPage() {
     <div style={{ margin: "-1.5rem -1rem 0" }}>
       <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
       <div dangerouslySetInnerHTML={{ __html: SPRITE }} style={{ display: "none" }} />
+      <TimerTracker />
       <CookTracker />
       <div ref={ref} onClick={onClick} dangerouslySetInnerHTML={{ __html: HOME_HTML }} />
     </div>
