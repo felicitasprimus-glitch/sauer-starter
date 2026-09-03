@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const PLUM = "#5A3D54";
@@ -565,6 +566,7 @@ const GRUNDSTOCK = [
 
 export default function RezeptePage() {
   const supabase = createClient();
+  const router = useRouter();
 
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
@@ -701,19 +703,8 @@ export default function RezeptePage() {
   function sendToBackplan(rec) {
     const mehl = rec.mehl_gramm || "";
     const hyd = rec.hydration || "";
-    const url =
-      "https://app.sauermachtkrustig.de/?bp=" + mehl + "-" + hyd + "#bp=" + mehl + "," + hyd;
-    try {
-      if (window.top && window.top !== window) {
-        setBpMsg("Planer wird geöffnet …");
-        // echtes Neuladen der Haupt-App erzwingen (query-Param aendert die URL wirklich)
-        window.top.location.replace(url);
-      } else {
-        setBpMsg("Den Backplan kannst du in der App nutzen (app.sauermachtkrustig.de).");
-      }
-    } catch (e) {
-      setBpMsg("Konnte den Planer nicht öffnen.");
-    }
+    setBpMsg("Planer wird geöffnet …");
+    router.push("/brotbackplaner?bp=" + mehl + "," + hyd);
   }
 
   const visibleRecipes =
