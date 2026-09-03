@@ -66,6 +66,22 @@ function parseAmount(zutaten, keywords) {
   return null;
 }
 
+function parseDuration(text) {
+  if (!text) return 10;
+  const low = text.toLowerCase();
+  if (/über nacht|ueber nacht/.test(low)) return 720;
+  let total = 0, found = false;
+  const hR = low.match(/(\d+(?:[.,]\d+)?)\s*[–-]\s*(\d+(?:[.,]\d+)?)\s*(?:std|stunden?)\b/);
+  const hS = low.match(/(\d+(?:[.,]\d+)?)\s*(?:std|stunden?)\b/);
+  if (hR) { total += (parseFloat(hR[1].replace(",", ".")) + parseFloat(hR[2].replace(",", "."))) / 2 * 60; found = true; }
+  else if (hS) { total += parseFloat(hS[1].replace(",", ".")) * 60; found = true; }
+  const mR = low.match(/(\d+)\s*[–-]\s*(\d+)\s*min/);
+  const mS = low.match(/(\d+)\s*min/);
+  if (mR) { total += (parseInt(mR[1]) + parseInt(mR[2])) / 2; found = true; }
+  else if (mS) { total += parseInt(mS[1]); found = true; }
+  return found ? Math.round(total) : 10;
+}
+
 const GRUNDSTOCK = [
   {
     "id": "g1",
@@ -606,6 +622,8 @@ export default function RezeptePage() {
   const [openKats, setOpenKats] = useState({});
   const [scale, setScale] = useState(1);
   const [bpMsg, setBpMsg] = useState("");
+  const [planSteps, setPlanSteps] = useState([]);
+  const [planName, setPlanName] = useState("");
 
   const emptyForm = {
     name: "",
@@ -754,6 +772,30 @@ export default function RezeptePage() {
     router.push("/start");
   }
 
+  function openAblaufplan(rec) {
+    const steps = parseSteps(rec.schritte || "");
+    setPlanSteps(steps.map((s) => ({ title: s, minutes: parseDuration(s) })));
+    setPlanName(rec.name);
+    setView("ablaufplan");
+  }
+
+  function startAblaufplan() {
+    const now = Date.now();
+    let t = now;
+    const steps = planSteps.map((s) => {
+      const step = { title: s.title, time: t, icon: "🍞" };
+      t += (Number(s.minutes) || 0) * 60000;
+      return step;
+    });
+    try {
+      localStorage.setItem(
+        "smk-active-bake",
+        JSON.stringify({ name: planName, started: now, steps })
+      );
+    } catch (e) {}
+    router.push("/start");
+  }
+
   const visibleRecipes =
     activeFolder === "alle"
       ? recipes
@@ -866,23 +908,20 @@ export default function RezeptePage() {
 
         {detail.schritte && (
           <button
-            onClick={() => startCooking(detail)}
+            onClick={() => openAblaufplan(detail)}
             style={{ width: "100%", marginTop: 18, background: PLUM, color: "#fff", border: "none", borderRadius: 999, padding: "14px", fontFamily: SANS, fontWeight: 600, fontSize: 15, cursor: "pointer" }}
           >
-            🍳 Schritt für Schritt kochen
+            📋 Ablaufplan erstellen
           </button>
         )}
 
-        {detail.mehl_gramm && (
+        {detail.schritte && (
           <button
-            onClick={() => sendToBackplan(detail)}
-            style={{ width: "100%", marginTop: 18, background: "#fff", color: PLUM, border: "1px solid " + PLUM, borderRadius: 999, padding: "13px", fontFamily: SANS, fontWeight: 600, fontSize: 15, cursor: "pointer" }}
+            onClick={() => startCooking(detail)}
+            style={{ width: "100%", marginTop: 10, background: "#fff", color: PLUM, border: "1px solid " + PLUM, borderRadius: 999, padding: "13px", fontFamily: SANS, fontWeight: 600, fontSize: 15, cursor: "pointer" }}
           >
-            🥖 Backplan erstellen
+            🍳 Nur Schritt für Schritt
           </button>
-        )}
-        {bpMsg && (
-          <p style={{ marginTop: 8, fontSize: 12, color: TAUPE, textAlign: "center" }}>{bpMsg}</p>
         )}
 
         <div style={{ marginTop: 14 }}>
@@ -902,6 +941,47 @@ export default function RezeptePage() {
             </button>
           )}
         </div>
+      </div>
+    );
+  }
+
+  // ===================== ABLAUFPLAN =====================
+  if (view === "ablaufplan") {
+    const totalMin = planSteps.reduce((a, s) => a + (Number(s.minutes) || 0), 0);
+    return (
+      <div style={{ fontFamily: "'Lora', Georgia, serif", padding: "18px 16px 44px", background: CREAM, minHeight: "100vh" }}>
+        <button onClick={() => setView("detail")} style={{ background: "none", border: "none", color: PLUM, fontSize: 14, cursor: "pointer", fontFamily: SANS }}>← Zurück</button>
+        <h1 style={{ fontFamily: SERIF, color: PLUM, fontSize: 28, fontWeight: 700, margin: "10px 0 2px" }}>Ablaufplan</h1>
+        <p style={{ color: TAUPE, fontSize: 13, margin: "0 0 4px" }}>{planName}</p>
+        <p style={{ color: TAUPE, fontSize: 12.5, margin: "8px 0 14px", lineHeight: 1.5 }}>
+          Passe die Dauer jedes Schritts an. „Jetzt starten" legt die Uhrzeiten fest und zeigt den Plan vorne auf der Startseite.
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {planSteps.map((s, i) => (
+            <div key={i} style={{ background: "#fff", border: "1px solid " + LINE, borderRadius: 16, padding: "12px 14px", boxShadow: "0 8px 20px -16px rgba(90,61,84,.5)" }}>
+              <div style={{ display: "flex", gap: 10 }}>
+                <span style={{ flex: "0 0 auto", width: 24, height: 24, borderRadius: "50%", background: PLUM, color: "#fff", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>{i + 1}</span>
+                <p style={{ flex: 1, fontSize: 14, lineHeight: 1.5, color: "#4a3a44", margin: 0, whiteSpace: "pre-line" }}>{s.title}</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+                <span style={{ fontSize: 12, color: TAUPE }}>Dauer:</span>
+                <input type="number" inputMode="numeric" value={s.minutes}
+                  onChange={(e) => { const v = e.target.value; setPlanSteps((prev) => prev.map((x, j) => (j === i ? { ...x, minutes: v } : x))); }}
+                  style={{ width: 64, textAlign: "right", border: "1px solid " + LINE, borderRadius: 10, padding: "6px 8px", fontSize: 14, color: PLUM, fontWeight: 600, fontFamily: "inherit", background: "#FBF6EF", outline: "none" }} />
+                <span style={{ fontSize: 12, color: "#9a8290" }}>Min</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <p style={{ textAlign: "center", fontSize: 12.5, color: TAUPE, margin: "14px 0" }}>
+          Gesamtdauer: ca. {Math.floor(totalMin / 60) > 0 ? Math.floor(totalMin / 60) + " Std " : ""}{totalMin % 60} Min
+        </p>
+
+        <button onClick={startAblaufplan} style={{ width: "100%", background: PLUM, color: "#fff", border: "none", borderRadius: 999, padding: "15px", fontFamily: SANS, fontWeight: 600, fontSize: 16, cursor: "pointer" }}>
+          ▶ Jetzt starten
+        </button>
       </div>
     );
   }
