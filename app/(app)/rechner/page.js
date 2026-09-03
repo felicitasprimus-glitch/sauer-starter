@@ -281,9 +281,9 @@ const RECHNER = [
   { key: "sw", emoji: "🌡️", title: "Schüttwasser", sub: "Wassertemperatur bestimmen", comp: Schuettwasser },
   { key: "fr", emoji: "🥣", title: "Feed-Ratio", sub: "Fütterung + Peak-Vorhersage", comp: FeedRatio },
   { key: "he", emoji: "🔄", title: "Hefe ↔ Sauerteig", sub: "Umrechnen & kombinieren", comp: HefeSauerteig },
-  { key: "hy", emoji: "💧", title: "Hydration", sub: "Wasseranteil berechnen", comp: Hydration },
-  { key: "sg", emoji: "⏱️", title: "Stückgare", sub: "Gehzeit abschätzen", comp: Stueckgare },
-  { key: "mi", emoji: "🌰", title: "Mix-ins", sub: "Nüsse, Saaten & Co. dosieren", comp: MixIns },
+  { key: "hy", emoji: "💧", title: "Hydration", sub: "Wasseranteil berechnen", iframe: "/hydration.html" },
+  { key: "sg", emoji: "⏱️", title: "Stückgare", sub: "Den richtigen Zeitpunkt finden", iframe: "/stueckgare.html" },
+  { key: "mi", emoji: "🌰", title: "Mix-ins", sub: "Nüsse, Saaten & Co. dosieren", iframe: "/mixins.html" },
 ];
 
 export default function RechnerPage() {
@@ -317,7 +317,20 @@ export default function RechnerPage() {
                 </span>
                 <span style={{ color: "#c9a3b3", fontSize: 22, transform: isOpen ? "rotate(90deg)" : "none", transition: "transform .15s" }}>›</span>
               </button>
-              {isOpen && <div style={{ marginTop: 12, marginBottom: 4 }}><Comp /></div>}
+              {isOpen &&
+                (r.iframe ? (
+                  <div style={{ ...cardS, marginTop: 12, marginBottom: 4, padding: 0, overflow: "hidden" }}>
+                    <iframe
+                      src={r.iframe}
+                      title={r.title}
+                      style={{ width: "100%", height: 640, border: 0, display: "block" }}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ marginTop: 12, marginBottom: 4 }}>
+                    <Comp />
+                  </div>
+                ))}
             </div>
           );
         })}
