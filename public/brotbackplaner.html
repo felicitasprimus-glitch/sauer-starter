@@ -1092,25 +1092,27 @@ $('saveBtn').onclick=()=>{$('saveBtn').innerHTML=ic('heart')+' Gespeichert \u271
 $('pfVal').textContent=state.prefermentGram+' g';
 renderAll();
 
+// === Rezept-Vorfuellung aus der Adresse (Mehl, Hydration, Vorteig, Salz) ===
+(function(){
+  try{
+    var m=(location.search||'').match(/[?&]bp=([^#&]*)/);
+    if(!m) return;
+    var p=decodeURIComponent(m[1]).split(',');
+    var mehl=parseFloat(p[0]);
+    var hyd=p[1]?parseFloat(p[1]):null;
+    var starter=p[2]?parseFloat(p[2]):null;
+    var salt=p[3]?parseFloat(p[3]):null;
+    if(!isNaN(mehl)){ state.flourAmount=Math.max(0,Math.min(9999,Math.round(mehl))); }
+    if(hyd && !isNaN(mehl)){ state.waterGram=Math.max(0,Math.min(9999,Math.round(mehl*hyd/100))); }
+    if(starter && starter>0){ state.prefermentGram=Math.max(50,Math.min(2000,Math.round(starter))); }
+    if(salt && salt>0 && !isNaN(mehl) && mehl>0){ state.saltPct=Math.max(0,Math.min(5,Math.round(salt/mehl*1000)/10)); }
+    try{ if($('rMehl')) $('rMehl').value=state.flourAmount; }catch(e){}
+    try{ if($('rWater')) $('rWater').value=state.waterGram; }catch(e){}
+    try{ if($('pfVal')) $('pfVal').textContent=state.prefermentGram+' g'; }catch(e){}
+    renderAll();
+  }catch(e){}
+})();
+
 </script>
 
-<script>
-(function(){
-  function num(x){ var n=parseFloat(String(x).replace(',','.')); return isNaN(n)?null:n; }
-  function apply(tries){
-    var m=(location.search||'').match(/[?&]bp=([\d.]*),?([\d.]*)/);
-    if(!m) return;
-    var mehl=num(m[1]); var hyd=m[2]?num(m[2]):null;
-    if(mehl===null){ if(tries<40) setTimeout(function(){apply(tries+1);},150); return; }
-    var rMehl=document.getElementById('rMehl');
-    if(!rMehl){ if(tries<40) setTimeout(function(){apply(tries+1);},150); return; }
-    try{
-      rMehl.value=mehl; rMehl.dispatchEvent(new Event('change',{bubbles:true}));
-      if(hyd){ var rW=document.getElementById('rWater'); if(rW){ rW.value=Math.round(mehl*hyd/100); rW.dispatchEvent(new Event('input',{bubbles:true})); } }
-    }catch(e){}
-  }
-  if(document.readyState==='complete'||document.readyState==='interactive'){ setTimeout(function(){apply(0);},300); }
-  else { window.addEventListener('load', function(){ setTimeout(function(){apply(0);},300); }); }
-})();
-</script>
 </body></html>
