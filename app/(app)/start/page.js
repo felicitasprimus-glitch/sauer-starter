@@ -150,6 +150,20 @@ const SPRITE = `<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
   <symbol id="i-crown" viewBox="0 0 24 24"><path d="M4.5 16.5h15M4.5 16.5 3.5 8l4.5 2.8L12 5.5l4 5.3L20.5 8l-1 8.5"/></symbol>
 </svg>`;
 
+const AB_CSS = `.smk-ab{margin:0 18px 6px}
+.smk-ab-card{cursor:pointer;background:linear-gradient(150deg,#9A6F82,#7C3E50);color:#fff;border-radius:22px;padding:16px 18px;box-shadow:0 14px 30px -16px rgba(124,62,80,.6)}
+.smk-ab-top{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.smk-ab-dot{width:9px;height:9px;border-radius:50%;background:#8FD19E;animation:smkPulse 1.8s infinite}
+.smk-ab-name{flex:1;font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;font-weight:600}
+.smk-ab-x{background:rgba(255,255,255,.18);border:none;color:#fff;font-family:inherit;font-size:12px;padding:5px 11px;border-radius:999px;cursor:pointer}
+.smk-ab-now{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.14);border-radius:14px;padding:11px 13px}
+.smk-ab-ic{font-size:22px}
+.smk-ab-now small{display:block;font-size:11px;opacity:.8;text-transform:uppercase;letter-spacing:.06em}
+.smk-ab-now b{font-size:16px}
+.smk-ab-next{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font-size:13.5px;opacity:.92}
+.smk-ab-next b{font-size:14px}
+@keyframes smkPulse{0%{box-shadow:0 0 0 0 rgba(143,209,158,.6)}70%{box-shadow:0 0 0 8px rgba(143,209,158,0)}`;
+
 const ROUTES = {
   profil: "/mein-profil", starter: "/dashboard", rezepte: "/rezepte",
   fehlerfinder: "/fehlerfinder", community: "/community", krume: "/krume",
@@ -297,6 +311,7 @@ export default function StartPage() {
   return (
     <div style={{ margin: "-1.5rem -1rem 0" }}>
       <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: AB_CSS }} />
       <div dangerouslySetInnerHTML={{ __html: SPRITE }} style={{ display: "none" }} />
       <TimerTracker />
       <CookTracker />
