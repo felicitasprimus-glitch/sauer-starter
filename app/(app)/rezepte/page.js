@@ -607,6 +607,17 @@ const GRUNDSTOCK = [
   }
 ];
 
+function loadTesseract() {
+  return new Promise((resolve, reject) => {
+    if (typeof window !== "undefined" && window.Tesseract) return resolve(window.Tesseract);
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+    s.onload = () => resolve(window.Tesseract);
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
 export default function RezeptePage() {
   const supabase = createClient();
   const router = useRouter();
@@ -640,6 +651,7 @@ export default function RezeptePage() {
   };
   const [form, setForm] = useState(emptyForm);
   const [uploading, setUploading] = useState(false);
+  const [ocrStatus, setOcrStatus] = useState("");
 
   async function loadData() {
     setLoading(true);
@@ -692,6 +704,33 @@ export default function RezeptePage() {
       .select()
       .single();
     if (!error && data) setFolders((prev) => [...prev, data]);
+  }
+
+  async function ocrRezept(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setOcrStatus("Text wird erkannt … (kann einen Moment dauern)");
+    try {
+      const T = await loadTesseract();
+      const res = await T.recognize(file, "deu+eng");
+      const text = (res && res.data && res.data.text) || "";
+      const lines = text.split(/\n/).map((x) => x.trim()).filter(Boolean);
+      const isIng = (l) =>
+        /^(½|¼|¾|⅓|⅔|\d+([.,]\d+)?)\s*(g|kg|ml|l|el|tl|stk|stück|stueck|prise|prisen|pck|packung|dose|dosen|becher|tasse|bund|zehe|zehen|scheibe|scheiben)\b/i.test(l) &&
+        !/^\d+[.)]\s/.test(l);
+      const name = lines[0] || "";
+      const ing = lines.filter(isIng).slice(0, 40);
+      const steps = lines.filter((l) => !isIng(l)).slice(1, 60);
+      setForm((f) => ({
+        ...f,
+        name: f.name || name.slice(0, 80),
+        zutaten: f.zutaten || ing.join("\n"),
+        schritte: f.schritte || steps.join("\n"),
+      }));
+      setOcrStatus("Text erkannt – bitte prüfen und ggf. korrigieren.");
+    } catch (err) {
+      setOcrStatus("Erkennung hat nicht geklappt. Bitte Text manuell eintragen.");
+    }
   }
 
   async function handleFoto(e) {
@@ -1060,6 +1099,17 @@ export default function RezeptePage() {
         <h1 style={{ ...h1, fontSize: 30, margin: "10px 0 18px" }}>Neues Rezept</h1>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", background: "linear-gradient(135deg,#f6e9ec,#e6cdd6)", border: "1px solid " + LINE, borderRadius: 16, padding: "14px 16px" }}>
+            <span style={{ fontSize: 26 }}>📷</span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: "block", fontFamily: SERIF, fontWeight: 600, color: PLUM, fontSize: 16 }}>Rezept fotografieren</span>
+              <span style={{ display: "block", fontSize: 12, color: TAUPE }}>Foto von einem Rezept – Text wird automatisch erkannt und eingetragen.</span>
+            </span>
+            <input type="file" accept="image/*" onChange={ocrRezept} style={{ display: "none" }} />
+          </label>
+          {ocrStatus && (
+            <p style={{ margin: "-6px 4px 0", fontSize: 12.5, color: PLUM }}>{ocrStatus}</p>
+          )}
           <div>
             <label style={lbl}>Name</label>
             <input style={inp} type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="z. B. Mein Bauernbrot" />
