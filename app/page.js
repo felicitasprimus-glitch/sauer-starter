@@ -95,6 +95,18 @@ export default function HomePage() {
     router.replace("/start");
   }
 
+  async function forgot() {
+    setErr("");
+    if (!email.trim()) { setErr("Bitte gib deine E-Mail ein."); return; }
+    setBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: (typeof window !== "undefined" ? window.location.origin : "") + "/reset",
+    });
+    setBusy(false);
+    if (error) { setErr(error.message || "Konnte die E-Mail nicht senden."); return; }
+    setMode("sent");
+  }
+
   const wrap = {
     minHeight: "100vh",
     background: CREAM,
@@ -143,6 +155,23 @@ export default function HomePage() {
     );
   }
 
+  if (mode === "sent") {
+    return (
+      <div style={wrap}>
+        <div style={{ fontSize: 46 }}>📧</div>
+        <h1 style={{ fontFamily: SERIF, color: PLUM, fontSize: 26, fontWeight: 700, margin: "10px 0 8px", textAlign: "center" }}>
+          E-Mail unterwegs
+        </h1>
+        <p style={{ color: TAUPE, fontSize: 14, textAlign: "center", maxWidth: 320, lineHeight: 1.55 }}>
+          Wir haben dir einen Link zum Zurücksetzen geschickt. Öffne die E-Mail und wähle ein neues Passwort.
+        </p>
+        <button style={btn} onClick={() => { setMode("login"); setErr(""); }}>
+          Zurück zur Anmeldung
+        </button>
+      </div>
+    );
+  }
+
   if (mode === "confirm") {
     return (
       <div style={wrap}>
@@ -155,6 +184,26 @@ export default function HomePage() {
         </p>
         <button style={btn} onClick={() => { setMode("login"); setErr(""); }}>
           Zur Anmeldung
+        </button>
+      </div>
+    );
+  }
+
+  if (mode === "forgot") {
+    return (
+      <div style={wrap}>
+        <div style={{ fontSize: 46 }}>🔑</div>
+        <h1 style={{ fontFamily: SERIF, color: PLUM, fontSize: 28, fontWeight: 700, margin: "10px 0 4px", textAlign: "center" }}>
+          Passwort vergessen?
+        </h1>
+        <p style={{ color: TAUPE, fontSize: 14, textAlign: "center", margin: "0 0 14px", maxWidth: 320 }}>
+          Gib deine E-Mail ein – wir schicken dir einen Link zum Zurücksetzen.
+        </p>
+        <input style={inp} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-Mail" autoCapitalize="none" />
+        {err && <p style={{ color: "#b5793b", fontSize: 13, margin: "12px 0 0", maxWidth: 320, textAlign: "center" }}>{err}</p>}
+        <button style={btn} disabled={busy} onClick={forgot}>{busy ? "Bitte warten …" : "Link senden"}</button>
+        <button onClick={() => { setMode("login"); setErr(""); }} style={{ background: "none", border: "none", color: PLUM, fontFamily: "inherit", fontSize: 13.5, cursor: "pointer", marginTop: 18, textDecoration: "underline" }}>
+          Zurück zur Anmeldung
         </button>
       </div>
     );
@@ -191,6 +240,15 @@ export default function HomePage() {
       >
         {mode === "register" ? "Schon ein Konto? Hier anmelden" : "Noch kein Konto? Jetzt registrieren"}
       </button>
+
+      {mode === "login" && (
+        <button
+          onClick={() => { setMode("forgot"); setErr(""); }}
+          style={{ background: "none", border: "none", color: TAUPE, fontFamily: "inherit", fontSize: 12.5, cursor: "pointer", marginTop: 10 }}
+        >
+          Passwort vergessen?
+        </button>
+      )}
     </div>
   );
 }
