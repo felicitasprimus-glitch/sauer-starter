@@ -155,7 +155,7 @@ const ROUTES = {
   fehlerfinder: "/fehlerfinder", community: "/community", krume: "/krume",
   bibliothek: "EXT:https://sauerteig-wissen.netlify.app/",
   stoneware: "EXT:https://stonewareapp.vercel.app/",
-  brotwerkstatt: "SOON", rechner: "SOON",
+  brotwerkstatt: "/brotbackplaner", rechner: "/rechner",
 };
 
 export default function StartPage() {
