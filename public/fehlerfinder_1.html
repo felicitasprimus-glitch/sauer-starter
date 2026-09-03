@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sauerteig Fehlerfinder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg1: #f2ecf0;
+      --bg2: #e8dde5;
+      --text-dark: #4e364a;
+      --text-mid: #7a5e75;
+      --text-soft: #8e6d82;
+      --accent: #a885a0;
+      --border: #ddc8d5;
+      --white-glass: rgba(255,255,255,0.75);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: 'Cormorant Garamond', serif;
+      background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+      color: var(--text-dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(24px);
+      opacity: 0.45;
+      z-index: 0;
+      mix-blend-mode: multiply;
+    }
+    .blob1 {
+      width: 360px; height: 360px; left: -100px; top: -70px;
+      background: radial-gradient(circle, rgba(221,200,213,0.95) 0%, rgba(221,200,213,0.45) 55%, rgba(221,200,213,0) 100%);
+    }
+    .blob2 {
+      width: 320px; height: 320px; right: -90px; top: 28%;
+      background: radial-gradient(circle, rgba(185,157,174,0.9) 0%, rgba(185,157,174,0.35) 55%, rgba(185,157,174,0) 100%);
+    }
+    .blob3 {
+      width: 360px; height: 360px; left: 18%; bottom: -100px;
+      background: radial-gradient(circle, rgba(216,194,208,0.9) 0%, rgba(216,194,208,0.4) 55%, rgba(216,194,208,0) 100%);
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.04;
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+      animation: fadeIn 0.45s ease;
+    }
+
+    .header-small {
+      text-align: center;
+      margin-bottom: 38px;
+    }
+
+    .brand {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin: 0 0 6px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: rgba(142,109,130,0.6);
+    }
+    .divider-line {
+      width: 40px;
+      height: 1px;
+      background: rgba(142,109,130,0.4);
+    }
+
+    .hero { text-align: center; margin-bottom: 40px; }
+    .hero h1 {
+      font-family: 'Allura', cursive;
+      font-size: clamp(3rem, 8vw, 4rem);
+      line-height: 1;
+      font-weight: 400;
+      color: var(--text-dark);
+      margin: 0 0 12px;
+    }
+    .hero p {
+      margin: 0 auto;
+      max-width: 320px;
+      color: var(--text-mid);
+      font-size: 1.1rem;
+      line-height: 1.5;
+      font-style: italic;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card, .cause-btn {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 12px rgba(157,123,123,0.08);
+      transition: all 0.25s ease;
+    }
+
+    .card {
+      border-radius: 20px;
+      padding: 22px 18px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .card:hover, .cause-btn:hover {
+      background: rgba(255,255,255,0.92);
+      border-color: var(--accent);
+      transform: translateY(-3px);
+    }
+    .card-emoji { font-size: 2rem; margin-bottom: 10px; }
+    .card-title {
+      font-size: 1.05rem;
+      line-height: 1.15;
+      font-style: italic;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin: 0;
+    }
+
+    .top-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-soft);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      margin: 0 auto 30px;
+    }
+    .top-back:hover { color: var(--text-dark); }
+    .top-back-wrap { text-align: center; }
+
+    .problem-head { text-align: center; margin-bottom: 34px; }
+    .problem-emoji { font-size: 3.2rem; margin-bottom: 10px; }
+    .problem-title {
+      font-family: 'Allura', cursive;
+      font-size: clamp(2.5rem, 7vw, 3rem);
+      line-height: 1.1;
+      font-weight: 400;
+      color: var(--text-dark);
+      margin: 0 0 8px;
+      padding: 0 12px;
+    }
+    .problem-sub {
+      font-size: 1rem;
+      font-style: italic;
+      color: var(--text-mid);
+      margin: 0;
+    }
+
+    .cause-list { display: flex; flex-direction: column; gap: 12px; }
+    .cause-btn {
+      width: 100%;
+      border-radius: 16px;
+      padding: 16px 18px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .cause-number {
+      font-family: 'Allura', cursive;
+      font-size: 1.8rem;
+      color: var(--accent);
+      flex: 0 0 auto;
+      min-width: 20px;
+      line-height: 1;
+    }
+    .cause-label {
+      flex: 1;
+      font-size: 1.1rem;
+      line-height: 1.15;
+      font-style: italic;
+      font-weight: 500;
+      color: var(--text-dark);
+    }
+    .cause-arrow {
+      color: var(--accent);
+      opacity: 0.55;
+      font-size: 1.1rem;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+    .cause-btn:hover .cause-arrow {
+      opacity: 1;
+      transform: translateX(3px);
+    }
+
+    .breadcrumb {
+      text-align: center;
+      color: var(--text-soft);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .breadcrumb .problem { text-transform: uppercase; letter-spacing: 0.15em; }
+    .breadcrumb .dot { margin: 0 10px; opacity: 0.4; }
+    .breadcrumb .cause {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      color: var(--text-dark);
+      font-size: 14px;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .section-why {
+      text-align: center;
+      padding: 0 10px;
+      margin-bottom: 24px;
+    }
+    .section-kicker {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.35em;
+      color: var(--accent);
+      margin: 0 0 14px;
+      font-weight: 500;
+    }
+    .why-text {
+      margin: 0;
+      font-size: 1.25rem;
+      line-height: 1.55;
+      font-style: italic;
+      color: var(--text-dark);
+    }
+
+    .solution-divider {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin: 28px 0;
+      color: var(--accent);
+    }
+    .solution-divider .divider-line { width: 48px; background: rgba(168,133,160,0.4); }
+
+    .solution-card {
+      position: relative;
+      margin-top: 8px;
+      background: rgba(255,255,255,0.84);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(168,133,160,0.4);
+      border-radius: 24px;
+      padding: 34px 28px 28px;
+      box-shadow: 0 8px 32px rgba(157,123,123,0.12);
+    }
+    .solution-pill {
+      position: absolute;
+      left: 50%;
+      top: -18px;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: white;
+      border-radius: 999px;
+      padding: 6px 20px;
+      font-family: 'Allura', cursive;
+      font-size: 1.35rem;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .solution-text {
+      margin: 0;
+      font-size: 1.2rem;
+      line-height: 1.65;
+      color: #3e2a3c;
+    }
+
+    .actions {
+      margin-top: 34px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .primary-btn, .secondary-btn {
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .primary-btn {
+      background: var(--accent);
+      color: white;
+      border-radius: 999px;
+      padding: 14px 28px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .primary-btn:hover { background: var(--text-dark); }
+    .secondary-btn {
+      background: transparent;
+      color: var(--text-soft);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .secondary-btn:hover { color: var(--text-dark); }
+
+    .footer-home {
+      margin-top: 62px;
+      text-align: center;
+    }
+    .footer-home .script {
+      font-family: 'Allura', cursive;
+      font-size: 1.5rem;
+      color: var(--text-soft);
+      margin: 0;
+    }
+    .footer-home .meta {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-top: 8px;
+    }
+
+    .icon-svg { display: inline-block; vertical-align: middle; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 560px) {
+      .wrap { padding: 34px 16px 64px; }
+      .grid { grid-template-columns: 1fr 1fr; }
+      .card { padding: 18px 14px; }
+      .card-title { font-size: 1rem; }
+      .solution-card { padding: 32px 20px 24px; }
+      .solution-text, .why-text { font-size: 1.12rem; }
+    }
+
+    @media (max-width: 390px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+  <div class="noise"></div>
+  <div id="app" class="wrap"></div>
+
+  <script>
+    const problems = [
+      {
+        id: 1,
+        emoji: "😴",
+        titel: "Teig geht kaum auf",
+        ursachen: [
+          {
+            label: "Starter war nicht auf Peak",
+            warum: "Ein zu junger oder bereits abgefallener Starter hat nicht genug aktive Mikroben.",
+            loesung: "Setze den Starter nur ein, wenn die Kuppel gerade einfällt. Schwimmtest: Ein Teelöffel auf Wasser muss oben schwimmen. Fütterung 4–6 h vor dem Teigansatz timen, dann triffst du den Peak."
+          },
+          {
+            label: "Zu kalt geführt",
+            warum: "Unter 22 °C bremsen die Mikroben stark, unter 18 °C kommt kaum noch Trieb.",
+            loesung: "Bulk bei konstant 24–26 °C führen. Dein Ofen: normale Ober-/Unterhitze verwenden."
+          },
+          {
+            label: "Zu wenig Starter im Teig",
+            warum: "Bei sehr niedrigem Starter-Anteil braucht es deutlich mehr Zeit — oft mehr, als der Teig aushält.",
+            loesung: "Erhöhe den Starter auf 15–20 % vom Mehl. Mehr Triebkraft, kürzerer Bulk, weniger Säure gleichzeitig."
+          },
+          {
+            label: "Salz direkt auf den Starter",
+            warum: "Direkter Salzkontakt schockt die Mikroben an der Kontaktstelle.",
+            loesung: "Reihenfolge: Autolyse (Mehl + Wasser) → Starter einarbeiten → zuletzt Salz mit einem Schluck Wasser. Nie Salz und Starter direkt aufeinander geben."
+          },
+          {
+            label: "Nach Uhr statt nach Volumen",
+            warum: "Feste Zeitangaben aus Rezepten ignorieren deine tatsächliche Küchentemperatur.",
+            loesung: "Beende den Bulk bei +50–75 % Volumen mit kuppeliger Oberfläche und sichtbaren Blasen an der Schüsselseite. Glas-Schüssel oder Markierung hilft."
+          }
+        ]
+      },
+      {
+        id: 2,
+        emoji: "🫠",
+        titel: "Teig zu klebrig",
+        ursachen: [
+          {
+            label: "Zu wenig Glutenentwicklung",
+            warum: "Ohne genügend Dehn- und Faltphasen bildet sich kein tragfähiges Netzwerk.",
+            loesung: "4 Sets Stretch & Fold in den ersten 2 h, jeweils im Abstand von 30 Min. Teig dabei um 90° drehen zwischen den Zügen."
+          },
+          {
+            label: "Mehl trägt die Hydration nicht",
+            warum: "Weizen 550 trägt weniger Wasser als T65, Tipo 0 oder Vollkornmehle.",
+            loesung: "Hydration um 3–5 % absenken und wieder hochtasten. Oder stärkeres Mehl mit mindestens 12 % Proteingehalt wählen."
+          },
+          {
+            label: "Zu warm geführt",
+            warum: "Über 28 °C bauen Enzyme das Gluten schneller ab als es sich entwickelt.",
+            loesung: "Bulk auf 24–25 °C einregeln. Im Ofen: normale Ober-/Unterhitze verwenden."
+          },
+          {
+            label: "Nur Stretch & Fold genutzt",
+            warum: "Bei hoher Hydration reichen sanfte S&F oft nicht für die nötige Spannung.",
+            loesung: "Früh 3–5 Min. Slap & Fold auf der Arbeitsfläche einsetzen, bis der Teig sichtbar Struktur aufbaut und sich vom Tisch löst."
+          },
+          {
+            label: "Teig ist überfermentiert",
+            warum: "Protease-Enzyme haben das Glutennetz bereits zerlegt.",
+            loesung: "Diesen Teig nicht mehr zu retten — backe ihn trotzdem, wird eher ein Fladenbrot. Nächstes Mal Bulk kürzer oder kühler führen."
+          }
+        ]
+      },
+      {
+        id: 3,
+        emoji: "🧽",
+        titel: "Krume speckig",
+        ursachen: [
+          {
+            label: "Zu früh angeschnitten",
+            warum: "Stärke retrogradiert erst beim Auskühlen. Warmer Anschnitt wirkt immer speckig.",
+            loesung: "Mindestens 4 h auf dem Gitter auskühlen lassen, bei hoher Hydration besser 8–12 h. Ja, das ist schwer — aber es ist der Unterschied."
+          },
+          {
+            label: "Kerntemperatur nicht erreicht",
+            warum: "Unter 96 °C im Kern ist die Stärke nicht verkleistert, Krume bleibt feucht und zäh.",
+            loesung: "Einstichthermometer in die Mitte des Laibs. Zielwert 96–98 °C. Bei Bedarf 5–10 Min. bei 210 °C nachbacken."
+          },
+          {
+            label: "Zu viel Dampf bis zum Ende",
+            warum: "Dauerhaft feuchter Ofen hält Krume und Kruste weich.",
+            loesung: "Ofen: normale Ober-/Unterhitze verwenden. 100 % Dampf bei 250 °C → dann 0 % Dampf, Umluft, 210 °C für den Rest. Die zweite Phase muss trocken sein."
+          },
+          {
+            label: "Teig war unterfermentiert",
+            warum: "Zu wenig Gärung bedeutet zu wenig Lockerung und dichte, feuchte Krume.",
+            loesung: "Bulk verlängern, bis der Teig +75 % Volumen zeigt, kuppelig wirkt und Blasen an der Schüsselseite sichtbar sind. Lieber länger warten als zu früh formen."
+          },
+          {
+            label: "Zu kurze Backzeit",
+            warum: "40 Min. reichen für kleine Laibe, für 900 g+ oft nicht.",
+            loesung: "40–45 Min. Gesamtbackzeit für einen Kilo-Laib. Bei kleineren entsprechend weniger, bei größeren mehr. Kerntemperatur ist der beste Indikator."
+          }
+        ]
+      },
+      {
+        id: 4,
+        emoji: "🫓",
+        titel: "Laib läuft flach",
+        ursachen: [
+          {
+            label: "Überfermentiert in der Stückgare",
+            warum: "Teig hat seinen Höhepunkt überschritten und keine Kraft mehr für den Ofentrieb.",
+            loesung: "Poke-Test: Delle mit Finger eindrücken. Springt sofort zurück → noch warten. Bleibt halb stehen → perfekt. Bleibt ganz stehen → zu spät, sofort backen."
+          },
+          {
+            label: "Keine saubere Formgebung",
+            warum: "Einschrittiges Formen bringt zu wenig Oberflächenspannung für Stabilität.",
+            loesung: "Preshape rund → 20–30 Min. Bench-Rest → final shape mit straffer Haut. Die zweistufige Formgebung ist der größte Hebel für Höhe."
+          },
+          {
+            label: "Warme Stückgare",
+            warum: "Raumtemperatur-Gare lässt den Teig zu schnell ermüden, besonders bei hoher Hydration.",
+            loesung: "Stückgare 12–16 h bei 4–6 °C im Kühlschrank (Retard). Bringt mehr Volumen, einfacheres Einschneiden und besseres Aroma gleichzeitig."
+          },
+          {
+            label: "Mehl zu schwach",
+            warum: "Unter 11 % Proteingehalt kann das Netzwerk die Gase nicht halten.",
+            loesung: "Mehl mit mindestens 12 % Protein wählen (T65, Manitoba, Ruchmehl). Alternativ 10–15 % Hartweizengrieß beimischen."
+          },
+          {
+            label: "Teig klebte im Gärkörbchen",
+            warum: "Beim Stürzen reißt der Teig die mühsam aufgebaute Oberflächenspannung wieder auf.",
+            loesung: "Gärkörbchen großzügig mit Reismehl-Weizenmehl-Mix (50/50) bemehlen. Reismehl klebt nicht — das ist der Trick."
+          }
+        ]
+      },
+      {
+        id: 5,
+        emoji: "🧱",
+        titel: "Krume zu dicht",
+        ursachen: [
+          {
+            label: "Unterfermentiert",
+            warum: "Teig kam zu früh in den Ofen, Mikroben hatten nicht genug Zeit zu lockern.",
+            loesung: "Bulk nach Volumen führen, nicht nach Uhr: +75 % Volumen, kuppelige Oberfläche, Blasen an der Seite. Bei 24 °C oft 5–7 h."
+          },
+          {
+            label: "Starter war schwach",
+            warum: "Hungriger oder unterversorgter Starter bringt zu wenig Triebkraft.",
+            loesung: "Starter 2 Tage in Folge im Abstand von 12 h mit 1:5:5 auffrischen (z. B. 10 g + 50 g + 50 g). Danach neu ansetzen."
+          },
+          {
+            label: "Zu stark entgast beim Formen",
+            warum: "Kräftiges Drücken und Falten presst die erarbeiteten Gase wieder raus.",
+            loesung: "Beim Formen nur Spannung aufbauen, nicht ausquetschen. Große Blasen an der Oberfläche dürfen sichtbar bleiben."
+          },
+          {
+            label: "Hydration zu niedrig",
+            warum: "Trockene Teige entwickeln kaum offene Krume.",
+            loesung: "Schrittweise auf 75–78 % hochtasten. Bei stärkeren Mehlen (T65, Manitoba) auch 80 % möglich."
+          },
+          {
+            label: "Ungleichmäßige Temperatur",
+            warum: "Schwankende Raumtemperatur ergibt ungleichmäßige Gärung.",
+            loesung: "Ofen: normale Ober-/Unterhitze verwenden. Viel reproduzierbarer als Küchentheke."
+          }
+        ]
+      },
+      {
+        id: 6,
+        emoji: "🍋",
+        titel: "Brot zu sauer",
+        ursachen: [
+          {
+            label: "Stückgare zu lange kalt",
+            warum: "Über 16 h Retard produzieren deutlich mehr Essigsäure.",
+            loesung: "Stückgare auf 8–12 h im Kühlschrank verkürzen. Der Trieb reicht, das Aroma ist milder."
+          },
+          {
+            label: "Starter zu fest geführt",
+            warum: "Feste Starter begünstigen Essigsäure über Milchsäure → spitzeres Säureprofil.",
+            loesung: "Starter immer 1:1 Mehl zu Wasser führen (100 % Hydration). Milchsäurebakterien werden begünstigt, das Aroma wird runder."
+          },
+          {
+            label: "Starter im Abstieg verwendet",
+            warum: "Nach dem Peak wird der Starter schnell sauer und bringt diese Säure in den Teig.",
+            loesung: "Fütterung so timen, dass du den Starter am Peak einsetzt (meist 4–6 h nach Fütterung bei 25 °C). Glas mit Gummiband markieren hilft."
+          },
+          {
+            label: "Roggenanteil zu hoch",
+            warum: "Roggen säuert deutlich stärker als Weizen, besonders bei langer Führung.",
+            loesung: "Für mildes Brot Roggenanteil auf 20 % reduzieren. Für bewusst kräftiges Roggenbrot → zur Eigenschaft machen."
+          },
+          {
+            label: "Zu wenig Starter, zu langer Bulk",
+            warum: "Kleine Starter-Mengen brauchen viel Zeit — Zeit ist Säure.",
+            loesung: "Mehr Starter (15–20 %), kürzerer Bulk. Gleiche Lockerung bei deutlich weniger Säurebildung."
+          }
+        ]
+      },
+      {
+        id: 7,
+        emoji: "✂️",
+        titel: "Keine Ohren",
+        ursachen: [
+          {
+            label: "Falscher Schnittwinkel",
+            warum: "Senkrechte Schnitte öffnen sich nicht — sie ziehen sich nach oben zu.",
+            loesung: "Rasierklinge flach halten, im 30°-Winkel schneiden. Eine entschlossene Bewegung, 0,5–1 cm tief. Nicht sägen, nicht nachsetzen."
+          },
+          {
+            label: "Teig war zu warm",
+            warum: "Warme Teige sind weich, schwer zu schneiden und dehnen sich flach.",
+            loesung: "Direkt kühlschrankkalt aus dem Gärkorb in den Ofen. Ergibt die schärfsten Ohren und einfachste Handhabung."
+          },
+          {
+            label: "Zu wenig Dampf in Phase 1",
+            warum: "Ohne Dampf setzt sich die Kruste zu früh, der Teig kann nicht mehr aufreißen.",
+            loesung: "Ofen: normale Ober-/Unterhitze verwenden. bei 250 °C mit 100 % Dampf. Danach Dampf komplett ablassen, auf 220 °C senken."
+          },
+          {
+            label: "Überfermentiert",
+            warum: "Ein müder Teig hat keine Kraft mehr für Ofentrieb und Ohrenbildung.",
+            loesung: "Stückgare rechtzeitig beenden — Poke-Test als Schiedsrichter. Lieber etwas früher in den Ofen als zu spät."
+          },
+          {
+            label: "Schnitt zog sich zu",
+            warum: "Feuchte Oberfläche lässt den Schnitt zusammenlaufen, bevor er öffnen kann.",
+            loesung: "Vor dem Schneiden dünn Reismehl aufsieben. Oberfläche wird trockener, Schnitt bleibt offen und zeichnet sich scharf ab."
+          }
+        ]
+      },
+      {
+        id: 8,
+        emoji: "🕳️",
+        titel: "Riesige Löcher",
+        ursachen: [
+          {
+            label: "Preshape ausgelassen",
+            warum: "Ohne Zwischenformgebung bleiben Blasen konzentriert und wachsen zu Großraumporen.",
+            loesung: "Preshape rund → 20 Min. Bench-Rest → final shape. Die zweistufige Formgebung verteilt die Gasstruktur gleichmäßig."
+          },
+          {
+            label: "Riesenblasen nicht ausgedrückt",
+            warum: "Große sichtbare Blasen beim Formen wachsen im Ofen zur Hohlraum-Pore.",
+            loesung: "Beim Formen mit flacher Hand die größten Blasen sanft auflösen. Kleine dürfen bleiben — sie sind die offene Krume."
+          },
+          {
+            label: "Ungleichmäßige Gärung",
+            warum: "Kalte/warme Zonen im Teig ergeben ungleichmäßige Lockerung.",
+            loesung: "Bulk bei konstanter Temperatur führen. Ofen: normale Ober-/Unterhitze verwenden."
+          },
+          {
+            label: "Schnitt zu flach",
+            warum: "Flacher Schnitt lenkt den Dampf nach oben statt in die Krume → Hohlraum unter der Kruste.",
+            loesung: "Im 30°-Winkel, 1 cm tief schneiden. Dampf entweicht kontrolliert durch den Schnitt und formt saubere Ohren."
+          }
+        ]
+      },
+      {
+        id: 9,
+        emoji: "🪵",
+        titel: "Kruste zu hart",
+        ursachen: [
+          {
+            label: "Zu wenig Dampf in Phase 1",
+            warum: "Ohne Dampf härtet die Kruste zu früh aus und wird zur Borke.",
+            loesung: "Ofen: normale Ober-/Unterhitze verwenden. bei 250 °C mit 100 % Dampf. Kruste bleibt elastisch, maximaler Ofentrieb."
+          },
+          {
+            label: "Zu lange gebacken",
+            warum: "Über 45 Min. bei hohen Temperaturen trocknen die Kruste komplett aus.",
+            loesung: "Für 900 g Laib 40–45 Min. Gesamtbackzeit. Kerntemperatur 96–98 °C ist das Abbruchkriterium, nicht die Uhr."
+          },
+          {
+            label: "Im Ofen ausgekühlt",
+            warum: "Nachgaren im warmen Ofen trocknet die Kruste weiter aus.",
+            loesung: "Sofort nach Backende aus dem Ofen nehmen, auf ein Gitter. Luftzirkulation rundum verhindert Weichwerden und Austrocknen."
+          },
+          {
+            label: "Endtemperatur zu hoch",
+            warum: "Konstant 250 °C bis zum Ende verbrennt und verdickt die Kruste.",
+            loesung: "Nach der Dampfphase auf 210–220 °C senken. Spart die Kruste und bringt dunkle Bräunung ohne Verhärtung."
+          }
+        ]
+      },
+      {
+        id: 10,
+        emoji: "👻",
+        titel: "Kruste bleibt blass",
+        ursachen: [
+          {
+            label: "Dampf bis zum Ende",
+            warum: "Feuchte Oberfläche verhindert die Maillard-Reaktion — keine Bräunung möglich.",
+            loesung: "Dampf nach 20 Min. komplett ablassen. Phase 2 muss trocken sein, sonst bräunt nichts."
+          },
+          {
+            label: "Mehlschicht auf dem Laib",
+            warum: "Mehl isoliert die Oberfläche vom direkten Hitzekontakt.",
+            loesung: "Vor dem Einschneiden mit weichem Pinsel überschüssiges Mehl abkehren. Nur hauchdünn Reismehl für den Schnitt lassen."
+          },
+          {
+            label: "Ofen nicht heiß genug",
+            warum: "Unter 220 °C reicht die Energie nicht für kräftige Bräunung.",
+            loesung: "Phase 2 bei 220–230 °C Umluft. Letzte 5 Min. Oberhitze oder kurz Grillstufe — dabei bleiben!"
+          },
+          {
+            label: "Zu wenig Restzucker",
+            warum: "Unterfermentierter Teig hat wenig freie Zucker, die für Maillard nötig sind.",
+            loesung: "Bulk bis +75 % Volumen vollständig ausführen. Restzucker = Bräunung = Geschmack."
+          },
+          {
+            label: "Nur Unter-/Umluft",
+            warum: "Ohne Oberhitze bleibt die Oberseite blass, auch wenn der Boden schon dunkel ist.",
+            loesung: "Letzte 5 Min. mit Oberhitze  Dabei bleiben — geht schnell von golden zu schwarz."
+          }
+        ]
+      },
+      {
+        id: 11,
+        emoji: "💥",
+        titel: "Reißt falsch auf",
+        ursachen: [
+          {
+            label: "Schnitt zu zögerlich",
+            warum: "Flache oder zu kurze Schnitte öffnen sich nicht — der Dampf sucht sich den nächstbesten Ausgang.",
+            loesung: "Eine entschlossene Bewegung mit der Rasierklinge, 0,5–1 cm tief, im 30°-Winkel. Nicht nachsetzen, nicht korrigieren."
+          },
+          {
+            label: "Unterfermentiert",
+            warum: "Volles Triebpotential im Ofen sucht sich einen Weg — und findet die Schwachstelle.",
+            loesung: "Bulk verlängern, bis Teig deutlich Volumen hat (+75 %). Oder Stückgare im Kühlschrank nutzen — bringt Ruhe und Struktur."
+          },
+          {
+            label: "Zu wenig Dampf",
+            warum: "Kruste setzt sich zu schnell, der Schnitt kann nicht mehr reagieren, Druck platzt seitlich raus.",
+            loesung: "Volle Dampfphase 20 Min. bei 250 °C. Der Ofen: normale Ober-/Unterhitze verwenden."
+          },
+          {
+            label: "Ungleichmäßige Formspannung",
+            warum: "Eine schwache Seite im Laib gibt unter Druck zuerst nach.",
+            loesung: "Beim final shape rundherum gleichmäßig Spannung aufbauen. Bei Länglichen: beide Seiten gleich einschlagen."
+          }
+        ]
+      },
+      {
+        id: 12,
+        emoji: "🫧",
+        titel: "Starter blubbert nicht",
+        ursachen: [
+          {
+            label: "Zu selten gefüttert",
+            warum: "Ohne regelmäßiges Futter hungern die Mikroben und versäuern das Glas.",
+            loesung: "Rettungsprogramm: 2–3 Tage in Folge alle 12 h füttern, keine Pause. Nach 48 h sollte Leben zurück sein."
+          },
+          {
+            label: "Zu kühl gelagert",
+            warum: "Unter 20 °C arbeiten die Mikroben kaum, unter 15 °C fast gar nicht.",
+            loesung: "Bei 25–26 °C führen. Ofen: normale Ober-/Unterhitze verwenden."
+          },
+          {
+            label: "Chlorhaltiges Leitungswasser",
+            warum: "Chlor hemmt Mikroben und macht ihnen das Leben schwer.",
+            loesung: "Wasser 30 Min. offen stehen lassen (Chlor verdunstet) oder filtern. Stilles Mineralwasser geht auch."
+          },
+          {
+            label: "Zu enzymarmes Mehl",
+            warum: "Stark ausgemahlenes helles Weizenmehl hat wenig Enzymaktivität — Mikroben finden nichts zu tun.",
+            loesung: "10–20 % Vollkornroggen bei jeder Fütterung beimischen. Bringt meist innerhalb von 24 h spürbar Leben ins Glas."
+          },
+          {
+            label: "Zu kleines Fütterungsverhältnis",
+            warum: "1:1:1 versäuert das Glas, bevor die Mikroben richtig arbeiten können.",
+            loesung: "Auf 1:5:5 umstellen: 10 g Starter + 50 g Mehl + 50 g Wasser. Gibt dem Starter Luft zum Wachsen."
+          }
+        ]
+      }
+    ];
+
+    let problemId = null;
+    let ursacheIdx = null;
+
+    function wheatIcon(color = '#8e6d82', width = 16, height = 24) {
+      return `
+        <svg class="icon-svg" width="${width}" height="${height}" viewBox="0 0 40 60" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="${color}" stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
+          <path d="M20 58 L20 15" />
+          <path d="M20 30 C 14 28, 11 24, 10 18 C 14 19, 18 22, 20 28" />
+          <path d="M20 30 C 26 28, 29 24, 30 18 C 26 19, 22 22, 20 28" />
+          <path d="M20 22 C 14 20, 11 16, 10 10 C 14 11, 18 14, 20 20" />
+          <path d="M20 22 C 26 20, 29 16, 30 10 C 26 11, 22 14, 20 20" />
+          <path d="M20 14 C 16 12, 14 9, 13 4 C 16 5, 19 7, 20 12" />
+          <path d="M20 14 C 24 12, 26 9, 27 4 C 24 5, 21 7, 20 12" />
+          <path d="M20 40 C 15 38, 13 35, 13 30 M20 40 C 25 38, 27 35, 27 30" />
+        </svg>`;
+    }
+
+    function arrowLeftIcon() {
+      return `
+        <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 12H5"></path>
+          <path d="M12 19l-7-7 7-7"></path>
+        </svg>`;
+    }
+
+    function rotateIcon() {
+      return `
+        <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 2v6h6"></path>
+          <path d="M3 8a9 9 0 1 0 3-6.7L3 4"></path>
+        </svg>`;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    
+function getCompareBlock(problemId, causeLabel){
+  if (![3,7,9,10,11].includes(problemId)) return "";
+
+  const cause = (causeLabel || "").toLowerCase();
+  let intro = "";
+
+  if (problemId === 3) {
+    if (cause.includes("kerntemperatur")) {
+      intro = "👉 Hier hilft ein verlässliches Backgefäß, weil dein Brot gleichmäßiger ausbacken kann.";
+    } else if (cause.includes("dampf")) {
+      intro = "👉 Hier spielt das Backklima eine große Rolle, damit dein Brot nicht feucht und speckig bleibt.";
+    } else if (cause.includes("backzeit")) {
+      intro = "👉 Auch hier hilft ein gutes Backgefäß, weil dein Brot gleichmäßiger und kontrollierter ausbackt.";
+    } else {
+      intro = "👉 Auch wenn die Ursache nicht nur am Backen liegt, kann das richtige Backgefäß dein Ergebnis deutlich verbessern.";
+    }
+  }
+
+  if (problemId === 7) {
+    if (cause.includes("schnitt")) {
+      intro = "👉 Der Schnitt ist wichtig – aber ohne passendes Backklima kann sich dein Brot trotzdem nicht sauber öffnen.";
+    } else if (cause.includes("dampf")) {
+      intro = "👉 Genau hier entscheidet das Backklima darüber, ob sich dein Brot richtig öffnen kann.";
+    } else {
+      intro = "👉 Das Backklima unterstützt hier stark – auch wenn Schnitt und Gare genauso wichtig bleiben.";
+    }
+  }
+
+  if (problemId === 9) {
+    if (cause.includes("dampf")) {
+      intro = "👉 Hier hilft ein kontrolliertes Backklima, damit die Kruste nicht sofort verhärtet.";
+    } else {
+      intro = "👉 Auch das Backgefäß beeinflusst, wie deine Kruste am Ende wird.";
+    }
+  }
+
+  if (problemId === 10) {
+    if (cause.includes("ofen nicht heiß")) {
+      intro = "👉 Hier hilft ein gutes Backgefäß, weil die Hitze gebündelter am Brot ankommt.";
+    } else {
+      intro = "👉 Das Backklima spielt hier eine größere Rolle, als viele denken.";
+    }
+  }
+
+  if (problemId === 11) {
+    if (cause.includes("dampf")) {
+      intro = "👉 Genau hier macht das Backklima den Unterschied, wie dein Brot aufreißt.";
+    } else {
+      intro = "👉 Auch das Backumfeld beeinflusst, wo dein Brot aufreißt.";
+    }
+  }
+
+  return `
+  <div style="margin-top:20px; text-align:center;">
+    <p style="font-style:italic; margin-bottom:14px;">
+      ${intro}
+    </p>
+
+    <div class="actions">
+      <a href="https://www.pamperedchef.eu/pws/FelicitasReitmeier/store/DEO/catalog/Stoneware/Deep%20Covered%20Baker-2023"
+         target="_blank"
+         class="primary-btn">
+         🔥 Ofenmeister – für beste Ergebnisse
+      </a>
+
+      <a href="https://www.pamperedchef.eu/pws/FelicitasReitmeier/eventstore428480/DEO/catalog/Stoneware/Mini%20Deep%20Covered%20Baker-2023"
+         target="_blank"
+         class="secondary-btn">
+         🌸 Lilly – für kleinere Brote
+      </a>
+    </div>
+  </div>
+  `;
+}
+
+
+function renderGefaessTest(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+  <div class="wrap" style="text-align:center;">
+    <h2 style="text-align:center;">Welches Gefäß passt zu dir?</h2>
+
+    <button class="primary-btn" onclick="showTestResult('ofenmeister')">
+      Ich will einfach sichere Ergebnisse
+    </button>
+
+    <button class="primary-btn" onclick="showTestResult('lilly')">
+      Ich backe kleinere Brote / will starten
+    </button>
+
+    <button class="secondary-btn" onclick="render()">Zurück</button>
+  </div>`;
+}
+
+function showTestResult(type){
+  const app = document.getElementById('app');
+
+  if(type === 'ofenmeister'){
+    app.innerHTML = `
+    <div class="wrap" style="text-align:center;">
+      <h2>Deine Empfehlung</h2>
+      <p>👉 Nimm den Ofenmeister – er verzeiht mehr Fehler und liefert konstant gute Ergebnisse.</p>
+      <a class="primary-btn" href="https://www.pamperedchef.eu/pws/FelicitasReitmeier/store/DEO/catalog/Stoneware/Deep%20Covered%20Baker-2023" target="_blank">
+      Ofenmeister ansehen
+      </a>
+      <button class="secondary-btn" onclick="render()">Zurück</button>
+    </div>`;
+  } else {
+    app.innerHTML = `
+    <div class="wrap" style="text-align:center;">
+      <h2>Deine Empfehlung</h2>
+      <p>👉 Nimm die Lilly – perfekt für kleinere Mengen und den Einstieg.</p>
+      <a class="primary-btn" href="https://www.pamperedchef.eu/pws/FelicitasReitmeier/eventstore428480/DEO/catalog/Stoneware/Mini%20Deep%20Covered%20Baker-2023" target="_blank">
+      Lilly ansehen
+      </a>
+      <button class="secondary-btn" onclick="render()">Zurück</button>
+    </div>`;
+  }
+}
+
+function render() {
+      const app = document.getElementById('app');
+      const selectedProblem = problems.find(p => p.id === problemId) || null;
+      const selectedUrsache = selectedProblem && ursacheIdx !== null ? selectedProblem.ursachen[ursacheIdx] : null;
+
+      let html = `
+        <div class="header-small">
+          <p class="brand">Sauer macht krustig</p>
+          <div class="divider">
+            <div class="divider-line"></div>
+            ${wheatIcon('#8e6d82', 16, 24)}
+            <div class="divider-line"></div>
+          </div>
+        </div>
+      `;
+
+      if (!selectedProblem) {
+        html += `
+          <section>
+            <div class="hero">
+              <h1>Fehlerfinder</h1>
+              <p>Dein Brot hat nicht geklappt? Tippe dein Symptom an — wir finden die Ursache.</p>
+            </div>
+            <div class="grid">
+              ${problems.map(p => `
+                <button class="card" data-problem="${p.id}" type="button">
+                  <div class="card-emoji">${p.emoji}</div>
+                  <h2 class="card-title">${escapeHtml(p.titel)}</h2>
+                </button>
+              `).join('')}
+            </div>
+            <div class="footer-home">
+              <p class="script">Diagnose durch Ausschluss</p>
+              <div class="meta">12 Symptome · 57 Lösungen</div>
+            </div>
+          </section>
+        `;
+      } else if (!selectedUrsache) {
+        html += `
+          <section>
+            <div class="top-back-wrap">
+              <button class="top-back" id="back-home" type="button">
+                ${arrowLeftIcon()}<span>Zurück</span>
+              </button>
+            </div>
+            <div class="problem-head">
+              <div class="problem-emoji">${selectedProblem.emoji}</div>
+              <h1 class="problem-title">${escapeHtml(selectedProblem.titel)}</h1>
+              <p class="problem-sub">Was davon trifft am ehesten zu?</p>
+            </div>
+            <div class="cause-list">
+              ${selectedProblem.ursachen.map((u, i) => `
+                <button class="cause-btn" type="button" data-cause="${i}">
+                  <span class="cause-number">${i + 1}</span>
+                  <span class="cause-label">${escapeHtml(u.label)}</span>
+                  <span class="cause-arrow">→</span>
+                </button>
+              `).join('')}
+            </div>
+          </section>
+        `;
+      } else {
+        html += `
+          <section>
+            <div class="top-back-wrap">
+              <button class="top-back" id="back-causes" type="button">
+                ${arrowLeftIcon()}<span>Andere Ursache</span>
+              </button>
+            </div>
+
+            <div class="breadcrumb">
+              <span class="problem">${escapeHtml(selectedProblem.titel)}</span>
+              <span class="dot">·</span>
+              <span class="cause">${escapeHtml(selectedUrsache.label)}</span>
+            </div>
+
+            <div class="section-why">
+              <p class="section-kicker">Warum</p>
+              <p class="why-text">${escapeHtml(selectedUrsache.warum)}</p>
+            </div>
+
+            <div class="solution-divider">
+              <div class="divider-line"></div>
+              ${wheatIcon('#a885a0', 14, 22)}
+              <div class="divider-line"></div>
+            </div>
+
+            <div class="solution-card">
+              <div class="solution-pill">Lösung</div>
+              <p class="solution-text">${escapeHtml(selectedUrsache.loesung)}</p>${getCompareBlock(selectedProblem.id, selectedUrsache.label)}
+    ${[3,7,9,10,11].includes(selectedProblem.id) ? `
+    <div class="actions" style="margin-top:12px;">
+      <button class="primary-btn" onclick="renderGefaessTest()">
+        Welches Gefäß passt zu mir?
+      </button>
+    </div>
+    ` : ``}
+            </div>
+${[3,7,9,10,11].includes(selectedProblem.id) ? `
+<div class="solution-card" style="margin-top:20px;">
+  <div class="solution-pill">Wichtig danach</div>
+  <p class="solution-text" style="font-style:italic;">
+    Stoneware nie direkt auf die Arbeitsplatte
+  </p>
+  <p class="solution-text">
+    Stoneware wie Ofenmeister oder Lilly nie direkt auf der Arbeitsplatte abkühlen lassen.
+    Stell sie immer auf ein Abkühlgitter, damit dein Brot nicht nachfeuchtet und deine Stoneware keinen Schaden nimmt.
+  </p>
+
+  <div class="actions">
+    <a href="https://www.pamperedchef.eu/pws/FelicitasReitmeier/store/DEO/catalog/Backen/Kuchengitter"
+       target="_blank"
+       class="secondary-btn">
+       Abkühlgitter ansehen
+    </a>
+  </div>
+</div>
+` : ``}
+
+
+            <div class="actions">
+              <button class="primary-btn" id="other-cause" type="button">Andere Ursache prüfen</button>
+              <button class="secondary-btn" id="new-problem" type="button">${rotateIcon()}<span>Neues Problem</span></button>
+            </div>
+          </section>
+        `;
+      }
+
+      app.innerHTML = html;
+
+      document.querySelectorAll('[data-problem]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          problemId = Number(btn.dataset.problem);
+          ursacheIdx = null;
+          render();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+
+      document.querySelectorAll('[data-cause]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          ursacheIdx = Number(btn.dataset.cause);
+          render();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+
+      const backHome = document.getElementById('back-home');
+      if (backHome) {
+        backHome.addEventListener('click', () => {
+          problemId = null;
+          ursacheIdx = null;
+          render();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      const backCauses = document.getElementById('back-causes');
+      if (backCauses) {
+        backCauses.addEventListener('click', () => {
+          ursacheIdx = null;
+          render();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      const otherCause = document.getElementById('other-cause');
+      if (otherCause) {
+        otherCause.addEventListener('click', () => {
+          ursacheIdx = null;
+          render();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      const newProblem = document.getElementById('new-problem');
+      if (newProblem) {
+        newProblem.addEventListener('click', () => {
+          problemId = null;
+          ursacheIdx = null;
+          render();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
