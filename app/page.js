@@ -23,7 +23,7 @@ export default function HomePage() {
 
         // Wiederkehrend (anonym ODER eingeloggt) -> sofort weiter
         if (session) {
-          if (!cancelled) router.replace("/dashboard");
+          if (!cancelled) router.replace("/start");
           return;
         }
 
@@ -36,7 +36,7 @@ export default function HomePage() {
             setErr("Konnte nicht starten. Bitte App neu laden.");
             return;
           }
-          if (!cancelled) router.replace("/dashboard");
+          if (!cancelled) router.replace("/start");
         }, 2200);
       } catch (e) {
         setErr("Konnte nicht starten. Bitte App neu laden.");
