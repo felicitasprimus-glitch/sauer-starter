@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const HOME_HTML = `
@@ -154,9 +154,53 @@ const ROUTES = {
   profil: "/mein-profil", starter: "/dashboard", rezepte: "/rezepte",
   fehlerfinder: "/fehlerfinder", community: "/community", krume: "/krume",
   bibliothek: "EXT:https://sauerteig-wissen.netlify.app/",
-  stoneware: "EXT:https://stonewareapp.vercel.app/",
+  stoneware: "/stoneware",
   brotwerkstatt: "/brotbackplaner", rechner: "/rechner",
 };
+
+function CookTracker() {
+  const [cook, setCook] = useState(null);
+  useEffect(() => {
+    function load() {
+      try {
+        const raw = localStorage.getItem("smk-active-cook");
+        setCook(raw ? JSON.parse(raw) : null);
+      } catch (e) { setCook(null); }
+    }
+    load();
+    window.addEventListener("focus", load);
+    return () => window.removeEventListener("focus", load);
+  }, []);
+  function persist(c) {
+    try {
+      if (c) localStorage.setItem("smk-active-cook", JSON.stringify(c));
+      else localStorage.removeItem("smk-active-cook");
+    } catch (e) {}
+    setCook(c);
+  }
+  if (!cook || !cook.steps || !cook.steps.length) return null;
+  const total = cook.steps.length;
+  const idx = Math.min(cook.idx || 0, total - 1);
+  const step = cook.steps[idx];
+  return (
+    <div style={{ margin: "12px 18px 0", background: "linear-gradient(150deg,#9A6F82,#7C3E50)", color: "#fff", borderRadius: 22, padding: "16px 18px", boxShadow: "0 14px 30px -16px rgba(124,62,80,.6)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 20, fontWeight: 600 }}>🍳 {cook.name}</span>
+        <button onClick={() => persist(null)} style={{ background: "rgba(255,255,255,.18)", border: "none", color: "#fff", fontSize: 12, padding: "5px 11px", borderRadius: 999, cursor: "pointer" }}>Beenden</button>
+      </div>
+      <div style={{ fontSize: 11, opacity: 0.85, textTransform: "uppercase", letterSpacing: ".06em" }}>Schritt {idx + 1} von {total}</div>
+      <p style={{ fontSize: 14.5, lineHeight: 1.5, margin: "4px 0 12px", whiteSpace: "pre-line" }}>{step}</p>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button disabled={idx <= 0} onClick={() => persist({ ...cook, idx: Math.max(0, idx - 1) })} style={{ flex: 1, background: "rgba(255,255,255,.15)", border: "none", color: "#fff", borderRadius: 12, padding: "10px", fontSize: 14, cursor: idx <= 0 ? "default" : "pointer", opacity: idx <= 0 ? 0.5 : 1 }}>← Zurück</button>
+        {idx < total - 1 ? (
+          <button onClick={() => persist({ ...cook, idx: idx + 1 })} style={{ flex: 2, background: "#fff", color: "#7C3E50", border: "none", borderRadius: 12, padding: "10px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Nächster Schritt →</button>
+        ) : (
+          <button onClick={() => persist(null)} style={{ flex: 2, background: "#fff", color: "#7C3E50", border: "none", borderRadius: 12, padding: "10px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>✓ Fertig!</button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function StartPage() {
   const router = useRouter();
@@ -215,6 +259,7 @@ export default function StartPage() {
     <div style={{ margin: "-1.5rem -1rem 0" }}>
       <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
       <div dangerouslySetInnerHTML={{ __html: SPRITE }} style={{ display: "none" }} />
+      <CookTracker />
       <div ref={ref} onClick={onClick} dangerouslySetInnerHTML={{ __html: HOME_HTML }} />
     </div>
   );
