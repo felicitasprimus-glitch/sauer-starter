@@ -39,6 +39,33 @@ function scaleZutaten(text, f) {
     .join("\n");
 }
 
+function parseSteps(text) {
+  if (!text) return [];
+  const blocks = text.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
+  const steps = [];
+  blocks.forEach((b) => {
+    if (/^\d+\./.test(b) && /\n\s*\d+\./.test(b)) {
+      b.split(/\n(?=\s*\d+\.)/).forEach((s) => { const t = s.trim(); if (t) steps.push(t); });
+    } else {
+      steps.push(b);
+    }
+  });
+  return steps;
+}
+
+function parseAmount(zutaten, keywords) {
+  if (!zutaten) return null;
+  const lines = zutaten.split("\n");
+  for (const line of lines) {
+    const low = line.toLowerCase();
+    if (keywords.some((k) => low.includes(k))) {
+      const m = line.match(/(\d+(?:[.,]\d+)?)\s*g\b/);
+      if (m) return parseFloat(m[1].replace(",", "."));
+    }
+  }
+  return null;
+}
+
 const GRUNDSTOCK = [
   {
     "id": "g1",
@@ -703,8 +730,28 @@ export default function RezeptePage() {
   function sendToBackplan(rec) {
     const mehl = rec.mehl_gramm || "";
     const hyd = rec.hydration || "";
+    const starter =
+      parseAmount(rec.zutaten, [
+        "anstellgut",
+        "sauerteigstarter",
+        "lievito",
+        "madre",
+        "starter",
+      ]) || "";
+    const salt = parseAmount(rec.zutaten, ["salz"]) || "";
     setBpMsg("Planer wird geöffnet …");
-    router.push("/brotbackplaner?bp=" + mehl + "," + hyd);
+    router.push(
+      "/brotbackplaner?bp=" + mehl + "," + hyd + "," + starter + "," + salt
+    );
+  }
+
+  function startCooking(rec) {
+    const steps = parseSteps(rec.schritte || "");
+    const finalSteps = steps.length ? steps : [rec.schritte || rec.name];
+    try {
+      localStorage.setItem("smk-active-cook", JSON.stringify({ name: rec.name, steps: finalSteps, idx: 0 }));
+    } catch (e) {}
+    router.push("/start");
   }
 
   const visibleRecipes =
@@ -815,6 +862,15 @@ export default function RezeptePage() {
               {detail.schritte}
             </p>
           </div>
+        )}
+
+        {detail.schritte && (
+          <button
+            onClick={() => startCooking(detail)}
+            style={{ width: "100%", marginTop: 18, background: PLUM, color: "#fff", border: "none", borderRadius: 999, padding: "14px", fontFamily: SANS, fontWeight: 600, fontSize: 15, cursor: "pointer" }}
+          >
+            🍳 Schritt für Schritt kochen
+          </button>
         )}
 
         {detail.mehl_gramm && (
