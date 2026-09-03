@@ -37,7 +37,7 @@ const HOME_HTML = `
       </div>
       <div class="dash-item" data-nav="rezepte">
         <span class="dash-ic"><svg><use href="#i-bread"/></svg></span>
-        <div class="dash-tx"><h3>Rezeptsammlung</h3><p>186+ erprobte Stoneware-Rezepte</p></div>
+        <div class="dash-tx"><h3>Brot-Rezepte</h3><p>Grundstock, gefüllte Brote &amp; Discard</p></div>
         <span class="dash-crown"><svg><use href="#i-crown"/></svg></span>
         <span class="dash-ar">&rsaquo;</span>
       </div>
@@ -65,7 +65,7 @@ const HOME_HTML = `
       </div>
       <div class="dash-item" data-nav="stoneware">
         <span class="dash-ic"><svg><use href="#i-grain"/></svg></span>
-        <div class="dash-tx"><h3>Stoneware &amp; Pflege</h3><p>Rezepte &amp; Pflegehinweise für deine Stoneware</p></div>
+        <div class="dash-tx"><h3>Stoneware-Rezepte</h3><p>150+ Rezepte &amp; Pflege für deine Stoneware</p></div>
         <span class="dash-ar">&rsaquo;</span>
       </div>
       <div class="dash-item" data-nav="community">
@@ -172,6 +172,49 @@ const ROUTES = {
   brotwerkstatt: "/brotbackplaner", rechner: "/rechner",
 };
 
+let __smkAudioCtx = null;
+function smkUnlockAudio() {
+  try {
+    if (!__smkAudioCtx) __smkAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (__smkAudioCtx.state === "suspended") __smkAudioCtx.resume();
+  } catch (e) {}
+}
+function smkBeep() {
+  try {
+    smkUnlockAudio();
+    const ctx = __smkAudioCtx;
+    if (!ctx) return;
+    for (let i = 0; i < 2; i++) {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 680; osc.type = "sine";
+      const t0 = ctx.currentTime + i * 0.5;
+      osc.start(t0);
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.3, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.4);
+      osc.stop(t0 + 0.45);
+    }
+  } catch (e) {}
+}
+function smkNotify(title, body) {
+  try {
+    let el = document.getElementById("smkStepToast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "smkStepToast";
+      el.style.cssText = "position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:2147483647;background:linear-gradient(150deg,#6E5266,#4A3447);color:#fff;padding:12px 18px;border-radius:16px;font-family:'Lora',Georgia,serif;font-size:14px;line-height:1.4;box-shadow:0 12px 32px rgba(0,0,0,.28);max-width:88%;text-align:center;transition:opacity .3s";
+      document.body.appendChild(el);
+    }
+    el.innerHTML = '<b style="display:block;margin-bottom:2px;font-family:\'Cormorant Garamond\',serif;font-size:17px">' + title + "</b>" + body;
+    el.style.opacity = "1";
+    el.style.display = "block";
+    clearTimeout(window.__smkStepToastT);
+    window.__smkStepToastT = setTimeout(function () { el.style.opacity = "0"; }, 9000);
+  } catch (e) {}
+  try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
+}
+
 function TimerTracker() {
   const [timer, setTimer] = useState(null);
   const [now, setNow] = useState(Date.now());
@@ -187,6 +230,20 @@ function TimerTracker() {
     window.addEventListener("focus", load);
     return () => { clearInterval(iv); window.removeEventListener("focus", load); };
   }, []);
+  const announcedRef = useRef(false);
+  useEffect(() => {
+    if (!timer || !timer.endTime) return;
+    const left = Math.max(0, Math.round((timer.endTime - Date.now()) / 1000));
+    if (left <= 0) {
+      if (!announcedRef.current) {
+        announcedRef.current = true;
+        smkBeep();
+        smkNotify("⏱ " + (timer.name || "Timer"), "Timer abgelaufen!");
+      }
+    } else {
+      announcedRef.current = false;
+    }
+  }, [now, timer]);
   function clear() {
     try { localStorage.removeItem("smk-active-timer"); } catch (e) {}
     setTimer(null);
@@ -277,6 +334,11 @@ export default function StartPage() {
       var now = Date.now(), cur = null, next = null;
       for (var i = 0; i < steps.length; i++) { if (steps[i].time <= now) { cur = steps[i]; } else { next = steps[i]; break; } }
       var done = steps[steps.length - 1].time <= now;
+      if (cur) {
+        var ann = window.__smkBakeAnn;
+        if (!ann || ann.started !== data.started) { window.__smkBakeAnn = { started: data.started, last: cur.time }; }
+        else if (cur.time > ann.last) { ann.last = cur.time; smkBeep(); smkNotify("🍞 " + (data.name || "Backvorgang"), "Jetzt: " + cur.title); }
+      }
       var html = '<div class="smk-ab-top"><span class="smk-ab-dot"></span><span class="smk-ab-name">' + esc(data.name || "Backvorgang") + '</span><button class="smk-ab-x" type="button" data-action="clear-bake">Fertig</button></div>';
       var head = cur || next, headLabel = cur ? "Jetzt" : "Startet gleich";
       if (head) { html += '<div class="smk-ab-now"><span class="smk-ab-ic">' + (head.icon || "\uD83C\uDF5E") + '</span><div><small>' + headLabel + '</small><b>' + esc(head.title) + "</b></div></div>"; }
@@ -286,9 +348,11 @@ export default function StartPage() {
       el.style.display = "block";
     }
     window.__smkRenderBake = render;
+    const smkUnlockOnce = () => smkUnlockAudio();
+    document.addEventListener("click", smkUnlockOnce, { once: true });
     render();
-    const iv = setInterval(render, 60000);
-    return () => clearInterval(iv);
+    const iv = setInterval(render, 20000);
+    return () => { clearInterval(iv); document.removeEventListener("click", smkUnlockOnce); };
   }, []);
   function onClick(e) {
     const act = e.target.closest && e.target.closest("[data-action]");
