@@ -632,8 +632,14 @@ export default function RezeptePage() {
     schritte: "",
     mehl_gramm: "",
     hydration: "",
+    temperatur: "",
+    portionen: "",
+    backzeit: "",
+    gefaess: "",
+    foto_url: "",
   };
   const [form, setForm] = useState(emptyForm);
+  const [uploading, setUploading] = useState(false);
 
   async function loadData() {
     setLoading(true);
@@ -688,6 +694,29 @@ export default function RezeptePage() {
     if (!error && data) setFolders((prev) => [...prev, data]);
   }
 
+  async function handleFoto(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = userId + "/" + Date.now() + "." + ext;
+      const { error } = await supabase.storage
+        .from("rezept-fotos")
+        .upload(path, file, { upsert: true });
+      if (error) {
+        window.alert("Foto konnte nicht hochgeladen werden: " + error.message);
+        setUploading(false);
+        return;
+      }
+      const { data } = supabase.storage.from("rezept-fotos").getPublicUrl(path);
+      setForm((f) => ({ ...f, foto_url: data.publicUrl }));
+    } catch (err) {
+      window.alert("Foto konnte nicht hochgeladen werden.");
+    }
+    setUploading(false);
+  }
+
   async function saveRecipe() {
     if (!form.name.trim()) {
       window.alert("Bitte gib deinem Rezept einen Namen.");
@@ -702,6 +731,11 @@ export default function RezeptePage() {
       schritte: form.schritte || null,
       mehl_gramm: form.mehl_gramm ? Number(form.mehl_gramm) : null,
       hydration: form.hydration ? Number(form.hydration) : null,
+      temperatur: form.temperatur || null,
+      portionen: form.portionen || null,
+      backzeit: form.backzeit || null,
+      gefaess: form.gefaess || null,
+      foto_url: form.foto_url || null,
     };
     const { data, error } = await supabase
       .from("rezepte")
@@ -850,6 +884,9 @@ export default function RezeptePage() {
         >
           ← Zurück
         </button>
+        {detail.foto_url && (
+          <img src={detail.foto_url} alt="" style={{ width: "100%", height: 200, objectFit: "cover", borderRadius: 18, margin: "12px 0 6px", display: "block" }} />
+        )}
         <h1 style={{ ...h1, fontSize: 30, margin: "10px 0 4px", lineHeight: 1.1 }}>{detail.name}</h1>
         {(detail.mehl_gramm || detail.hydration) && (
           <p style={{ color: TAUPE, fontSize: 13, margin: 0 }}>
@@ -857,6 +894,14 @@ export default function RezeptePage() {
             {detail.mehl_gramm && detail.hydration ? " · " : ""}
             {detail.hydration ? detail.hydration + " % Hydration" : ""}
           </p>
+        )}
+        {(detail.temperatur || detail.backzeit || detail.portionen || detail.gefaess) && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+            {detail.temperatur && <span style={{ background: "rgba(201,143,160,.14)", color: PLUM, borderRadius: 999, padding: "4px 11px", fontSize: 12.5, fontWeight: 500 }}>🌡 {detail.temperatur}</span>}
+            {detail.backzeit && <span style={{ background: "rgba(201,143,160,.14)", color: PLUM, borderRadius: 999, padding: "4px 11px", fontSize: 12.5, fontWeight: 500 }}>⏱ {detail.backzeit}</span>}
+            {detail.portionen && <span style={{ background: "rgba(201,143,160,.14)", color: PLUM, borderRadius: 999, padding: "4px 11px", fontSize: 12.5, fontWeight: 500 }}>👥 {detail.portionen}</span>}
+            {detail.gefaess && <span style={{ background: "rgba(201,143,160,.14)", color: PLUM, borderRadius: 999, padding: "4px 11px", fontSize: 12.5, fontWeight: 500 }}>🍽 {detail.gefaess}</span>}
+          </div>
         )}
 
         {detail.zutaten && (
@@ -1039,6 +1084,40 @@ export default function RezeptePage() {
               <label style={lbl}>Hydration (%)</label>
               <input style={inp} type="number" inputMode="decimal" value={form.hydration} onChange={(e) => setForm({ ...form, hydration: e.target.value })} placeholder="70" />
             </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div>
+              <label style={lbl}>Temperatur</label>
+              <input style={inp} type="text" value={form.temperatur} onChange={(e) => setForm({ ...form, temperatur: e.target.value })} placeholder="230 °C" />
+            </div>
+            <div>
+              <label style={lbl}>Backzeit</label>
+              <input style={inp} type="text" value={form.backzeit} onChange={(e) => setForm({ ...form, backzeit: e.target.value })} placeholder="45 Min" />
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div>
+              <label style={lbl}>Portionen</label>
+              <input style={inp} type="text" value={form.portionen} onChange={(e) => setForm({ ...form, portionen: e.target.value })} placeholder="1 Brot" />
+            </div>
+            <div>
+              <label style={lbl}>Form / Gefäß</label>
+              <input style={inp} type="text" value={form.gefaess} onChange={(e) => setForm({ ...form, gefaess: e.target.value })} placeholder="Gusseisentopf" />
+            </div>
+          </div>
+          <div>
+            <label style={lbl}>Foto</label>
+            {form.foto_url ? (
+              <div style={{ position: "relative" }}>
+                <img src={form.foto_url} alt="" style={{ width: "100%", height: 180, objectFit: "cover", borderRadius: 14, display: "block" }} />
+                <button type="button" onClick={() => setForm({ ...form, foto_url: "" })} style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,.55)", color: "#fff", border: "none", borderRadius: 999, padding: "5px 11px", fontSize: 12, cursor: "pointer" }}>Entfernen</button>
+              </div>
+            ) : (
+              <label style={{ ...inp, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer", color: PLUM, borderStyle: "dashed" }}>
+                {uploading ? "Lädt hoch …" : "📷 Foto auswählen"}
+                <input type="file" accept="image/*" onChange={handleFoto} style={{ display: "none" }} />
+              </label>
+            )}
           </div>
           <div>
             <label style={lbl}>Zutaten</label>
