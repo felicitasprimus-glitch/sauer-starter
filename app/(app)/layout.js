@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { LanguageProvider } from "@/components/LanguageProvider";
+import CodeGate from "@/components/CodeGate";
 
 export default async function AppLayout({ children }) {
   const supabase = createClient();
@@ -38,8 +39,10 @@ export default async function AppLayout({ children }) {
   return (
     <LanguageProvider>
       <div className="mx-auto min-h-screen max-w-md bg-cream-50 px-4 pb-24 pt-6">
-        {children}
-        <BottomNav />
+        <CodeGate>
+          {children}
+          <BottomNav />
+        </CodeGate>
       </div>
     </LanguageProvider>
   );
