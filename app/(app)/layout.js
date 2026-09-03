@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { LanguageProvider } from "@/components/LanguageProvider";
-import CodeGate from "@/components/CodeGate";
 
 export default async function AppLayout({ children }) {
   const supabase = createClient();
@@ -10,7 +9,7 @@ export default async function AppLayout({ children }) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Nicht angemeldet -> Startseite (legt automatisch anonymes Konto an)
+  // Nicht angemeldet -> zur Registrierung/Anmeldung
   if (!user) {
     redirect("/");
   }
@@ -18,31 +17,30 @@ export default async function AppLayout({ children }) {
   // Profil holen
   const { data: profile } = await supabase
     .from("user_profiles")
-    .select("is_admin, access_expires_at")
+    .select("is_admin")
     .eq("id", user.id)
     .single();
 
-  // Wenn kein Profil existiert: dauerhaft anlegen (kein Ablauf) + Anzeigename
+  // Falls kein Profil: mit dem Namen aus der Registrierung anlegen
   if (!profile) {
     const isAdmin = user.email === "felicitas.primus@gmail.com";
+    const nm =
+      (user.user_metadata && user.user_metadata.display_name) ||
+      (user.email ? user.email.split("@")[0] : "Bäckerin");
     await supabase.from("user_profiles").insert({
       id: user.id,
       email: user.email || null,
-      display_name: "Baeckerin " + Math.floor(1000 + Math.random() * 9000),
+      display_name: nm,
       is_admin: isAdmin,
       access_expires_at: null,
     });
-    // durchlassen
   }
-  // Kein Ablauf-Check mehr: Zugang bleibt dauerhaft bestehen.
 
   return (
     <LanguageProvider>
       <div className="mx-auto min-h-screen max-w-md bg-cream-50 px-4 pb-24 pt-6">
-        <CodeGate>
-          {children}
-          <BottomNav />
-        </CodeGate>
+        {children}
+        <BottomNav />
       </div>
     </LanguageProvider>
   );
