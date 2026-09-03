@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const HOME_HTML = `
@@ -161,7 +161,47 @@ const ROUTES = {
 export default function StartPage() {
   const router = useRouter();
   const ref = useRef(null);
+
+  useEffect(() => {
+    function esc(s) {
+      return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    function render() {
+      var el = document.getElementById("smkActiveBake");
+      if (!el) return;
+      var raw = null;
+      try { raw = localStorage.getItem("smk-active-bake"); } catch (e) {}
+      if (!raw) { el.style.display = "none"; el.innerHTML = ""; return; }
+      var data;
+      try { data = JSON.parse(raw); } catch (e) { el.style.display = "none"; return; }
+      var steps = (data.steps || []).filter(function (s) { return s.time; });
+      if (!steps.length) { el.style.display = "none"; return; }
+      steps.sort(function (a, b) { return a.time - b.time; });
+      var now = Date.now(), cur = null, next = null;
+      for (var i = 0; i < steps.length; i++) { if (steps[i].time <= now) { cur = steps[i]; } else { next = steps[i]; break; } }
+      var done = steps[steps.length - 1].time <= now;
+      var html = '<div class="smk-ab-top"><span class="smk-ab-dot"></span><span class="smk-ab-name">' + esc(data.name || "Backvorgang") + '</span><button class="smk-ab-x" type="button" data-action="clear-bake">Fertig</button></div>';
+      var head = cur || next, headLabel = cur ? "Jetzt" : "Startet gleich";
+      if (head) { html += '<div class="smk-ab-now"><span class="smk-ab-ic">' + (head.icon || "\uD83C\uDF5E") + '</span><div><small>' + headLabel + '</small><b>' + esc(head.title) + "</b></div></div>"; }
+      if (next) { var mins = Math.round((next.time - now) / 60000); var when = mins <= 0 ? "jetzt" : (mins < 60 ? ("in " + mins + " Min") : ("in " + Math.floor(mins / 60) + " Std " + (mins % 60) + " Min")); html += '<div class="smk-ab-next"><span>N\u00e4chster: ' + esc(next.title) + "</span><b>" + when + "</b></div>"; }
+      else if (done) { html += '<div class="smk-ab-next"><span>Alle Schritte erledigt</span><b>\uD83C\uDF89</b></div>'; }
+      el.innerHTML = '<div class="smk-ab-card" data-nav="brotwerkstatt">' + html + "</div>";
+      el.style.display = "block";
+    }
+    window.__smkRenderBake = render;
+    render();
+    const iv = setInterval(render, 60000);
+    return () => clearInterval(iv);
+  }, []);
   function onClick(e) {
+    const act = e.target.closest && e.target.closest("[data-action]");
+    if (act && act.getAttribute("data-action") === "clear-bake") {
+      e.preventDefault();
+      e.stopPropagation();
+      try { localStorage.removeItem("smk-active-bake"); } catch (x) {}
+      if (window.__smkRenderBake) window.__smkRenderBake();
+      return;
+    }
     const el = e.target.closest && e.target.closest("[data-nav]");
     if (!el) return;
     const nav = el.getAttribute("data-nav");
