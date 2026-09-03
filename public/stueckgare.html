@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sauer macht krustig – Stückgare Rechner</title>
+  <meta name="description" content="Stückgare Rechner für Sauerteigbrot – Raumtemperatur & Kühlschrank, alle Mehlsorten, Mischbrot-Rechner." />
+  <!-- Prevent indexing if you want it private -->
+  <!-- <meta name="robots" content="noindex"> -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: linear-gradient(160deg,#F5EBF0 0%,#EAD8E5 55%,#F2E8EF 100%); min-height: 100vh; }
+    input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; width: 100%; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #925274; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.2); margin-top: -6px; }
+    input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #925274; cursor: pointer; border: none; }
+    input[type=range]::-webkit-slider-runnable-track { height: 5px; border-radius: 3px; background: #EDE0E7; }
+    input[type=range]::-moz-range-track { height: 5px; border-radius: 3px; background: #EDE0E7; }
+    button { transition: all 0.13s ease; font-family: inherit; }
+    button:hover { transform: translateY(-1px); }
+    select { appearance: none; -webkit-appearance: none; font-family: inherit; }
+  </style>
+
+<style id="smk-theme-bridge">
+  :root {
+    --smk-cream: #FAF6F0;
+    --smk-cream-warm: #F4EDE3;
+    --smk-ink: #2A1F26;
+    --smk-ink-soft: #6B5560;
+    --smk-mauve: #925274;
+    --smk-mauve-soft: #B98AA1;
+    --smk-mauve-mist: #EFE0E8;
+    --smk-line: #E8DED4;
+    --smk-accent: #C98B6B;
+    --smk-success: #6F8F70;
+    --smk-shadow: 0 1px 2px rgba(42,31,38,.04), 0 8px 28px rgba(42,31,38,.06);
+  }
+  html, body { background: var(--smk-cream) !important; color: var(--smk-ink) !important; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3, .display { font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif !important; font-weight: 600 !important; letter-spacing: -0.01em !important; }
+  /* Soften any boxes that look heavy */
+  *[style*="border-radius:14px"], *[style*="border-radius: 14px"],
+  *[style*="border-radius:16px"], *[style*="border-radius: 16px"] { border-radius: 20px !important; }
+  button { font-family: inherit !important; }
+  /* Make tools breathe on mobile */
+  @media (max-width: 640px) {
+    body { padding-bottom: 12px; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    const MEHLSORTEN = [
+      { id: "w550",  full: "Weizenmehl 550",  factor: 1.00, hint: "Klassisches Brotmehl, gute Triebkraft" },
+      { id: "w812",  full: "Weizenmehl 812",  factor: 0.95, hint: "Mehr Schalenanteil, etwas aktiver" },
+      { id: "w1050", full: "Weizenmehl 1050", factor: 0.90, hint: "Kräftiges Mehl, enzymreicher" },
+      { id: "d630",  full: "Dinkelmehl 630",  factor: 0.82, hint: "Dinkel vergärt schneller – Untergare vermeiden!" },
+      { id: "d1050", full: "Dinkelmehl 1050", factor: 0.78, hint: "Hohes Enzympotenzial, kurze Garzeiten beachten" },
+      { id: "r997",  full: "Roggenmehl 997",  factor: 0.68, hint: "Sehr aktiv durch Amylasen, kurze Stückgare empfohlen" },
+      { id: "r1150", full: "Roggenmehl 1150", factor: 0.63, hint: "Stark enzymatisch, Übergare-Gefahr ist real" },
+      { id: "r1370", full: "Roggenmehl 1370", factor: 0.58, hint: "Maximale Enzymaktivität – kurz und präzise garen" },
+    ];
+
+    const MIX_COLORS = ["#925274","#5A7BB5","#4A9B6A","#9B6EA8","#B6758F","#5A8A9A","#8A5060","#6A9B7A"];
+
+    function calcTimes({ flourFactor, raumtemp, kuehltemp, starter, hydration, teiggewicht }) {
+      const tempF_room  = Math.pow(2, (22 - raumtemp) / 10);
+      const tempF_kuehl = Math.pow(2, (5 - kuehltemp) / 10);
+      const starterF    = Math.pow(20 / starter, 0.55);
+      const hydroF      = Math.pow(72 / hydration, 0.3);
+      const weightF     = teiggewicht < 600 ? 0.95 : teiggewicht > 1200 ? 1.08 : 1.0;
+      const base = (b) => Math.round(b * flourFactor * weightF * starterF * hydroF);
+      return {
+        roomMin:  Math.round(base(90)  * tempF_room),
+        roomMax:  Math.round(base(150) * tempF_room),
+        kuehlMin: Math.round(base(600) * tempF_kuehl),
+        kuehlMax: Math.round(base(960) * tempF_kuehl),
+      };
+    }
+
+    function formatTime(mins) {
+      const h = Math.floor(mins / 60), m = mins % 60;
+      if (h === 0) return `${m} Min`;
+      if (m === 0) return `${h} Std`;
+      return `${h} Std ${m} Min`;
+    }
+
+    function Slider({ label, value, min, max, step, onChange, unit, marks }) {
+      const pct = ((value - min) / (max - min)) * 100;
+      return (
+        <div style={{ marginBottom: 22 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7, alignItems: "baseline" }}>
+            <label style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 13, color: "#3A2430", fontWeight: 600 }}>{label}</label>
+            <span style={{ fontFamily: "'Courier Prime',Courier,monospace", fontSize: 17, fontWeight: 700, color: "#925274", minWidth: 64, textAlign: "right" }}>{value}{unit}</span>
+          </div>
+          <div style={{ position: "relative", paddingBottom: 5 }}>
+            <div style={{ height: 5, borderRadius: 3, background: "#EDE0E7", position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#D6B7C7,#925274)", borderRadius: 3, transition: "width 0.2s" }} />
+            </div>
+            <input type="range" min={min} max={max} step={step} value={value}
+              onChange={e => onChange(Number(e.target.value))}
+              style={{ position: "absolute", top: 0, left: 0, width: "100%", opacity: 0, cursor: "pointer", height: 20, margin: 0 }} />
+          </div>
+          {marks && (
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+              {marks.map(m => <span key={m} style={{ fontFamily: "Courier Prime,monospace", fontSize: 9.5, color: "#8A6A7A" }}>{m}{unit}</span>)}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function TimeCard({ title, icon, minTime, maxTime, color, note }) {
+      return (
+        <div style={{ background: `linear-gradient(135deg,${color}16,${color}06)`, border: `1.5px solid ${color}38`, borderRadius: 14, padding: "16px 18px", flex: 1, minWidth: 175 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}>
+            <span style={{ fontSize: 18 }}>{icon}</span>
+            <span style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 11, fontWeight: 700, color: "#3A2430", letterSpacing: "0.06em", textTransform: "uppercase" }}>{title}</span>
+          </div>
+          <div style={{ fontFamily: "'Courier Prime',Courier,monospace" }}>
+            <div style={{ fontSize: 10, color: "#8A6A7A", marginBottom: 1 }}>Empfohlene Stückgare</div>
+            <div style={{ fontSize: 23, fontWeight: 700, color, lineHeight: 1.2 }}>{formatTime(minTime)}</div>
+            <div style={{ fontSize: 11, color: "#6A4A5A" }}>bis</div>
+            <div style={{ fontSize: 23, fontWeight: 700, color, lineHeight: 1.2 }}>{formatTime(maxTime)}</div>
+          </div>
+          {note && <div style={{ marginTop: 9, fontSize: 10.5, color: "#6A4A5A", fontFamily: "Georgia,serif", fontStyle: "italic", lineHeight: 1.5, borderTop: `1px solid ${color}22`, paddingTop: 8 }}>{note}</div>}
+        </div>
+      );
+    }
+
+    function ResultsRow({ result, raumtemp, kuehltemp }) {
+      return (
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TimeCard title="Raumtemperatur" icon="🌡️" minTime={result.roomMin} maxTime={result.roomMax} color="#925274"
+            note={`Bei ${raumtemp}°C – nach 2/3 der Zeit erstmals prüfen.`} />
+          <TimeCard title="Kühlschrank / Übergare" icon="❄️" minTime={result.kuehlMin} maxTime={result.kuehlMax} color="#5A7BB5"
+            note={`Bei ${kuehltemp}°C – abgedeckt, z. B. über Nacht.`} />
+        </div>
+      );
+    }
+
+    function SectionTitle({ children }) {
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+          <h2 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 16, fontWeight: 800, color: "#3A2430", margin: 0, whiteSpace: "nowrap" }}>{children}</h2>
+          <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,#DFCDD6,transparent)" }} />
+        </div>
+      );
+    }
+
+    function Card({ children, accent }) {
+      return (
+        <div style={{ background: "rgba(255,250,253,0.92)", borderRadius: 20, border: `1px solid ${accent || "rgba(146,82,116,0.18)"}`, boxShadow: "0 5px 28px rgba(58,36,48,0.09)", padding: "22px 24px", marginBottom: 16 }}>
+          {children}
+        </div>
+      );
+    }
+
+    function TipsList({ tips }) {
+      if (!tips.length) return null;
+      return (
+        <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+          {tips.map((t, i) => (
+            <div key={i} style={{ fontSize: 12, color: "#4A2A3A", lineHeight: 1.55, paddingLeft: 8, borderLeft: "2px solid #D6B7C7", fontFamily: "Georgia,serif", fontStyle: "italic" }}>{t}</div>
+          ))}
+        </div>
+      );
+    }
+
+    function MischbrotRechner({ raumtemp, kuehltemp, starter, hydration, teiggewicht }) {
+      const [components, setComponents] = useState([
+        { id: "w550", pct: 60 },
+        { id: "r997", pct: 40 },
+      ]);
+
+      const total = components.reduce((s, c) => s + c.pct, 0);
+
+      const addComponent = () => {
+        const usedIds = new Set(components.map(c => c.id));
+        const next = MEHLSORTEN.find(m => !usedIds.has(m.id));
+        if (!next || components.length >= MEHLSORTEN.length) return;
+        setComponents([...components, { id: next.id, pct: Math.min(10, Math.max(1, 100 - total)) }]);
+      };
+
+      const removeComponent = (i) => {
+        if (components.length <= 2) return;
+        setComponents(components.filter((_, idx) => idx !== i));
+      };
+
+      const updatePct = (i, delta) => {
+        setComponents(prev => prev.map((c, idx) =>
+          idx === i ? { ...c, pct: Math.max(1, Math.min(99, c.pct + delta)) } : c
+        ));
+      };
+
+      const updateMehl = (i, id) => {
+        setComponents(prev => prev.map((c, idx) => idx === i ? { ...c, id } : c));
+      };
+
+      const blendedFactor = useMemo(() => {
+        if (total === 0) return 1;
+        return components.reduce((sum, c) => {
+          const m = MEHLSORTEN.find(m => m.id === c.id);
+          return sum + (m ? m.factor * (c.pct / total) : 0);
+        }, 0);
+      }, [components, total]);
+
+      const result = useMemo(() =>
+        calcTimes({ flourFactor: blendedFactor, raumtemp, kuehltemp, starter, hydration, teiggewicht }),
+        [blendedFactor, raumtemp, kuehltemp, starter, hydration, teiggewicht]
+      );
+
+      const mixTips = useMemo(() => {
+        const t = [];
+        const roggen = components.filter(c => c.id.startsWith("r")).reduce((s, c) => s + c.pct, 0);
+        const dinkel = components.filter(c => c.id.startsWith("d")).reduce((s, c) => s + c.pct, 0);
+        if (total !== 100) t.push(`⚖️ Summe beträgt ${total}% – bitte genau 100% einstellen.`);
+        if (roggen > 60) t.push(`⚡ Hoher Roggenanteil (${roggen}%): Amylase-Aktivität sehr hoch – kurze Stückgare bevorzugen.`);
+        if (roggen > 0 && roggen <= 30) t.push("🤝 Leichtes Roggenmischbrot: Gute Balance aus Triebkraft und Haltbarkeit.");
+        if (dinkel > 40) t.push(`⚠️ Hoher Dinkelanteil (${dinkel}%): Glutenstruktur empfindlich – Fingerdrucktest ist Pflicht.`);
+        return t;
+      }, [components, total]);
+
+      const barItems = components.map((c, i) => ({
+        full: MEHLSORTEN.find(m => m.id === c.id)?.full ?? "",
+        pct: total > 0 ? (c.pct / total) * 100 : 0,
+        rawPct: c.pct,
+        color: MIX_COLORS[i % MIX_COLORS.length],
+      }));
+
+      const usedIds = new Set(components.map(c => c.id));
+
+      return (
+        <Card accent="rgba(90,123,181,0.2)">
+          <SectionTitle>🫓 Mischbrot-Rechner</SectionTitle>
+
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ display: "flex", height: 26, borderRadius: 13, overflow: "hidden", border: "1px solid rgba(146,82,116,0.2)" }}>
+              {barItems.map((b, i) => (
+                <div key={i} style={{ width: `${b.pct}%`, background: b.color, transition: "width 0.3s", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                  {b.pct > 9 && <span style={{ fontSize: 9, color: "#fff", fontFamily: "Courier Prime,monospace", fontWeight: 700, textShadow: "0 1px 2px rgba(0,0,0,0.45)" }}>{Math.round(b.rawPct)}%</span>}
+                </div>
+              ))}
+              {total < 100 && (
+                <div style={{ flex: 1, background: "repeating-linear-gradient(45deg,#EDE0E7,#EDE0E7 3px,#F5EEF2 3px,#F5EEF2 7px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: 9, color: "#8A6A7A", fontFamily: "Courier Prime,monospace" }}>+{100 - total}%</span>
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px", marginTop: 6 }}>
+              {barItems.map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ width: 9, height: 9, borderRadius: 2, background: b.color }} />
+                  <span style={{ fontSize: 10.5, color: "#4A2A3A", fontFamily: "Courier Prime,monospace" }}>{b.full}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+            {components.map((comp, i) => {
+              const dot = MIX_COLORS[i % MIX_COLORS.length];
+              return (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(237,224,231,0.4)", borderRadius: 11, padding: "9px 12px", border: "1px solid rgba(146,82,116,0.14)" }}>
+                  <div style={{ width: 9, height: 9, borderRadius: 2, background: dot, flexShrink: 0 }} />
+                  <select value={comp.id} onChange={e => updateMehl(i, e.target.value)}
+                    style={{ fontFamily: "Courier Prime,monospace", fontSize: 12, color: "#3A2430", background: "transparent", border: "none", outline: "none", cursor: "pointer", flex: 1, minWidth: 0 }}>
+                    {MEHLSORTEN.map(m => (
+                      <option key={m.id} value={m.id} disabled={usedIds.has(m.id) && m.id !== comp.id}>{m.full}</option>
+                    ))}
+                  </select>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                    <button onClick={() => updatePct(i, -5)}
+                      style={{ width: 24, height: 24, borderRadius: "50%", border: "1.5px solid #DFCDD6", background: "transparent", color: "#6A4A5A", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
+                    <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 15, fontWeight: 700, color: dot, minWidth: 40, textAlign: "center" }}>{comp.pct}%</span>
+                    <button onClick={() => updatePct(i, +5)}
+                      style={{ width: 24, height: 24, borderRadius: "50%", border: "1.5px solid #DFCDD6", background: "transparent", color: "#6A4A5A", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+                  </div>
+                  {components.length > 2 && (
+                    <button onClick={() => removeComponent(i)}
+                      style={{ width: 20, height: 20, borderRadius: "50%", border: "none", background: "#C47A7A", color: "#fff", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+            <div style={{ fontFamily: "Courier Prime,monospace", fontSize: 13, fontWeight: 700, color: total === 100 ? "#4A9B5A" : "#C4553A" }}>
+              Summe: {total}% {total === 100 ? "✓" : total > 100 ? "— zu viel!" : `— ${100 - total}% fehlen`}
+            </div>
+            {components.length < MEHLSORTEN.length && (
+              <button onClick={addComponent}
+                style={{ padding: "5px 14px", borderRadius: 14, border: "1.5px dashed #5A7BB5", background: "transparent", color: "#5A7BB5", fontFamily: "Courier Prime,monospace", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                + Mehl hinzufügen
+              </button>
+            )}
+          </div>
+
+          <div style={{ background: "rgba(90,123,181,0.07)", border: "1px solid rgba(90,123,181,0.18)", borderRadius: 9, padding: "8px 14px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontFamily: "Georgia,serif", fontSize: 11.5, fontStyle: "italic", color: "#3A5A7A" }}>Gewichteter Aktivitätsfaktor</span>
+            <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 15, fontWeight: 700, color: "#5A7BB5" }}>{blendedFactor.toFixed(3)}</span>
+          </div>
+
+          <ResultsRow result={result} raumtemp={raumtemp} kuehltemp={kuehltemp} />
+          <TipsList tips={mixTips} />
+        </Card>
+      );
+    }
+
+    function App() {
+      const [mehlId,      setMehlId]      = useState("w550");
+      const [teiggewicht, setTeiggewicht] = useState(800);
+      const [hydration,   setHydration]   = useState(72);
+      const [starter,     setStarter]     = useState(20);
+      const [raumtemp,    setRaumtemp]    = useState(22);
+      const [kuehltemp,   setKuehltemp]   = useState(5);
+
+      const mehl   = MEHLSORTEN.find(m => m.id === mehlId);
+      const result = useMemo(() =>
+        calcTimes({ flourFactor: mehl.factor, raumtemp, kuehltemp, starter, hydration, teiggewicht }),
+        [mehl, raumtemp, kuehltemp, starter, hydration, teiggewicht]
+      );
+
+      const tips = useMemo(() => {
+        const t = [];
+        if (hydration >= 78) t.push("🫧 Hohe Hydration: Teig straff wirken, Gärkorb gut bemehlen.");
+        if (mehl.id.startsWith("r")) t.push("⚡ Roggenmehl vergärt sehr schnell – lieber zu kurz als zu lang.");
+        if (mehl.id.startsWith("d")) t.push("⚠️ Dinkel hat wenig Glutenstruktur – auf Fingerdrucktest vertrauen.");
+        if (raumtemp >= 26) t.push("🌡️ Warme Küche: Teig gut im Auge behalten.");
+        if (starter >= 28)  t.push("📈 Viel Anstellgut: Nach ca. 2/3 der Zeit schon kontrollieren.");
+        if (kuehltemp >= 7) t.push("🧊 Wärmerer Kühlschrank: Obergare-Grenze beachten.");
+        t.push("👆 Fingerdrucktest: Eindrücken soll langsam zurückfedern – das ist perfekte Gare.");
+        return t;
+      }, [hydration, mehl, raumtemp, starter, kuehltemp]);
+
+      return (
+        <div style={{ minHeight: "100vh", fontFamily: "Georgia,serif", padding: "20px 14px" }}>
+          <div style={{ maxWidth: 680, margin: "0 auto" }}>
+
+            {/* Header */}
+            <div style={{ textAlign: "center", marginBottom: 30 }}>
+              <div style={{ fontSize: 46, lineHeight: 1, marginBottom: 10 }}>🍞</div>
+              <div style={{ display: "inline-block", background: "#3A2430", borderRadius: 6, padding: "3px 14px", marginBottom: 12 }}>
+                <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 10, fontWeight: 700, color: "#D6B7C7", letterSpacing: "0.22em", textTransform: "uppercase" }}>Handwerks-Bäckerei Tools</span>
+              </div>
+              <div>
+                <h1 style={{ fontFamily: "'Playfair Display','Times New Roman',Georgia,serif", fontSize: "clamp(28px,8vw,48px)", fontWeight: 900, color: "#3A2430", letterSpacing: "-0.02em", margin: "0 0 2px", lineHeight: 1.1 }}>
+                  Sauer macht
+                </h1>
+                <h1 style={{ fontFamily: "'Playfair Display','Times New Roman',Georgia,serif", fontSize: "clamp(28px,8vw,48px)", fontWeight: 900, color: "#925274", letterSpacing: "-0.02em", margin: "0 0 12px", lineHeight: 1.1 }}>
+                  krustig.
+                </h1>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 8 }}>
+                <div style={{ height: 1, width: 40, background: "#B6859F" }} />
+                <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 11, color: "#8A6A7A", letterSpacing: "0.12em", textTransform: "uppercase" }}>Stückgare Rechner</span>
+                <div style={{ height: 1, width: 40, background: "#B6859F" }} />
+              </div>
+              <p style={{ color: "#8A6A7A", fontStyle: "italic", margin: 0, fontSize: 12.5 }}>Sauerteigbrot · Raumtemperatur &amp; Kühlschrank</p>
+            </div>
+
+            {/* Globale Einstellungen */}
+            <Card>
+              <SectionTitle>⚙️ Globale Einstellungen</SectionTitle>
+              <div style={{ fontSize: 11, color: "#8A6A7A", fontStyle: "italic", marginBottom: 16, marginTop: -10 }}>Gelten für beide Rechner unten.</div>
+              <Slider label="Teiggewicht" value={teiggewicht} min={300} max={2000} step={50} onChange={setTeiggewicht} unit=" g" marks={[300,600,1000,1500,2000]} />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 22px" }}>
+                <Slider label="Hydration"       value={hydration} min={60} max={90} step={1} onChange={setHydration}   unit="%" marks={[60,70,80,90]} />
+                <Slider label="Sauerteiganteil" value={starter}   min={5}  max={40} step={1} onChange={setStarter}     unit="%" marks={[5,15,25,40]} />
+              </div>
+              <div style={{ height: 1, background: "linear-gradient(90deg,transparent,#DFCDD6,transparent)", margin: "2px 0 20px" }} />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 22px" }}>
+                <Slider label="🏠 Raumtemperatur" value={raumtemp}  min={16} max={30} step={0.5} onChange={setRaumtemp}  unit="°C" marks={[16,20,24,28]} />
+                <Slider label="❄️ Kühlschrank"    value={kuehltemp} min={2}  max={10} step={0.5} onChange={setKuehltemp} unit="°C" marks={[2,4,6,8,10]} />
+              </div>
+            </Card>
+
+            {/* Einzelmehl-Rechner */}
+            <Card>
+              <SectionTitle>🍞 Einzelmehl-Rechner</SectionTitle>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 12, fontWeight: 700, color: "#3A2430", marginBottom: 8, letterSpacing: "0.05em", textTransform: "uppercase" }}>Mehlsorte wählen</div>
+                <div style={{ display: "flex", gap: 16, marginBottom: 10, flexWrap: "wrap" }}>
+                  {[["W", "#E4C8D8", "Weizen"], ["D", "#D4BACC", "Dinkel"], ["R", "#9A7090", "Roggen"]].map(([k, col, name]) => (
+                    <div key={k} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <div style={{ width: 18, height: 18, borderRadius: 4, background: col, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 10, fontWeight: 700, color: "#3A2430" }}>{k}</span>
+                      </div>
+                      <span style={{ fontFamily: "Georgia,serif", fontSize: 11.5, color: "#6A4A5A" }}>= {name}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {MEHLSORTEN.map(m => (
+                    <button key={m.id} onClick={() => setMehlId(m.id)}
+                      style={{ padding: "6px 13px", borderRadius: 16, border: "1.5px solid", borderColor: mehlId === m.id ? "#925274" : "#DFCDD6", background: mehlId === m.id ? "#925274" : "transparent", color: mehlId === m.id ? "#FFF5FA" : "#4A2A3A", fontFamily: "Courier Prime,Courier,monospace", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                      {m.full}
+                    </button>
+                  ))}
+                </div>
+                {mehl && <div style={{ marginTop: 8, fontSize: 11.5, color: "#7A5A6A", fontStyle: "italic", display: "flex", gap: 5 }}><span>💡</span>{mehl.hint}</div>}
+              </div>
+              <ResultsRow result={result} raumtemp={raumtemp} kuehltemp={kuehltemp} />
+              <TipsList tips={tips} />
+            </Card>
+
+            {/* Mischbrot */}
+            <MischbrotRechner raumtemp={raumtemp} kuehltemp={kuehltemp} starter={starter} hydration={hydration} teiggewicht={teiggewicht} />
+
+            <div style={{ textAlign: "center", paddingBottom: 32 }}>
+              <div style={{ fontSize: 11, color: "#9A7A8A", fontStyle: "italic", marginBottom: 6 }}>
+                Zeiten sind Richtwerte · Immer mit dem Fingerdrucktest prüfen · Jeder Teig ist anders
+              </div>
+              <div style={{ fontFamily: "Courier Prime,monospace", fontSize: 10.5, color: "#B6859F", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700 }}>
+                Sauer macht krustig ™
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

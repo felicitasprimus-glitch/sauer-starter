@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inclusions Planer — Sauer.macht.Krustig</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #FDF8F4;
+  --surface: #FFFFFF;
+  --rose: #B87A94;
+  --rose-dark: #8D5570;
+  --rose-light: #EDD5E2;
+  --rose-faint: #FAF1F5;
+  --terra: #C4785A;
+  --terra-light: #F2E4DA;
+  --text: #2A1A16;
+  --text-muted: #7A6560;
+  --text-light: #B0A09A;
+  --border: #E5D8D3;
+  --border-rose: #D9B5C8;
+  --warn-bg: #FEF3EC;
+  --warn-border: #E49060;
+  --warn-text: #7B3D14;
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --r-pill: 100px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+/* ─── Header ─────────────────────────────────────── */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 24px 14px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-sub {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rose);
+  margin-bottom: 3px;
+}
+.header-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+/* ─── Layout ─────────────────────────────────────── */
+.main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 72px;
+}
+
+/* ─── Mode Toggle ────────────────────────────────── */
+.mode-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 26px;
+}
+.mode-toggle {
+  display: inline-flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 3px;
+}
+.mode-btn {
+  padding: 7px 22px;
+  border: none;
+  background: none;
+  border-radius: var(--r-pill);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  font-weight: 400;
+}
+.mode-btn.active {
+  background: var(--rose);
+  color: #fff;
+  font-weight: 500;
+}
+
+/* ─── Form Sections ──────────────────────────────── */
+.form-section { margin-bottom: 22px; }
+
+.form-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rose-dark);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* ─── Chips ──────────────────────────────────────── */
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip {
+  padding: 8px 18px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-pill);
+  font-size: 13.5px;
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'DM Sans', sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.chip:hover { border-color: var(--rose); color: var(--rose-dark); background: var(--rose-faint); }
+.chip.selected { background: var(--rose); border-color: var(--rose); color: #fff; font-weight: 500; }
+.chip.multi.selected { background: var(--rose-light); border-color: var(--rose); color: var(--rose-dark); font-weight: 500; }
+
+/* ─── Input ──────────────────────────────────────── */
+.text-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.text-input:focus { border-color: var(--rose); }
+.text-input::placeholder { color: var(--text-light); }
+
+/* ─── Divider ────────────────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: 22px 0; }
+
+/* ─── CTA Button ─────────────────────────────────── */
+.btn-generate {
+  width: 100%;
+  padding: 15px;
+  background: var(--rose);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-lg);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  letter-spacing: 0.01em;
+}
+.btn-generate:hover { background: var(--rose-dark); }
+.btn-generate:active { transform: scale(0.99); }
+.btn-generate:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ─── Loading ────────────────────────────────────── */
+.loading {
+  text-align: center;
+  padding: 52px 24px;
+}
+.loading-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  color: var(--rose-dark);
+  margin-bottom: 6px;
+}
+.loading-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+.dots { display: inline-flex; gap: 7px; }
+.dot {
+  width: 7px; height: 7px;
+  background: var(--rose);
+  border-radius: 50%;
+  animation: bounce 1.3s ease-in-out infinite;
+}
+.dot:nth-child(2) { animation-delay: 0.18s; }
+.dot:nth-child(3) { animation-delay: 0.36s; }
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0.5); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* ─── Result Cards ───────────────────────────────── */
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.result-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--rose-dark);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.btn-why {
+  font-size: 12px;
+  padding: 4px 14px;
+  border: 1px solid var(--border-rose);
+  background: var(--rose-faint);
+  color: var(--rose-dark);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-why:hover { background: var(--rose-light); }
+
+.why-box {
+  display: none;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: var(--rose-faint);
+  border-left: 3px solid var(--rose);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  padding: 12px 14px;
+  margin-top: 2px;
+  margin-bottom: 12px;
+  line-height: 1.65;
+}
+
+.rcard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+.rcard.warn {
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+}
+.rcard.warn .result-title { color: var(--warn-text); }
+
+/* ─── Stream Content ─────────────────────────────── */
+.scontent {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text);
+}
+.scontent h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 14px 0 6px;
+}
+.scontent h3:first-child { margin-top: 0; }
+.scontent p { margin-bottom: 9px; }
+.scontent ul, .scontent ol { padding-left: 20px; margin-bottom: 9px; }
+.scontent li { margin-bottom: 5px; }
+.scontent strong { font-weight: 500; color: var(--rose-dark); }
+.scontent em { color: var(--terra); font-style: normal; font-weight: 500; }
+
+/* combo cards inside stream */
+.combo {
+  background: var(--rose-faint);
+  border: 1px solid var(--border-rose);
+  border-radius: var(--r-sm);
+  padding: 13px 15px;
+  margin: 10px 0;
+}
+.combo-name {
+  font-weight: 500;
+  color: var(--rose-dark);
+  font-size: 14px;
+  margin-bottom: 3px;
+}
+.combo-desc { font-size: 13px; color: var(--text-muted); }
+
+/* ─── Back Button ────────────────────────────────── */
+.btn-back {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px 18px;
+  border-radius: var(--r-pill);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  margin-bottom: 20px;
+  transition: all 0.15s;
+}
+.btn-back:hover { border-color: var(--rose); color: var(--rose-dark); }
+
+/* ─── Signature Box ──────────────────────────────── */
+.sig-box {
+  background: var(--surface);
+  border: 1px solid var(--border-rose);
+  border-radius: var(--r-md);
+  padding: 20px;
+  margin-top: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.sig-stripe {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--rose) 0%, var(--terra) 100%);
+}
+.sig-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  margin-top: 4px;
+}
+.sig-item {
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--border);
+}
+.sig-item:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+.sig-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--rose-dark);
+  margin-bottom: 8px;
+}
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; }
+.tag {
+  font-size: 11.5px;
+  padding: 3px 11px;
+  background: var(--rose-light);
+  color: var(--rose-dark);
+  border-radius: var(--r-pill);
+}
+.tag.w {
+  background: #FDEEE2;
+  color: var(--warn-text);
+}
+.sig-tips { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+
+/* ─── Fade-in ─────────────────────────────────────── */
+.fade-in { animation: fadeUp 0.35s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<style id="smk-theme-bridge">
+  :root {
+    --smk-cream: #FAF6F0;
+    --smk-cream-warm: #F4EDE3;
+    --smk-ink: #2A1F26;
+    --smk-ink-soft: #6B5560;
+    --smk-mauve: #925274;
+    --smk-mauve-soft: #B98AA1;
+    --smk-mauve-mist: #EFE0E8;
+    --smk-line: #E8DED4;
+    --smk-accent: #C98B6B;
+    --smk-success: #6F8F70;
+    --smk-shadow: 0 1px 2px rgba(42,31,38,.04), 0 8px 28px rgba(42,31,38,.06);
+  }
+  html, body { background: var(--smk-cream) !important; color: var(--smk-ink) !important; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3, .display { font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif !important; font-weight: 600 !important; letter-spacing: -0.01em !important; }
+  /* Soften any boxes that look heavy */
+  *[style*="border-radius:14px"], *[style*="border-radius: 14px"],
+  *[style*="border-radius:16px"], *[style*="border-radius: 16px"] { border-radius: 20px !important; }
+  button { font-family: inherit !important; }
+  /* Make tools breathe on mobile */
+  @media (max-width: 640px) {
+    body { padding-bottom: 12px; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+
+<div class="header">
+  <div class="header-sub">Sauer.macht.Krustig</div>
+  <div class="header-title">Inclusions Planer 🍞</div>
+</div>
+
+<div class="main">
+
+  <!-- ── FORM VIEW ─────────────────────────── -->
+  <div id="view-form">
+
+    <div class="mode-wrap">
+      <div class="mode-toggle">
+        <button class="mode-btn active" onclick="setMode('quick')">⚡ Quick</button>
+        <button class="mode-btn" onclick="setMode('pro')">🔬 Pro</button>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">🌾 Teigart</div>
+      <div class="chip-group" id="g-teigart">
+        <div class="chip" onclick="pick(this,'teigart')">Weizen</div>
+        <div class="chip" onclick="pick(this,'teigart')">Dinkel</div>
+        <div class="chip" onclick="pick(this,'teigart')">Mischteig</div>
+        <div class="chip" onclick="pick(this,'teigart')">Roggen</div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">💧 Hydration</div>
+      <div class="chip-group" id="g-hydration">
+        <div class="chip" onclick="pick(this,'hydration')">&lt;65%</div>
+        <div class="chip" onclick="pick(this,'hydration')">65–75%</div>
+        <div class="chip" onclick="pick(this,'hydration')">&gt;75%</div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">🧭 Gewünschte Richtung</div>
+      <div class="chip-group" id="g-richtung">
+        <div class="chip" onclick="pick(this,'richtung')">🧀 Herzhaft</div>
+        <div class="chip" onclick="pick(this,'richtung')">🍫 Süß</div>
+        <div class="chip" onclick="pick(this,'richtung')">🧪 Experimentell</div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">🛒 Vorhandene Zutaten <span style="font-size:10.5px;color:var(--text-light);text-transform:none;letter-spacing:0;font-weight:400;margin-left:2px;">(optional)</span></div>
+      <input class="text-input" id="inp-zutaten" type="text" placeholder="z. B. Käse, Oliven, Schokolade, Nüsse …">
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">🎯 Dein Ziel</div>
+      <div class="chip-group" id="g-ziel">
+        <div class="chip multi" onclick="toggle(this,'ziel')">✨ Optik</div>
+        <div class="chip multi" onclick="toggle(this,'ziel')">🚀 Maximaler Ofentrieb</div>
+        <div class="chip multi" onclick="toggle(this,'ziel')">💦 Saftige Krume</div>
+        <div class="chip multi" onclick="toggle(this,'ziel')">🎵 Intensiver Geschmack</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:12px;text-align:center;">Funktioniert direkt im Browser – ohne Login, ohne API-Key.</div>
+
+    <button class="btn-generate" id="btn-gen" onclick="generate()">
+      ✨ Inclusions Plan erstellen
+    </button>
+
+  </div><!-- /view-form -->
+
+  <!-- ── RESULTS VIEW ──────────────────────── -->
+  <div id="view-results" style="display:none;">
+    <button class="btn-back" onclick="showForm()">← Neue Planung</button>
+    <div id="results-area"></div>
+  </div>
+
+  <!-- ── SIGNATURE RECIPES (always shown) ──── -->
+  <div class="sig-box">
+    <div class="sig-stripe"></div>
+    <div class="sig-title">✨ Signature Rezepte</div>
+
+    <div class="sig-item">
+      <div class="sig-name">🟤 Dubai Schokolade Brot</div>
+      <div class="tags">
+        <span class="tag">Schokolade</span>
+        <span class="tag">Pistazien</span>
+        <span class="tag">Engelshaar</span>
+        <span class="tag w">⚠️ Ofentrieb beachten</span>
+      </div>
+      <div class="sig-tips">
+        Beim Formen einschichten für maximale Optik. Fett &amp; Zucker aus Schokolade &amp; Engelshaar reduzieren den Ofentrieb — Teig vor dem Einschichten stärker auskneten &amp; kühl formen. Maximal 20 % Inclusions-Anteil verwenden.
+      </div>
+    </div>
+
+    <div class="sig-item">
+      <div class="sig-name">🍪 Krümelmonster Brot</div>
+      <div class="tags">
+        <span class="tag">Cookie Dough</span>
+        <span class="tag">Oreos</span>
+        <span class="tag">Schokolade</span>
+        <span class="tag w">⚠️ Extrem schwere Inclusions</span>
+      </div>
+      <div class="sig-tips">
+        Nur beim Formen einarbeiten — niemals früher. Extrem schwere Inclusions: maximal 15 % des Teiggewichts. Oreos vorab leicht anrösten für mehr Stabilität &amp; erhaltene Knusprigkeit nach dem Backen.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const S = { mode:'quick', teigart:'', hydration:'', richtung:'', ziel:[] };
+
+function setMode(m) {
+  S.mode = m;
+  document.querySelectorAll('.mode-btn').forEach((b,i) => {
+    b.classList.toggle('active', i === (m==='quick'?0:1));
+  });
+}
+
+function pick(el, key) {
+  document.querySelectorAll(`#g-${key} .chip`).forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  S[key] = el.textContent.replace(/[🧀🍫🧪]/g,'').trim();
+}
+
+function toggle(el, key) {
+  el.classList.toggle('selected');
+  const txt = el.textContent.replace(/[✨🚀💦🎵]/g,'').trim();
+  S[key] = el.classList.contains('selected')
+    ? [...S[key].filter(x=>x!==txt), txt]
+    : S[key].filter(x=>x!==txt);
+}
+
+function showForm() {
+  document.getElementById('view-form').style.display = 'block';
+  document.getElementById('view-results').style.display = 'none';
+}
+
+function toggleWhy(btn) {
+  const box = btn.closest('.rcard').querySelector('.why-box');
+  const open = box.style.display === 'block';
+  box.style.display = open ? 'none' : 'block';
+  btn.textContent = open ? 'Warum? 💡' : '✕ Schließen';
+}
+
+function cleanLabel(text) {
+  return text.replace(/[🧀🍫🧪✨🚀💦🎵]/g,'').trim();
+}
+
+function parseIngredients(str) {
+  return str.toLowerCase()
+    .split(/[,;\n]+/)
+    .map(x => x.trim())
+    .filter(Boolean);
+}
+
+function includesAny(list, words) {
+  const joined = list.join(' ');
+  return words.some(w => joined.includes(w));
+}
+
+function percentGuide() {
+  const heavy = S.richtung === 'Süß' || includesAny(parseIngredients(S.zutaten||''), ['schokolade','oreo','cookie','nuss','käse','speck','bacon','pistazie','pistazien','engelshaar']);
+  const wet = includesAny(parseIngredients(S.zutaten||''), ['olive','oliven','tomate','tomaten','pesto','beere','erdbeere','frucht','zucchini','apfel','passata']);
+  if (S.ziel.includes('Maximaler Ofentrieb')) return heavy || wet ? '10–15 % vom Teiggewicht' : '15–20 % vom Teiggewicht';
+  if (S.richtung === 'Experimentell') return '15–25 % vom Teiggewicht – bei sehr schweren Zutaten lieber am unteren Ende bleiben';
+  if (S.richtung === 'Süß') return '12–20 % vom Teiggewicht';
+  return '15–25 % vom Teiggewicht';
+}
+
+function baseSuggestions() {
+  const z = parseIngredients(S.zutaten || '');
+  const suggestions = [];
+  const add = (name,zutaten,beschreibung) => suggestions.push({name,zutaten,beschreibung});
+
+  if (z.length) {
+    const label = S.zutaten.split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean).slice(0,4);
+    add('Deine Zutaten – sicher geplant', label, 'Nutze deine vorhandenen Zutaten zuerst kontrolliert in kleiner Menge. Besonders bei feuchten oder fettigen Zutaten lieber vorsichtig starten und erst beim Formen einschichten.');
+  }
+
+  if (S.richtung === 'Herzhaft') {
+    add('Mediterraner Klassiker', ['getrocknete Tomaten','Oliven','Rosmarin','optional Parmesan'], 'Aromatisch, Instagram-tauglich und relativ sicher, wenn Tomaten und Oliven gut abgetupft werden.');
+    add('Hot Honey Bacon Style', ['knuspriger Bacon','Gouda oder Cheddar','Hot Honey nach dem Backen'], 'Sehr beliebt, aber schwer: Käse und Bacon drücken den Ofentrieb etwas. Dafür bekommst du maximalen Geschmack.');
+    add('Pesto Rosso Swirl', ['Pesto Rosso','Parmesan','geröstete Pinienkerne'], 'Für schöne Swirls nur beim Formen dünn verstreichen, nicht in der Stockgare komplett einarbeiten.');
+    add('Zwiebel-Käse Brot', ['Röstzwiebeln','würziger Käse','Pfeffer'], 'Sehr anfängerfreundlich, wenn der Käse klein gewürfelt und die Zwiebeln trocken sind.');
+  } else if (S.richtung === 'Süß') {
+    add('Dubai Schokolade Style', ['Schokolade','Pistaziencreme','geröstetes Engelshaar','Pistazien'], 'Optisch stark, aber schwer. Am besten als Füllung beim Formen einschichten und nicht überladen.');
+    add('Krümelmonster Style', ['Cookie Dough','Oreos','Schokostücke'], 'Ein richtiges Showbrot. Funktioniert am besten mit festem, gut entwickeltem Teig und sehr zurückhaltender Menge.');
+    add('Schoko-Nuss Brot', ['Zartbitterschokolade','Haselnüsse oder Walnüsse','optional Kakao im Teig'], 'Stabiler als cremige Füllungen und deshalb super für süße Anfänger-Experimente.');
+    add('Zimt-Apfel Swirl', ['Apfelwürfel','Zimt-Zucker','Walnüsse'], 'Saftig und cozy – Apfel vorher klein würfeln und gut trocken tupfen, sonst wird die Krume schnell klitschig.');
+  } else {
+    add('Pizza-Brot', ['Passata sehr reduziert','Salami','Oliven','Mozzarella','Knoblauch'], 'Experimentell, aber genial. Feuchtigkeit stark kontrollieren und Mozzarella eher beim Formen einlegen.');
+    add('Matcha-Erdbeer Swirl', ['Matcha-Teig','gefriergetrocknete Erdbeeren','weiße Schokolade'], 'Sehr schöne Optik. Gefriergetrocknete Früchte sind sicherer als frische, weil sie weniger Wasser abgeben.');
+    add('Bärlauchbutter Swirl', ['Bärlauchbutter','Salzflocken','optional Käse'], 'Fettig, aber wunderschön. Nur dünn einstreichen und eher für Optik als maximalen Ofentrieb planen.');
+    add('Crunchy Sweet-Salty', ['Salzbrezeln','Schokolade','geröstete Nüsse'], 'Knusprig, salzig, süß – aber schwere Zutaten. Kleine Stücke und moderate Menge sind hier Pflicht.');
+  }
+
+  return suggestions.slice(0, S.mode === 'quick' ? 3 : 5);
+}
+
+function buildLocalPlan() {
+  const ingredients = parseIngredients(S.zutaten || '');
+  const wet = includesAny(ingredients, ['olive','oliven','tomate','tomaten','pesto','beere','erdbeere','frucht','zucchini','apfel','passata','mozzarella']);
+  const fatty = includesAny(ingredients, ['schokolade','käse','pesto','butter','creme','pistaziencreme','nuss','nüsse','bacon','speck']);
+  const sweetHeavy = S.richtung === 'Süß';
+  const highHydration = S.hydration.includes('>75');
+  const rye = S.teigart === 'Roggen';
+  const spelt = S.teigart === 'Dinkel';
+  const maxOvenSpring = S.ziel.includes('Maximaler Ofentrieb');
+  const pct = percentGuide();
+
+  let zeitpunkt = `<p><strong>Beste Empfehlung:</strong> Die meisten Inclusions kommen <em>nicht</em> in die Autolyse, sondern später.</p><ul>`;
+  if (rye) zeitpunkt += `<li><strong>Roggen:</strong> eher vorsichtig unterheben oder als Topping/Füllung nutzen, weil Roggenteige empfindlicher und weniger elastisch sind.</li>`;
+  else zeitpunkt += `<li><strong>Stabile Stücke</strong> wie Nüsse, Saaten, Röstzwiebeln oder Schokostücke: bei der letzten Dehn- & Falt-Runde einarbeiten.</li>`;
+  zeitpunkt += `<li><strong>Feuchte, cremige oder fettige Zutaten</strong> wie Pesto, Käse, Pistaziencreme, Mozzarella oder Schokolade: am sichersten erst beim Formen einschichten.</li>`;
+  if (S.ziel.includes('Optik')) zeitpunkt += `<li><strong>Für schöne Swirls:</strong> Füllung beim Formen dünn verstreichen, Teig straff aufrollen und nicht zu wild drücken.</li>`;
+  zeitpunkt += `</ul>`;
+
+  let vorbereitung = `<p><strong>Mengen-Guide:</strong> Starte mit <em>${pct}</em>. Bei neuen Kombinationen lieber weniger nehmen – mehr geht beim nächsten Brot immer.</p><ul>`;
+  vorbereitung += `<li><strong>Schneidgröße:</strong> alles klein bis mittelgroß schneiden. Große Stücke reißen den Teig und machen Hohlräume.</li>`;
+  if (wet) vorbereitung += `<li><strong>Feuchte Zutaten:</strong> sehr gut abtupfen, ggf. kurz antrocknen lassen. Sonst wird die Krume schnell klitschig.</li>`;
+  if (fatty || sweetHeavy) vorbereitung += `<li><strong>Fettige/süße Zutaten:</strong> nicht zu früh einarbeiten, weil Fett und Zucker die Glutenstruktur schwächen können.</li>`;
+  vorbereitung += `<li><strong>Mehl-Coating:</strong> sinnvoll bei klebrigen, feuchten oder schmelzenden Zutaten. Einfach hauchdünn mit Mehl bestäuben.</li>`;
+  vorbereitung += `<li><strong>Rösten:</strong> Nüsse, Saaten, Bacon, Engelshaar oder Oreos kurz anrösten – gibt mehr Aroma und bessere Struktur.</li>`;
+  vorbereitung += `</ul>`;
+
+  let warnings = `<p><strong>Wichtig:</strong> Inclusions machen Brot spannend – aber sie können den Ofentrieb reduzieren.</p><ul>`;
+  if (highHydration) warnings += `<li>Bei hoher Hydration plus feuchten Inclusions wird der Teig schnell instabil. Lieber weniger Inclusions und sehr gut abtupfen.</li>`;
+  if (spelt) warnings += `<li>Dinkel ist empfindlicher gegen Überkneten und schwere Füllungen. Sanft falten und nicht überladen.</li>`;
+  if (rye) warnings += `<li>Roggen hat kaum dehnbares Glutengerüst. Schwere Stücke können die Krume verdichten.</li>`;
+  if (maxOvenSpring) warnings += `<li>Wenn maximaler Ofentrieb dein Ziel ist: Inclusions klein halten, Menge reduzieren und keine schweren Cremes in den Teig mischen.</li>`;
+  warnings += `<li>Zu viel Zucker, Fett, Käse, Schokolade oder Creme kann zu flacherem Brot, Hohlräumen oder dichter Krume führen.</li>`;
+  warnings += `<li>Alles, was stark schmilzt oder ausläuft, lieber als Füllung einschichten statt komplett einzukneten.</li>`;
+  warnings += `</ul>`;
+
+  let tips = `<ul>`;
+  tips += `<li><strong>Instagram-Optik:</strong> Beim Formen eine dünne Schicht Füllung sichtbar einrollen und oben dekorativ einschneiden.</li>`;
+  tips += `<li><strong>Ofentrieb retten:</strong> Teig vor dem Befüllen wirklich gut entwickeln und nicht zu spät formen.</li>`;
+  tips += `<li><strong>Saftige Krume:</strong> lieber aromatische Füllung beim Formen einschichten als den ganzen Teig mit feuchten Zutaten zu belasten.</li>`;
+  tips += `<li><strong>Saubere Schnitte:</strong> Gefüllte Brote 10–15 Minuten kühler stellen, dann lassen sie sich schöner einschneiden.</li>`;
+  if (S.mode === 'pro') tips += `<li><strong>Pro-Tipp:</strong> Teile schwere Inclusions auf: stabile Stücke beim letzten Falten, cremige Komponenten erst beim Formen. So bekommst du Verteilung und trotzdem Struktur.</li>`;
+  tips += `</ul>`;
+
+  return {
+    vorschlaege: baseSuggestions(),
+    zeitpunkt: { text: zeitpunkt },
+    vorbereitung: { text: vorbereitung },
+    warnungen: { text: warnings },
+    tipps: { text: tips }
+  };
+}
+
+function generate() {
+  const missing = [];
+  if (!S.teigart)  missing.push('Teigart');
+  if (!S.hydration) missing.push('Hydration');
+  if (!S.richtung) missing.push('Richtung');
+  if (missing.length) { alert('Bitte noch auswählen: ' + missing.join(', ')); return; }
+
+  S.zutaten = document.getElementById('inp-zutaten').value.trim();
+
+  document.getElementById('view-form').style.display = 'none';
+  document.getElementById('view-results').style.display = 'block';
+
+  const area = document.getElementById('results-area');
+  area.innerHTML = `
+    <div class="loading">
+      <div class="loading-title">Dein Plan wird gebacken…</div>
+      <div class="loading-sub">Offline-Regelplaner — kein API-Key nötig</div>
+      <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    </div>`;
+
+  setTimeout(() => renderResults(area, buildLocalPlan()), 350);
+}
+
+const WHY = {
+  vorschlaege: 'Diese Kombinationen wurden auf Basis deiner Teigart, Hydration und Geschmacksrichtung zusammengestellt. Dabei werden Aromenharmonie, Textur-Kontraste und das Risiko für die Teigstruktur berücksichtigt.',
+  zeitpunkt:   'Der Zeitpunkt ist entscheidend: Zu früh eingearbeitet → Gluten wird zerrissen. Zu spät → schlechte Verteilung. Die Empfehlung berücksichtigt Schwere, Feuchtigkeit und Gewicht der Inclusions.',
+  vorbereitung:'Richtig vorbereitet haften Inclusions besser, verlieren weniger Feuchtigkeit an den Teig und erzeugen gleichmäßigere Ergebnisse. Mehl-Coating verhindert Klebrigkeit und Auslaufen.',
+  warnungen:   'Diese Warnungen basieren auf Physik: Fett hemmt Glutenentwicklung, Feuchtigkeit destabilisiert die Krume, Gewicht reduziert Ofentrieb. Wer diese Risiken kennt, kann gezielt gegensteuern.',
+  tipps:       'Diese Tricks kommen aus der Praxis professioneller Bäcker:innen und wurden für Sauerteig mit Inclusions optimiert — besonders für den Spagat zwischen Optik und stabilem Trieb.'
+};
+
+const TITLES = {
+  vorschlaege: '🔥 Inclusions Vorschläge',
+  zeitpunkt:   '⏱️ Optimaler Zeitpunkt',
+  vorbereitung:'🧑‍🍳 Vorbereitung',
+  warnungen:   '⚠️ Warnungen',
+  tipps:       '💡 Profi-Tipps'
+};
+
+function renderResults(area, obj) {
+  let html = '';
+
+  // Vorschläge
+  if (obj.vorschlaege) {
+    const combos = obj.vorschlaege.map(v => `
+      <div class="combo">
+        <div class="combo-name">${v.name}</div>
+        <div class="combo-desc">${Array.isArray(v.zutaten)?v.zutaten.join(' · '):v.zutaten}</div>
+        ${v.beschreibung ? `<div class="combo-desc" style="margin-top:5px;font-style:italic;">${v.beschreibung}</div>` : ''}
+      </div>`).join('');
+    html += buildCard('vorschlaege', combos, false);
+  }
+
+  ['zeitpunkt','vorbereitung','tipps'].forEach(key => {
+    if (obj[key]) html += buildCard(key, obj[key].text||obj[key], false);
+  });
+
+  if (obj.warnungen) html += buildCard('warnungen', obj.warnungen.text||obj.warnungen, true);
+
+  area.innerHTML = html;
+  area.querySelectorAll('.rcard').forEach((el,i) => {
+    el.style.animationDelay = (i*0.07)+'s';
+    el.classList.add('fade-in');
+  });
+}
+
+function buildCard(key, content, isWarn) {
+  const why = WHY[key] || '';
+  const whyOverride = '';
+  return `
+    <div class="rcard${isWarn?' warn':''}">
+      <div class="result-header">
+        <div class="result-title">${TITLES[key]}</div>
+        <button class="btn-why" onclick="toggleWhy(this)">Warum? 💡</button>
+      </div>
+      <div class="why-box">${why}</div>
+      <div class="scontent">${content}</div>
+    </div>`;
+}
+</script>
+</body>
+</html>

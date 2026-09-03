@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sauer macht krustig – Hydrations-Rechner</title>
+  <meta name="description" content="Hydrations-Rechner für Sauerteigbrot – einfach erklärt, für Anfänger geeignet." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: linear-gradient(160deg,#F5EBF0 0%,#EAD8E5 55%,#F2E8EF 100%); min-height: 100vh; }
+    input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; width: 100%; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #925274; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.2); margin-top: -7px; }
+    input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #925274; cursor: pointer; border: none; }
+    input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: #EDE0E7; }
+    input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: #EDE0E7; }
+    button { transition: all 0.13s ease; font-family: inherit; cursor: pointer; }
+    button:hover { transform: translateY(-1px); }
+    select { appearance: none; -webkit-appearance: none; font-family: inherit; }
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type=number] { -moz-appearance: textfield; }
+  </style>
+
+<style id="smk-theme-bridge">
+  :root {
+    --smk-cream: #FAF6F0;
+    --smk-cream-warm: #F4EDE3;
+    --smk-ink: #2A1F26;
+    --smk-ink-soft: #6B5560;
+    --smk-mauve: #925274;
+    --smk-mauve-soft: #B98AA1;
+    --smk-mauve-mist: #EFE0E8;
+    --smk-line: #E8DED4;
+    --smk-accent: #C98B6B;
+    --smk-success: #6F8F70;
+    --smk-shadow: 0 1px 2px rgba(42,31,38,.04), 0 8px 28px rgba(42,31,38,.06);
+  }
+  html, body { background: var(--smk-cream) !important; color: var(--smk-ink) !important; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3, .display { font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif !important; font-weight: 600 !important; letter-spacing: -0.01em !important; }
+  /* Soften any boxes that look heavy */
+  *[style*="border-radius:14px"], *[style*="border-radius: 14px"],
+  *[style*="border-radius:16px"], *[style*="border-radius: 16px"] { border-radius: 20px !important; }
+  button { font-family: inherit !important; }
+  /* Make tools breathe on mobile */
+  @media (max-width: 640px) {
+    body { padding-bottom: 12px; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+const MEHLSORTEN = [
+  // ── Weizen ──
+  {
+    id: "w550", full: "Weizenmehl 550", absorption: 1.00,
+    beginner: true, beginnerHydration: 68,
+    beginnerTip: "Perfekt für den Start! Dieses Mehl verzeiht kleine Fehler und ist gut formbar.",
+    hint: "Das beliebteste Anfänger-Mehl. Starte mit 65–70% Wasser."
+  },
+  {
+    id: "w812", full: "Weizenmehl 812", absorption: 1.05,
+    beginner: true, beginnerHydration: 67,
+    beginnerTip: "Gute Wahl für Anfänger – ähnlich wie 550, etwas rustikaler im Geschmack.",
+    hint: "Etwas mehr Kleie, starte mit 65–68% Wasser."
+  },
+  {
+    id: "w1050", full: "Weizenmehl 1050", absorption: 1.10,
+    beginner: false, beginnerHydration: 65,
+    beginnerTip: "Etwas anspruchsvoller – der Teig klebt mehr. Erst mit 550er üben, dann probieren.",
+    hint: "Braucht mehr Wasser, klebt aber auch mehr. Für Fortgeschrittene empfohlen."
+  },
+  {
+    id: "wvk", full: "Weizenvollkornmehl", absorption: 1.18,
+    beginner: false, beginnerHydration: 70,
+    beginnerTip: "⚠️ Vollkorn saugt viel Wasser – Teig quillt nach. Erst 5 Min warten vor dem Kneten!",
+    hint: "Braucht deutlich mehr Wasser als helles Mehl. Teig quillt nach dem Mischen noch nach."
+  },
+  // ── Dinkel ──
+  {
+    id: "d630", full: "Dinkelmehl 630", absorption: 0.92,
+    beginner: false, beginnerHydration: 63,
+    beginnerTip: "⚠️ Dinkel reißt schnell – unbedingt weniger Wasser nehmen als bei Weizen!",
+    hint: "Dinkel braucht WENIGER Wasser als Weizen. Max. 60–65% für Anfänger."
+  },
+  {
+    id: "d1050", full: "Dinkelmehl 1050", absorption: 0.97,
+    beginner: false, beginnerHydration: 62,
+    beginnerTip: "⚠️ Wie Dinkel 630 – weniger Wasser als gedacht, sonst zerläuft der Teig.",
+    hint: "Vorsicht: Dinkel klebt viel, aber reißt schnell. Wenig Wasser ist besser."
+  },
+  {
+    id: "dvk", full: "Dinkelvollkornmehl", absorption: 1.05,
+    beginner: false, beginnerHydration: 65,
+    beginnerTip: "⚠️ Vollkorn-Dinkel ist besonders empfindlich – reißt noch leichter. Erst üben!",
+    hint: "Kombination aus Dinkel-Empfindlichkeit und Vollkorn-Quellverhalten. Teig 10 Min ruhen lassen nach dem Mischen."
+  },
+  // ── Roggen ──
+  {
+    id: "r997", full: "Roggenmehl 997", absorption: 1.18,
+    beginner: false, beginnerHydration: 70,
+    beginnerTip: "Roggen ist sehr klebrig und lässt sich kaum formen – am besten in Kastenformen backen.",
+    hint: "Roggenteig ist eher ein Brei als ein Teig – wird in der Form gebacken, nicht freigeschoben."
+  },
+  {
+    id: "r1150", full: "Roggenmehl 1150", absorption: 1.22,
+    beginner: false, beginnerHydration: 72,
+    beginnerTip: "Nur für Fortgeschrittene – Roggenteig lässt sich kaum kneten oder formen.",
+    hint: "Sehr klebriger Teig. Kastenform verwenden, nicht freigeschoben backen."
+  },
+  {
+    id: "r1370", full: "Roggenmehl 1370", absorption: 1.28,
+    beginner: false, beginnerHydration: 74,
+    beginnerTip: "Nur für Fortgeschrittene – sehr anspruchsvoll in der Verarbeitung.",
+    hint: "Maximale Klebrigkeit. Nur als Mischung mit Weizenmehl für Anfänger geeignet."
+  },
+  {
+    id: "rvk", full: "Roggenvollkornmehl", absorption: 1.35,
+    beginner: false, beginnerHydration: 76,
+    beginnerTip: "❌ Nicht für Anfänger geeignet – extrem klebrig, kaum formbar. Nur in Kastenform.",
+    hint: "Höchste Wasseraufnahme aller Mehle. Fast ausschließlich für Kastenbrote geeignet."
+  },
+];
+
+const MIX_COLORS = ["#925274","#5A7BB5","#4A9B6A","#9B6EA8","#B6758F","#5A8A9A"];
+
+// Hydration zones with beginner info
+const ZONES = [
+  { min: 0,   max: 62, label: "Sehr fest",  emoji: "🪨", color: "#A07070",
+    beginnerOk: true,  beginnerNote: "Sehr gut formbar – ideal wenn du noch übst." },
+  { min: 62,  max: 68, label: "Fest",        emoji: "💪", color: "#B6859F",
+    beginnerOk: true,  beginnerNote: "✅ Perfekt für Anfänger! Teig ist gut händelbar." },
+  { min: 68,  max: 75, label: "Standard",    emoji: "✅", color: "#4A9B6A",
+    beginnerOk: true,  beginnerNote: "Noch gut machbar – Teig klebt etwas mehr." },
+  { min: 75,  max: 82, label: "Hoch",        emoji: "💧", color: "#5A7BB5",
+    beginnerOk: false, beginnerNote: "⚠️ Für Anfänger schwierig – Teig klebt stark und lässt sich kaum formen." },
+  { min: 82,  max: 90, label: "Sehr hoch",   emoji: "🌊", color: "#7B5AB5",
+    beginnerOk: false, beginnerNote: "❌ Nicht für Anfänger geeignet – sehr klebrig, kaum formbar." },
+  { min: 90,  max: 200,label: "Extrem",      emoji: "⚠️", color: "#C44A4A",
+    beginnerOk: false, beginnerNote: "❌ Nur für erfahrene Bäcker – fast flüssiger Teig." },
+];
+
+function getZone(pct) {
+  return ZONES.find(z => pct >= z.min && pct < z.max) || ZONES[ZONES.length - 1];
+}
+
+function formatTime(mins) {
+  const h = Math.floor(mins / 60), m = mins % 60;
+  if (h === 0) return `${m} Min`; if (m === 0) return `${h} Std`;
+  return `${h} Std ${m} Min`;
+}
+
+function SectionTitle({ children }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+      <h2 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 16, fontWeight: 800, color: "#3A2430", margin: 0, whiteSpace: "nowrap" }}>{children}</h2>
+      <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,#DFCDD6,transparent)" }} />
+    </div>
+  );
+}
+
+function Card({ children, accent }) {
+  return (
+    <div style={{ background: "rgba(255,250,253,0.92)", borderRadius: 20, border: `1px solid ${accent || "rgba(146,82,116,0.18)"}`, boxShadow: "0 5px 28px rgba(58,36,48,0.09)", padding: "22px 24px", marginBottom: 16 }}>
+      {children}
+    </div>
+  );
+}
+
+// Simple gram stepper
+function GramInput({ label, value, onChange, unit = "g", min = 0, hint }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+        <label style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 13, color: "#3A2430", fontWeight: 600 }}>{label}</label>
+        <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 11, color: "#8A6A7A" }}>{unit}</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <button onClick={() => onChange(Math.max(min, value - 10))}
+          style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid #DFCDD6", background: "transparent", color: "#6A4A5A", fontWeight: 700, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
+        <input type="number" value={value} min={min}
+          onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v >= min) onChange(v); }}
+          style={{ flex: 1, fontFamily: "Courier Prime,monospace", fontSize: 22, fontWeight: 700, color: "#925274", textAlign: "center", background: "rgba(237,224,231,0.35)", border: "1.5px solid #DFCDD6", borderRadius: 10, padding: "7px 8px", outline: "none" }} />
+        <button onClick={() => onChange(value + 10)}
+          style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid #DFCDD6", background: "transparent", color: "#6A4A5A", fontWeight: 700, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+      </div>
+      {hint && <div style={{ fontSize: 11.5, color: "#8A6A7A", fontStyle: "italic", marginTop: 6, lineHeight: 1.5 }}>{hint}</div>}
+    </div>
+  );
+}
+
+// Hydration gauge
+function HydrationGauge({ pct, trueHydration, isBeginnerMode }) {
+  const zone = getZone(pct);
+  const clampedPct = Math.min(Math.max(pct, 40), 105);
+  const barPct = ((clampedPct - 40) / 65) * 100;
+
+  return (
+    <div>
+      {/* Big result */}
+      <div style={{ textAlign: "center", marginBottom: 20, padding: "20px 16px", background: `linear-gradient(135deg,${zone.color}12,${zone.color}06)`, borderRadius: 16, border: `1.5px solid ${zone.color}30` }}>
+        <div style={{ fontFamily: "Courier Prime,monospace", fontSize: 11, color: "#8A6A7A", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>
+          Hydration deines Teigs
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 4 }}>
+          <span style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 68, fontWeight: 900, color: zone.color, lineHeight: 1, transition: "color 0.3s" }}>
+            {isNaN(pct) || !isFinite(pct) ? "–" : pct.toFixed(1)}
+          </span>
+          <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 26, fontWeight: 700, color: zone.color }}>%</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8, marginBottom: 6 }}>
+          <span style={{ fontSize: 24 }}>{zone.emoji}</span>
+          <span style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 18, fontWeight: 700, color: zone.color }}>{zone.label}</span>
+        </div>
+
+        {/* Beginner verdict */}
+        {isBeginnerMode && (
+          <div style={{ marginTop: 10, padding: "8px 14px", borderRadius: 10, background: zone.beginnerOk ? "rgba(74,155,106,0.12)" : "rgba(196,74,74,0.1)", border: `1px solid ${zone.beginnerOk ? "#4A9B6A" : "#C44A4A"}40` }}>
+            <div style={{ fontSize: 13, fontFamily: "Georgia,serif", color: zone.beginnerOk ? "#2A6A3A" : "#8A2A2A", lineHeight: 1.5, fontWeight: zone.beginnerOk ? 400 : 600 }}>
+              {zone.beginnerNote}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bar */}
+      <div style={{ position: "relative", height: 24, borderRadius: 12, overflow: "hidden", display: "flex", marginBottom: 6 }}>
+        {ZONES.filter((z,i) => i < 5).map((z, i) => {
+          const zMin = Math.max(z.min, 40), zMax = Math.min(z.max, 105);
+          const w = ((zMax - zMin) / 65) * 100;
+          return <div key={i} style={{ width: `${w}%`, background: z.color, opacity: 0.22, borderRight: "1px solid rgba(255,255,255,0.4)" }} />;
+        })}
+        <div style={{ position: "absolute", left: `${barPct}%`, top: 2, bottom: 2, width: 4, background: zone.color, borderRadius: 2, transform: "translateX(-50%)", transition: "left 0.4s cubic-bezier(.34,1.56,.64,1)", boxShadow: `0 0 8px ${zone.color}88` }} />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "Courier Prime,monospace", fontSize: 9.5, color: "#8A6A7A", marginBottom: 14 }}>
+        <span>40%</span><span>62%</span><span>68%</span><span>75%</span><span>82%</span><span>105%</span>
+      </div>
+
+      {/* True hydration note */}
+      {Math.abs(trueHydration - pct) > 0.5 && (
+        <div style={{ background: "rgba(146,82,116,0.07)", border: "1px solid rgba(146,82,116,0.18)", borderRadius: 10, padding: "10px 14px", marginBottom: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontFamily: "Courier Prime,monospace", fontSize: 11, color: "#8A6A7A", textTransform: "uppercase", letterSpacing: "0.06em" }}>Wahre Hydration</div>
+              <div style={{ fontFamily: "Georgia,serif", fontSize: 11, fontStyle: "italic", color: "#6A4A5A", marginTop: 2 }}>Wasser im Starter mitgerechnet</div>
+            </div>
+            <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 24, fontWeight: 700, color: "#925274" }}>{trueHydration.toFixed(1)}%</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Reverse calculator
+function ReverseCalc({ totalFlourG, starterG, starterHydration }) {
+  const [target, setTarget] = useState(68);
+  const starterFlourG = starterG / (1 + starterHydration / 100);
+  const starterWaterG = starterG - starterFlourG;
+  const effectiveFlour = totalFlourG + starterFlourG;
+  const waterNeeded = Math.max(0, Math.round((target / 100) * effectiveFlour - starterWaterG));
+  const zone = getZone(target);
+
+  return (
+    <Card accent="rgba(90,123,181,0.2)">
+      <SectionTitle>🔄 Wieviel Wasser brauche ich?</SectionTitle>
+      <div style={{ fontFamily: "Georgia,serif", fontSize: 13, color: "#6A4A5A", marginBottom: 18, marginTop: -10, lineHeight: 1.6 }}>
+        Gib deine Wunsch-Hydration ein — der Rechner sagt dir genau, wieviel Gramm Wasser du brauchst.
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+          <label style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 13, color: "#3A2430", fontWeight: 600 }}>Gewünschte Hydration</label>
+          <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 18, fontWeight: 700, color: "#925274" }}>{target}%</span>
+        </div>
+        <div style={{ position: "relative", paddingBottom: 6 }}>
+          <div style={{ height: 6, borderRadius: 3, background: "#EDE0E7", overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${((target-50)/50)*100}%`, background: "linear-gradient(90deg,#D6B7C7,#925274)", transition: "width 0.2s" }} />
+          </div>
+          <input type="range" min={50} max={100} step={1} value={target}
+            onChange={e => setTarget(Number(e.target.value))}
+            style={{ position: "absolute", top: 0, left: 0, width: "100%", opacity: 0, cursor: "pointer", height: 20 }} />
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+          {[50,60,68,75,82,90,100].map(v => (
+            <span key={v} style={{ fontFamily: "Courier Prime,monospace", fontSize: 9.5, color: v === 68 ? "#925274" : "#8A6A7A", fontWeight: v === 68 ? 700 : 400 }}>{v}%{v === 68 ? " ★" : ""}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Result */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+        <div style={{ background: `linear-gradient(135deg,${zone.color}14,${zone.color}06)`, border: `1.5px solid ${zone.color}35`, borderRadius: 14, padding: "16px", textAlign: "center" }}>
+          <div style={{ fontFamily: "Courier Prime,monospace", fontSize: 10, color: "#8A6A7A", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Wasser zugeben</div>
+          <div style={{ fontFamily: "Courier Prime,monospace", fontSize: 34, fontWeight: 700, color: zone.color, lineHeight: 1 }}>{waterNeeded}</div>
+          <div style={{ fontFamily: "Courier Prime,monospace", fontSize: 13, color: "#8A6A7A", marginTop: 4 }}>Gramm</div>
+        </div>
+        <div style={{ background: "rgba(146,82,116,0.07)", border: "1px solid rgba(146,82,116,0.2)", borderRadius: 14, padding: "16px", textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div style={{ fontSize: 22, marginBottom: 4 }}>{zone.emoji}</div>
+          <div style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 14, fontWeight: 700, color: zone.color }}>{zone.label}</div>
+          <div style={{ fontFamily: "Georgia,serif", fontSize: 11, fontStyle: "italic", color: "#6A4A5A", marginTop: 4, lineHeight: 1.4 }}>{zone.beginnerNote}</div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// ── Main App ──────────────────────────────────────────────────────────────────
+function App() {
+  const [flours, setFlours] = useState([{ id: "w550", g: 450 }]);
+  const [waterG, setWaterG] = useState(306);
+  const [starterG, setStarterG] = useState(90);
+  const [starterHydration, setStarterHydration] = useState(100);
+  const [saltG, setSaltG] = useState(9);
+  const [mode, setMode] = useState("calc");
+  const [isBeginnerMode, setBeginnerMode] = useState(true);
+
+  const totalFlourG = flours.reduce((s, c) => s + c.g, 0);
+  const bakersHydration = totalFlourG > 0 ? (waterG / totalFlourG) * 100 : 0;
+  const starterFlourG = starterG / (1 + starterHydration / 100);
+  const starterWaterG = starterG - starterFlourG;
+  const trueHydration = (totalFlourG + starterFlourG) > 0
+    ? ((waterG + starterWaterG) / (totalFlourG + starterFlourG)) * 100 : 0;
+
+  const totalDoughG = totalFlourG + waterG + starterG + saltG;
+  const bakerPct = (g) => totalFlourG > 0 ? ((g / totalFlourG) * 100).toFixed(1) : "–";
+
+  // Per-flour beginner tips
+  const flourTips = useMemo(() => flours.map(c => MEHLSORTEN.find(m => m.id === c.id)).filter(Boolean), [flours]);
+
+  const addFlour = () => {
+    const usedIds = new Set(flours.map(c => c.id));
+    const next = MEHLSORTEN.find(m => !usedIds.has(m.id));
+    if (!next) return;
+    setFlours([...flours, { id: next.id, g: 100 }]);
+  };
+
+  const updateFlour = (i, field, val) => setFlours(prev => prev.map((c, idx) => idx === i ? { ...c, [field]: val } : c));
+  const removeFlour = (i) => { if (flours.length > 1) setFlours(flours.filter((_, idx) => idx !== i)); };
+  const usedIds = new Set(flours.map(c => c.id));
+
+  // Flour bar
+  const flourBar = flours.map((c, i) => ({
+    full: MEHLSORTEN.find(m => m.id === c.id)?.full ?? "",
+    pct: totalFlourG > 0 ? (c.g / totalFlourG) * 100 : 0,
+    color: MIX_COLORS[i % MIX_COLORS.length],
+  }));
+
+  return (
+    <div style={{ minHeight: "100vh", fontFamily: "Georgia,serif", padding: "20px 14px" }}>
+      <div style={{ maxWidth: 680, margin: "0 auto" }}>
+
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 26 }}>
+          <div style={{ fontSize: 44, lineHeight: 1, marginBottom: 10 }}>💧</div>
+          <div style={{ display: "inline-block", background: "#3A2430", borderRadius: 6, padding: "3px 14px", marginBottom: 12 }}>
+            <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 10, fontWeight: 700, color: "#D6B7C7", letterSpacing: "0.22em", textTransform: "uppercase" }}>Handwerks-Bäckerei Tools</span>
+          </div>
+          <h1 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: "clamp(26px,7vw,44px)", fontWeight: 900, color: "#3A2430", margin: "0 0 2px", lineHeight: 1.1 }}>Sauer macht</h1>
+          <h1 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: "clamp(26px,7vw,44px)", fontWeight: 900, color: "#925274", margin: "0 0 12px", lineHeight: 1.1 }}>krustig.</h1>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 8 }}>
+            <div style={{ height: 1, width: 36, background: "#B6859F" }} />
+            <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 11, color: "#8A6A7A", letterSpacing: "0.12em", textTransform: "uppercase" }}>Hydrations-Rechner</span>
+            <div style={{ height: 1, width: 36, background: "#B6859F" }} />
+          </div>
+          <p style={{ color: "#8A6A7A", fontStyle: "italic", margin: 0, fontSize: 12.5 }}>Wieviel Wasser kommt in meinen Teig?</p>
+        </div>
+
+        {/* What is hydration? - beginner explainer */}
+        <div style={{ background: "rgba(146,82,116,0.07)", border: "1px solid rgba(146,82,116,0.18)", borderRadius: 16, padding: "16px 20px", marginBottom: 16 }}>
+          <div style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 14, fontWeight: 700, color: "#3A2430", marginBottom: 8 }}>
+            💡 Was bedeutet Hydration?
+          </div>
+          <div style={{ fontSize: 13, color: "#4A2A3A", lineHeight: 1.7, fontFamily: "Georgia,serif" }}>
+            Hydration = der Wasseranteil im Teig, angegeben in Prozent des Mehlgewichts.<br/>
+            <strong>Beispiel:</strong> 500 g Mehl + 350 g Wasser = <strong>70% Hydration</strong>.<br/>
+            Je höher die Zahl, desto <em>klebriger und weicher</em> der Teig — und desto anspruchsvoller das Backen.
+            <br/><strong>Für Anfänger: 65–70% sind ideal.</strong> 🎯
+          </div>
+        </div>
+
+        {/* Beginner toggle */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(237,224,231,0.5)", borderRadius: 14, padding: "10px 16px", marginBottom: 16 }}>
+          <span style={{ fontFamily: "Georgia,serif", fontSize: 13, color: "#4A2A3A" }}>Anfänger-Modus <span style={{ fontStyle: "italic", color: "#8A6A7A" }}>(zeigt Empfehlungen)</span></span>
+          <button onClick={() => setBeginnerMode(!isBeginnerMode)}
+            style={{ width: 48, height: 26, borderRadius: 13, border: "none", background: isBeginnerMode ? "#925274" : "#DFCDD6", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+            <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: isBeginnerMode ? 25 : 3, transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+          </button>
+        </div>
+
+        {/* Mode tabs */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 16, background: "rgba(237,224,231,0.5)", borderRadius: 14, padding: 5 }}>
+          {[["calc","🧮 Hydration berechnen"],["reverse","🔄 Wasser berechnen"]].map(([m, l]) => (
+            <button key={m} onClick={() => setMode(m)}
+              style={{ flex: 1, padding: "9px 12px", borderRadius: 10, border: "none", background: mode === m ? "#925274" : "transparent", color: mode === m ? "#FFF5FA" : "#6A4A5A", fontFamily: "Courier Prime,monospace", fontSize: 12, fontWeight: 700 }}>
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Mehl ── */}
+        <Card>
+          <SectionTitle>🌾 Mehlsorte & Menge</SectionTitle>
+
+          {/* Beginner flour guide */}
+          {isBeginnerMode && (
+            <div style={{ background: "rgba(74,155,106,0.08)", border: "1px solid rgba(74,155,106,0.25)", borderRadius: 10, padding: "10px 14px", marginBottom: 16, fontSize: 12, color: "#2A5A3A", fontFamily: "Georgia,serif", lineHeight: 1.55 }}>
+              ✅ <strong>Empfehlung für Anfänger:</strong> Starte mit <strong>Weizenmehl 550</strong> — es ist das fehlerverzeihendste Mehl und eignet sich perfekt zum Üben.
+            </div>
+          )}
+
+          {/* Flour bar for mixes */}
+          {flours.length > 1 && (
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ display: "flex", height: 20, borderRadius: 10, overflow: "hidden", border: "1px solid rgba(146,82,116,0.2)" }}>
+                {flourBar.map((b, i) => (
+                  <div key={i} style={{ width: `${b.pct}%`, background: b.color, transition: "width 0.3s", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    {b.pct > 12 && <span style={{ fontSize: 8.5, color: "#fff", fontFamily: "Courier Prime,monospace", fontWeight: 700, textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}>{b.pct.toFixed(0)}%</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Flour rows */}
+          {flours.map((comp, i) => {
+            const dot = MIX_COLORS[i % MIX_COLORS.length];
+            const m = MEHLSORTEN.find(m => m.id === comp.id);
+            return (
+              <div key={i} style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(237,224,231,0.45)", borderRadius: 12, padding: "10px 12px", border: "1px solid rgba(146,82,116,0.14)" }}>
+                  <div style={{ width: 9, height: 9, borderRadius: 2, background: dot, flexShrink: 0 }} />
+                  <select value={comp.id} onChange={e => updateFlour(i, "id", e.target.value)}
+                    style={{ fontFamily: "Courier Prime,monospace", fontSize: 12, color: "#3A2430", background: "transparent", border: "none", outline: "none", cursor: "pointer", flex: 1, minWidth: 0 }}>
+                    {MEHLSORTEN.map(m => (
+                      <option key={m.id} value={m.id} disabled={usedIds.has(m.id) && m.id !== comp.id}>
+                        {m.full}{m.beginner ? " ★" : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                    <button onClick={() => updateFlour(i, "g", Math.max(10, comp.g - 10))}
+                      style={{ width: 24, height: 24, borderRadius: "50%", border: "1.5px solid #DFCDD6", background: "transparent", color: "#6A4A5A", fontWeight: 700, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
+                    <input type="number" value={comp.g} min={10}
+                      onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v >= 10) updateFlour(i, "g", v); }}
+                      style={{ width: 72, fontFamily: "Courier Prime,monospace", fontSize: 15, fontWeight: 700, color: dot, textAlign: "center", background: "transparent", border: "none", outline: "none" }} />
+                    <button onClick={() => updateFlour(i, "g", comp.g + 10)}
+                      style={{ width: 24, height: 24, borderRadius: "50%", border: "1.5px solid #DFCDD6", background: "transparent", color: "#6A4A5A", fontWeight: 700, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+                    <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 11, color: "#8A6A7A" }}>g</span>
+                  </div>
+                  {flours.length > 1 && (
+                    <button onClick={() => removeFlour(i)}
+                      style={{ width: 20, height: 20, borderRadius: "50%", border: "none", background: "#C47A7A", color: "#fff", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+                  )}
+                </div>
+                {/* Per-flour beginner tip */}
+                {isBeginnerMode && m && (
+                  <div style={{ fontSize: 11.5, color: m.beginner ? "#2A5A3A" : "#7A3A2A", fontFamily: "Georgia,serif", fontStyle: "italic", marginTop: 5, paddingLeft: 10, borderLeft: `2px solid ${m.beginner ? "#4A9B6A" : "#C47A7A"}`, lineHeight: 1.5 }}>
+                    {m.beginnerTip}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
+            {flours.length < MEHLSORTEN.length && (
+              <button onClick={addFlour}
+                style={{ padding: "5px 14px", borderRadius: 14, border: "1.5px dashed #925274", background: "transparent", color: "#925274", fontFamily: "Courier Prime,monospace", fontSize: 11, fontWeight: 700 }}>
+                + Mehlsorte hinzufügen
+              </button>
+            )}
+            <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 13, fontWeight: 700, color: "#3A2430", marginLeft: "auto" }}>
+              Gesamt: {totalFlourG} g
+            </span>
+          </div>
+          {isBeginnerMode && <div style={{ fontSize: 11, color: "#8A6A7A", marginTop: 6, fontStyle: "italic", fontFamily: "Georgia,serif" }}>★ = für Anfänger empfohlen</div>}
+        </Card>
+
+        {/* ── Wasser & Zutaten ── */}
+        <Card>
+          <SectionTitle>💧 Wasser & weitere Zutaten</SectionTitle>
+
+          <GramInput label="Wasser" value={waterG} onChange={setWaterG}
+            hint={isBeginnerMode ? `Tipp: Für ${totalFlourG} g Mehl sind ${Math.round(totalFlourG * 0.68)} g Wasser (68%) ein guter Anfänger-Start.` : null} />
+
+          <GramInput label="Sauerteig / Anstellgut" value={starterG} onChange={setStarterG}
+            hint={isBeginnerMode ? "Der Starter bringt selbst Wasser mit – das rechnen wir automatisch ein." : null} />
+
+          {/* Starter hydration - simplified for beginners */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+              <label style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 13, color: "#3A2430", fontWeight: 600 }}>Starter-Hydration</label>
+              <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 18, fontWeight: 700, color: "#925274" }}>{starterHydration}%</span>
+            </div>
+            <div style={{ position: "relative", paddingBottom: 6 }}>
+              <div style={{ height: 6, borderRadius: 3, background: "#EDE0E7", overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${((starterHydration-50)/150)*100}%`, background: "linear-gradient(90deg,#D6B7C7,#925274)", transition: "width 0.2s" }} />
+              </div>
+              <input type="range" min={50} max={200} step={5} value={starterHydration}
+                onChange={e => setStarterHydration(Number(e.target.value))}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", opacity: 0, cursor: "pointer", height: 20 }} />
+            </div>
+            {isBeginnerMode && (
+              <div style={{ fontSize: 11.5, color: "#6A4A5A", fontStyle: "italic", marginTop: 5, fontFamily: "Georgia,serif" }}>
+                {starterHydration === 100 ? "✅ 100% = gleiche Teile Mehl und Wasser – das ist der häufigste Starter." : starterHydration < 100 ? "Fester Starter – weniger Wasser als Mehl." : "Flüssiger Starter – mehr Wasser als Mehl."}
+              </div>
+            )}
+          </div>
+
+          <GramInput label="Salz" value={saltG} onChange={setSaltG} min={0}
+            hint={isBeginnerMode ? `Üblich: 1,8–2% vom Mehlgewicht = ${Math.round(totalFlourG * 0.019)} g für ${totalFlourG} g Mehl.` : null} />
+        </Card>
+
+        {/* ── Result ── */}
+        {mode === "calc" && (
+          <Card>
+            <SectionTitle>📊 Dein Ergebnis</SectionTitle>
+            <HydrationGauge pct={bakersHydration} trueHydration={trueHydration} isBeginnerMode={isBeginnerMode} />
+
+            {/* Summary */}
+            <div style={{ marginTop: 4 }}>
+              <div style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 13, fontWeight: 700, color: "#3A2430", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Dein Rezept auf einen Blick
+              </div>
+              <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(146,82,116,0.16)" }}>
+                {[
+                  ["🌾 Mehl gesamt", totalFlourG + " g", "100%", "#3A2430"],
+                  ["💧 Wasser", waterG + " g", bakerPct(waterG) + "%", "#5A7BB5"],
+                  ["🫙 Sauerteig", starterG + " g", bakerPct(starterG) + "%", "#925274"],
+                  ["🧂 Salz", saltG + " g", bakerPct(saltG) + "%", "#8A6A7A"],
+                ].map(([label, g, pct, col], i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: i % 2 === 0 ? "rgba(237,224,231,0.25)" : "transparent" }}>
+                    <span style={{ fontFamily: "Georgia,serif", fontSize: 13, color: "#4A2A3A" }}>{label}</span>
+                    <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+                      <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 13, color: "#6A4A5A" }}>{g}</span>
+                      <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 14, fontWeight: 700, color: col, minWidth: 52, textAlign: "right" }}>{pct}</span>
+                    </div>
+                  </div>
+                ))}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(146,82,116,0.08)", borderTop: "1px solid rgba(146,82,116,0.15)" }}>
+                  <span style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 13, fontWeight: 700, color: "#3A2430" }}>🍞 Teig gesamt</span>
+                  <span style={{ fontFamily: "Courier Prime,monospace", fontSize: 16, fontWeight: 700, color: "#925274" }}>{totalDoughG} g</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {mode === "reverse" && (
+          <ReverseCalc totalFlourG={totalFlourG} starterG={starterG} starterHydration={starterHydration} />
+        )}
+
+        {/* Footer */}
+        <div style={{ textAlign: "center", paddingBottom: 32 }}>
+          <div style={{ fontSize: 11, color: "#9A7A8A", fontStyle: "italic", marginBottom: 6 }}>
+            Alle Angaben in Bäckerprozenten · Starter-Anteil wird automatisch aufgeteilt
+          </div>
+          <div style={{ fontFamily: "Courier Prime,monospace", fontSize: 10.5, color: "#B6859F", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700 }}>
+            Sauer macht krustig ™
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
