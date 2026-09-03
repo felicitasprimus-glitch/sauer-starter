@@ -32,7 +32,7 @@ export default function HomePage() {
           data: { user },
         } = await supabase.auth.getUser();
         if (user && !cancelled) {
-          router.replace("/start");
+          window.location.href = "/start";
           return;
         }
       } catch (e) {}
@@ -70,7 +70,7 @@ export default function HomePage() {
       return;
     }
     if (data.session) {
-      router.replace("/start");
+      window.location.href = "/start";
     } else {
       setMode("confirm");
     }
@@ -92,7 +92,7 @@ export default function HomePage() {
       setErr("E-Mail oder Passwort stimmt nicht.");
       return;
     }
-    router.replace("/start");
+    window.location.href = "/start";
   }
 
   async function forgot() {
