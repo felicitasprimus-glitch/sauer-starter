@@ -44,7 +44,7 @@ const HOME_HTML = `
       </div>
       <div class="dash-item" data-nav="brotwerkstatt">
         <span class="dash-ic"><svg><use href="#i-grain"/></svg></span>
-        <div class="dash-tx"><h3>Brotwerkstatt</h3><p>Schritt für Schritt zu deinem Brot</p></div>
+        <div class="dash-tx"><h3>Brotbackplaner</h3><p>Schritt für Schritt zu deinem Brot</p></div>
         <span class="dash-crown"><svg><use href="#i-crown"/></svg></span>
         <span class="dash-ar">&rsaquo;</span>
       </div>
