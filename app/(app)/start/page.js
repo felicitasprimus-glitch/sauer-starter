@@ -324,11 +324,29 @@ export default function StartPage() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         let nm = (user && user.user_metadata && user.user_metadata.display_name) || "";
-        if (!nm && user) {
-          const { data } = await supabase.from("user_profiles").select("display_name").eq("id", user.id).single();
-          nm = (data && data.display_name) || "";
+        let avatarPath = null;
+        if (user) {
+          const { data } = await supabase.from("user_profiles").select("display_name, avatar_path").eq("id", user.id).single();
+          if (data) {
+            if (!nm) nm = data.display_name || "";
+            avatarPath = data.avatar_path || null;
+          }
         }
         if (cancelled) return;
+        if (avatarPath) {
+          try {
+            const { data: sig } = await supabase.storage.from("photos").createSignedUrl(avatarPath, 3600);
+            const url = sig && sig.signedUrl;
+            if (url) {
+              const circle = document.querySelector(".topbar .circle-btn");
+              if (circle) {
+                circle.style.padding = "0";
+                circle.style.overflow = "hidden";
+                circle.innerHTML = '<img src="' + url + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block" />';
+              }
+            }
+          } catch (e) {}
+        }
         const hrs = new Date().getHours();
         const greet = hrs < 11 ? "Guten Morgen," : hrs < 18 ? "Hallo," : "Guten Abend,";
         const hiEl = document.querySelector(".hero-inner .hi");
