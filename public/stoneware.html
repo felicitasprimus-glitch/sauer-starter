@@ -674,13 +674,29 @@ window.addEventListener('pageshow', syncTimerOnReturn);
 
 // === Timer meldet sich aufs Dashboard (Backstube) ===
 (function(){
+  function smkLN(){ try{ return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications; }catch(e){ return null; } }
+  function scheduleTimerNotif(){
+    var LN=smkLN(); if(!LN) return;
+    var t=window.stonewareTimer;
+    try{
+      LN.requestPermissions().then(function(){
+        LN.cancel({ notifications:[{id:2000}] }).catch(function(){});
+        if(t && t.running && t.endTime > Date.now()){
+          LN.schedule({ notifications:[{ id:2000, title:"⏱ "+(window.__swTimerLabel||"Timer"), body:"Dein Timer ist fertig!", schedule:{ at:new Date(t.endTime) } }] });
+        }
+      }).catch(function(){});
+    }catch(e){}
+  }
+  function cancelTimerNotif(){ var LN=smkLN(); if(!LN) return; try{ LN.cancel({ notifications:[{id:2000}] }).catch(function(){}); }catch(e){} }
   function reportTimer(){
     try{
       var t = window.stonewareTimer;
       if(t && t.running && t.endTime > Date.now()){
         localStorage.setItem("smk-active-timer", JSON.stringify({ name: window.__swTimerLabel || "Stoneware-Timer", endTime: t.endTime }));
+        scheduleTimerNotif();
       } else {
         localStorage.removeItem("smk-active-timer");
+        cancelTimerNotif();
       }
     }catch(e){}
   }
