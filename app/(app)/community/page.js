@@ -20,6 +20,7 @@ export default function CommunityPage() {
   const [openKomm, setOpenKomm] = useState(null);
   const [kommentarDraft, setKommentarDraft] = useState({});
   const [busy, setBusy] = useState(false);
+  const [openMenu, setOpenMenu] = useState(null);
 
   useEffect(() => {
     init();
@@ -35,6 +36,47 @@ export default function CommunityPage() {
         .eq("id", userData.user.id)
         .maybeSingle();
       if (profile?.display_name) setMyDisplayName(profile.display_name);
+    }
+    await loadFeed();
+  }
+
+  async function meldeInhalt(brotId, kommentarId) {
+    if (!user) return;
+    const grund = window.prompt(
+      "Warum meldest du diesen Inhalt? (z. B. beleidigend, Spam, unangemessenes Foto)"
+    );
+    if (grund === null) return;
+    setOpenMenu(null);
+    const { error: err } = await supabase.from("brot_meldungen").insert({
+      brot_id: brotId || null,
+      kommentar_id: kommentarId || null,
+      melder_id: user.id,
+      grund: (grund || "").trim() || "ohne Angabe",
+    });
+    if (err) {
+      window.alert("Die Meldung konnte nicht gesendet werden. Bitte versuche es spaeter noch einmal.");
+      return;
+    }
+    window.alert(
+      "Danke fuer deine Meldung. Wir schauen uns den Inhalt innerhalb von 24 Stunden an."
+    );
+  }
+
+  async function blockiereNutzer(autorId, autorName) {
+    if (!user || !autorId) return;
+    const ok = window.confirm(
+      "Moechtest du " +
+        (autorName || "diese Person") +
+        " blockieren? Du siehst dann keine Beitraege und Kommentare mehr von ihr."
+    );
+    if (!ok) return;
+    setOpenMenu(null);
+    const { error: err } = await supabase
+      .from("user_blocks")
+      .insert({ blocker_id: user.id, blocked_id: autorId });
+    if (err && err.code !== "23505") {
+      window.alert("Das Blockieren hat nicht geklappt. Bitte versuche es spaeter noch einmal.");
+      return;
     }
     await loadFeed();
   }
@@ -350,6 +392,36 @@ export default function CommunityPage() {
                   </h3>
                   <p className="mini-label mt-1">{t("comm.by")} {post.autor}</p>
                 </div>
+                {!post.isOwn && (
+                  <div className="relative flex-shrink-0">
+                    <button
+                      type="button"
+                      aria-label="Optionen"
+                      onClick={() => setOpenMenu(openMenu === post.id ? null : post.id)}
+                      className="px-2 py-1 text-lg leading-none text-cocoa-700/60"
+                    >
+                      &#8943;
+                    </button>
+                    {openMenu === post.id && (
+                      <div className="absolute right-0 z-20 mt-1 w-56 overflow-hidden rounded-xl border border-mauve-200 bg-white shadow-lg">
+                        <button
+                          type="button"
+                          onClick={() => meldeInhalt(post.id, null)}
+                          className="block w-full px-4 py-3 text-left text-sm text-cocoa-800 hover:bg-mauve-50"
+                        >
+                          Beitrag melden
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => blockiereNutzer(post.autorId, post.autor)}
+                          className="block w-full border-t border-mauve-100 px-4 py-3 text-left text-sm text-cocoa-800 hover:bg-mauve-50"
+                        >
+                          {post.autor} blockieren
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {post.krumeScore && (
                   <div className="flex-shrink-0 text-center">
                     <div className="font-display-italic text-2xl text-cocoa-900">
@@ -486,7 +558,7 @@ export default function CommunityPage() {
                           <span className="text-[10px] font-semibold uppercase tracking-widest text-mauve-700">
                             {komm.autor}
                           </span>
-                          {komm.istEigener && (
+                          {komm.istEigener ? (
                             <button
                               type="button"
                               onClick={() => deleteKommentar(post, komm)}
@@ -494,6 +566,23 @@ export default function CommunityPage() {
                             >
                               {t("comm.delete")}
                             </button>
+                          ) : (
+                            <span className="flex flex-shrink-0 gap-2">
+                              <button
+                                type="button"
+                                onClick={() => meldeInhalt(post.id, komm.id)}
+                                className="text-[10px] text-cocoa-700/50 hover:text-terra-600"
+                              >
+                                Melden
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => blockiereNutzer(komm.autorId, komm.autor)}
+                                className="text-[10px] text-cocoa-700/50 hover:text-terra-600"
+                              >
+                                Blockieren
+                              </button>
+                            </span>
                           )}
                         </div>
                         <p className="text-cocoa-800">{komm.text}</p>
