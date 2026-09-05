@@ -22,6 +22,13 @@ export async function GET() {
 
     const admin = createAdminClient(adminUrl, adminKey);
 
+    // Von mir blockierte Personen laden
+    const { data: blocks } = await admin
+      .from("user_blocks")
+      .select("blocked_id")
+      .eq("blocker_id", user.id);
+    const blockiert = new Set((blocks || []).map((b) => b.blocked_id));
+
     const { data: brote, error: broteError } = await admin
       .from("brote")
       .select(
@@ -35,7 +42,8 @@ export async function GET() {
       return Response.json({ error: broteError.message }, { status: 500 });
     }
 
-    const brotIds = (brote || []).map((b) => b.id);
+    const sichtbareBrote = (brote || []).filter((b) => !blockiert.has(b.user_id));
+    const brotIds = sichtbareBrote.map((b) => b.id);
 
     // Likes laden
     const likesByBrot = {};
@@ -66,6 +74,7 @@ export async function GET() {
         .in("brot_id", brotIds)
         .order("created_at", { ascending: true });
       (komms || []).forEach((k) => {
+        if (blockiert.has(k.user_id)) return;
         if (!kommentareByBrot[k.brot_id]) kommentareByBrot[k.brot_id] = [];
         kommentareByBrot[k.brot_id].push(k);
         kommentarUserIds.push(k.user_id);
@@ -75,7 +84,7 @@ export async function GET() {
     // Alle Anzeige-Namen laden (Brot-Autorinnen + Kommentatorinnen)
     const allUserIds = [
       ...new Set([
-        ...(brote || []).map((b) => b.user_id),
+        ...sichtbareBrote.map((b) => b.user_id),
         ...kommentarUserIds,
         ...likeUserIds,
       ]),
@@ -92,7 +101,7 @@ export async function GET() {
     }
 
     const posts = [];
-    for (const b of brote || []) {
+    for (const b of sichtbareBrote) {
       let fotoUrl = null;
       if (b.photo_path) {
         const { data: signed } = await admin.storage
@@ -113,6 +122,7 @@ export async function GET() {
         id: k.id,
         text: k.text,
         autor: nameMap[k.user_id] || "Anonym",
+        autorId: k.user_id,
         istEigener: k.user_id === user.id,
         createdAt: k.created_at,
       }));
@@ -126,6 +136,7 @@ export async function GET() {
         krumeScore: b.krume_score || null,
         krumeDiagnose: b.krume_diagnose || null,
         autor: nameMap[b.user_id] || "Anonym",
+        autorId: b.user_id,
         sharedAt: b.shared_at,
         bakedAt: b.baked_at,
         isOwn: b.user_id === user.id,
