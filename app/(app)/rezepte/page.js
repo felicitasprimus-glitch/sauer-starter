@@ -684,9 +684,9 @@ export default function RezeptePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Rezept direkt oeffnen, wenn die Adresse ?id=... enthaelt
+  // Rezept direkt oeffnen, wenn die Adresse ?id=... oder ?name=... enthaelt
   useEffect(() => {
-    if (loading || !recipes.length) return;
+    if (loading) return;
     var wanted = null, wantedName = null;
     try {
       var q = new URLSearchParams(window.location.search);
@@ -694,11 +694,13 @@ export default function RezeptePage() {
       wantedName = q.get("name");
     } catch (e) {}
     if (!wanted && !wantedName) return;
+    // eigene Rezepte UND Grundstock durchsuchen
+    var alle = (recipes || []).concat(GRUNDSTOCK);
     var found = null;
-    if (wanted) found = recipes.filter(function (r) { return String(r.id) === String(wanted); })[0];
+    if (wanted) found = alle.filter(function (r) { return String(r.id) === String(wanted); })[0];
     if (!found && wantedName) {
       var nn = String(wantedName).trim().toLowerCase();
-      found = recipes.filter(function (r) { return String(r.name || "").trim().toLowerCase() === nn; })[0];
+      found = alle.filter(function (r) { return String(r.name || "").trim().toLowerCase() === nn; })[0];
     }
     if (found) {
       setScale(1);
