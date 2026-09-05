@@ -687,10 +687,19 @@ export default function RezeptePage() {
   // Rezept direkt oeffnen, wenn die Adresse ?id=... enthaelt
   useEffect(() => {
     if (loading || !recipes.length) return;
-    var wanted = null;
-    try { wanted = new URLSearchParams(window.location.search).get("id"); } catch (e) {}
-    if (!wanted) return;
-    var found = recipes.filter(function (r) { return String(r.id) === String(wanted); })[0];
+    var wanted = null, wantedName = null;
+    try {
+      var q = new URLSearchParams(window.location.search);
+      wanted = q.get("id");
+      wantedName = q.get("name");
+    } catch (e) {}
+    if (!wanted && !wantedName) return;
+    var found = null;
+    if (wanted) found = recipes.filter(function (r) { return String(r.id) === String(wanted); })[0];
+    if (!found && wantedName) {
+      var nn = String(wantedName).trim().toLowerCase();
+      found = recipes.filter(function (r) { return String(r.name || "").trim().toLowerCase() === nn; })[0];
+    }
     if (found) {
       setScale(1);
       setDetail(found);
