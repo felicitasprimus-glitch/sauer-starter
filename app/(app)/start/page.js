@@ -391,7 +391,8 @@ export default function StartPage() {
       if (head) { html += '<div class="smk-ab-now"><span class="smk-ab-ic">' + (head.icon || "\uD83C\uDF5E") + '</span><div><small>' + headLabel + '</small><b>' + esc(head.title) + "</b></div></div>"; }
       if (next) { var mins = Math.round((next.time - now) / 60000); var when = mins <= 0 ? "jetzt" : (mins < 60 ? ("in " + mins + " Min") : ("in " + Math.floor(mins / 60) + " Std " + (mins % 60) + " Min")); html += '<div class="smk-ab-next"><span>N\u00e4chster: ' + esc(next.title) + "</span><b>" + when + "</b></div>"; }
       else if (done) { html += '<div class="smk-ab-next"><span>Alle Schritte erledigt</span><b>\uD83C\uDF89</b></div>'; }
-      el.innerHTML = '<div class="smk-ab-card" data-nav="rezepte">' + html + "</div>";
+      var idAttr = data.rezeptId ? ' data-bakeid="' + esc(data.rezeptId) + '"' : "";
+      el.innerHTML = '<div class="smk-ab-card" data-nav="rezepte"' + idAttr + ">" + html + "</div>";
       el.style.display = "block";
     }
     window.__smkRenderBake = render;
@@ -413,6 +414,10 @@ export default function StartPage() {
     const el = e.target.closest && e.target.closest("[data-nav]");
     if (!el) return;
     const nav = el.getAttribute("data-nav");
+    if (nav === "rezepte") {
+      const bid = el.getAttribute("data-bakeid");
+      if (bid) { router.push("/rezepte?id=" + encodeURIComponent(bid)); return; }
+    }
     const r = ROUTES[nav];
     if (!r) return;
     if (r.indexOf("EXT:") === 0) { window.open(r.slice(4), "_blank"); return; }
