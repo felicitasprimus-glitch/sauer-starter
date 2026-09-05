@@ -21,6 +21,7 @@ export default function HomePage() {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [code, setCode] = useState("");
+  const [agb, setAgb] = useState(false);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -58,11 +59,20 @@ export default function HomePage() {
       setErr("Das Passwort braucht mindestens 6 Zeichen.");
       return;
     }
+    if (!agb) {
+      setErr("Bitte stimme den Nutzungsbedingungen zu.");
+      return;
+    }
     setBusy(true);
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password: pw,
-      options: { data: { display_name: name.trim() } },
+      options: {
+        data: {
+          display_name: name.trim(),
+          agb_akzeptiert_am: new Date().toISOString(),
+        },
+      },
     });
     setBusy(false);
     if (error) {
@@ -146,6 +156,21 @@ export default function HomePage() {
     cursor: "pointer",
     opacity: busy ? 0.6 : 1,
   };
+  const agbWrap = {
+    width: "100%",
+    maxWidth: 320,
+    marginTop: 14,
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 10,
+  };
+  const agbText = {
+    fontSize: 12.5,
+    lineHeight: 1.5,
+    color: TAUPE,
+    fontFamily: "inherit",
+  };
+  const agbLink = { color: PLUM, textDecoration: "underline" };
 
   if (checking) {
     return (
@@ -226,6 +251,29 @@ export default function HomePage() {
       <input style={inp} type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Passwort" />
       {mode === "register" && (
         <input style={{ ...inp, letterSpacing: "1px" }} type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Zugangscode" autoCapitalize="characters" />
+      )}
+
+      {mode === "register" && (
+        <label style={agbWrap}>
+          <input
+            type="checkbox"
+            checked={agb}
+            onChange={(e) => setAgb(e.target.checked)}
+            style={{ marginTop: 2, width: 18, height: 18, accentColor: PLUM, flexShrink: 0 }}
+          />
+          <span style={agbText}>
+            Ich habe die{" "}
+            <a href="/nutzungsbedingungen" target="_blank" rel="noopener noreferrer" style={agbLink}>
+              Nutzungsbedingungen
+            </a>{" "}
+            und die{" "}
+            <a href="/datenschutz" target="_blank" rel="noopener noreferrer" style={agbLink}>
+              Datenschutzerklärung
+            </a>{" "}
+            gelesen und stimme ihnen zu. Beleidigende oder rechtswidrige Inhalte
+            sind in der Community nicht erlaubt.
+          </span>
+        </label>
       )}
 
       {err && <p style={{ color: "#b5793b", fontSize: 13, margin: "12px 0 0", maxWidth: 320, textAlign: "center" }}>{err}</p>}
