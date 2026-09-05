@@ -392,6 +392,7 @@ export default function StartPage() {
       if (next) { var mins = Math.round((next.time - now) / 60000); var when = mins <= 0 ? "jetzt" : (mins < 60 ? ("in " + mins + " Min") : ("in " + Math.floor(mins / 60) + " Std " + (mins % 60) + " Min")); html += '<div class="smk-ab-next"><span>N\u00e4chster: ' + esc(next.title) + "</span><b>" + when + "</b></div>"; }
       else if (done) { html += '<div class="smk-ab-next"><span>Alle Schritte erledigt</span><b>\uD83C\uDF89</b></div>'; }
       var idAttr = data.rezeptId ? ' data-bakeid="' + esc(data.rezeptId) + '"' : "";
+      if (!data.rezeptId && data.name) idAttr = ' data-bakename="' + esc(data.name) + '"';
       el.innerHTML = '<div class="smk-ab-card" data-nav="rezepte"' + idAttr + ">" + html + "</div>";
       el.style.display = "block";
     }
@@ -417,6 +418,8 @@ export default function StartPage() {
     if (nav === "rezepte") {
       const bid = el.getAttribute("data-bakeid");
       if (bid) { router.push("/rezepte?id=" + encodeURIComponent(bid)); return; }
+      const bnm = el.getAttribute("data-bakename");
+      if (bnm) { router.push("/rezepte?name=" + encodeURIComponent(bnm)); return; }
     }
     const r = ROUTES[nav];
     if (!r) return;
