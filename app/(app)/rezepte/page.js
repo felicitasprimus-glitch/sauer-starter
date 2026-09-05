@@ -635,6 +635,7 @@ export default function RezeptePage() {
   const [bpMsg, setBpMsg] = useState("");
   const [planSteps, setPlanSteps] = useState([]);
   const [planName, setPlanName] = useState("");
+  const [planId, setPlanId] = useState(null);
 
   const emptyForm = {
     name: "",
@@ -682,6 +683,22 @@ export default function RezeptePage() {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Rezept direkt oeffnen, wenn die Adresse ?id=... enthaelt
+  useEffect(() => {
+    if (loading || !recipes.length) return;
+    var wanted = null;
+    try { wanted = new URLSearchParams(window.location.search).get("id"); } catch (e) {}
+    if (!wanted) return;
+    var found = recipes.filter(function (r) { return String(r.id) === String(wanted); })[0];
+    if (found) {
+      setScale(1);
+      setDetail(found);
+      setView("detail");
+    }
+    try { window.history.replaceState({}, "", "/rezepte"); } catch (e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, recipes]);
 
   // Wenn eingebettet (im Rezepte-Tab der App): Tagebuch-Leiste ausblenden
   useEffect(() => {
@@ -849,6 +866,7 @@ export default function RezeptePage() {
     const steps = parseSteps(rec.schritte || "");
     setPlanSteps(steps.map((s) => ({ title: s, minutes: parseDuration(s) })));
     setPlanName(rec.name);
+    setPlanId(rec.id || null);
     setView("ablaufplan");
   }
 
@@ -891,7 +909,7 @@ export default function RezeptePage() {
     try {
       localStorage.setItem(
         "smk-active-bake",
-        JSON.stringify({ name: planName, started: now, steps })
+        JSON.stringify({ name: planName, rezeptId: planId, started: now, steps })
       );
     } catch (e) {}
     scheduleBakeNotifications(planName, steps);
