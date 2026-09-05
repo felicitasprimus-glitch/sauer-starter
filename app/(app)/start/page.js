@@ -114,7 +114,7 @@ const HOME_CSS = `@import url('https://fonts.googleapis.com/css2?family=Cormoran
 .divider::before,.divider::after{content:"";width:84px;height:1px;background:linear-gradient(90deg,transparent,rgba(142,84,104,.4));}
 .divider::after{background:linear-gradient(90deg,rgba(142,84,104,.4),transparent);}
 .divider svg{width:26px;height:26px;stroke:var(--rose-mid);fill:none;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(16px + env(safe-area-inset-top)) 20px 0;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(28px + env(safe-area-inset-top)) 20px 8px;}
 .circle-btn{width:46px;height:46px;border-radius:50%;background:linear-gradient(150deg,#FDF6F8,#F3DEE4);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 20px -8px rgba(142,84,104,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .circle-btn svg{width:20px;height:20px;stroke:var(--wine);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
 .lock-badge{position:absolute;top:16px;right:16px;z-index:3;width:52px;height:52px;border-radius:50%;background:linear-gradient(150deg,var(--rose),var(--rose-deep));border:2px solid rgba(255,255,255,.75);box-shadow:0 8px 18px -6px rgba(110,51,72,.55);display:flex;align-items:center;justify-content:center;}
@@ -391,7 +391,7 @@ export default function StartPage() {
       if (head) { html += '<div class="smk-ab-now"><span class="smk-ab-ic">' + (head.icon || "\uD83C\uDF5E") + '</span><div><small>' + headLabel + '</small><b>' + esc(head.title) + "</b></div></div>"; }
       if (next) { var mins = Math.round((next.time - now) / 60000); var when = mins <= 0 ? "jetzt" : (mins < 60 ? ("in " + mins + " Min") : ("in " + Math.floor(mins / 60) + " Std " + (mins % 60) + " Min")); html += '<div class="smk-ab-next"><span>N\u00e4chster: ' + esc(next.title) + "</span><b>" + when + "</b></div>"; }
       else if (done) { html += '<div class="smk-ab-next"><span>Alle Schritte erledigt</span><b>\uD83C\uDF89</b></div>'; }
-      el.innerHTML = '<div class="smk-ab-card" data-nav="brotwerkstatt">' + html + "</div>";
+      el.innerHTML = '<div class="smk-ab-card" data-nav="rezepte">' + html + "</div>";
       el.style.display = "block";
     }
     window.__smkRenderBake = render;
@@ -420,7 +420,7 @@ export default function StartPage() {
     router.push(r);
   }
   return (
-    <div style={{ margin: "-1.5rem -1rem 0" }}>
+    <div style={{ margin: "0 -1rem 0" }}>
       <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
       <style dangerouslySetInnerHTML={{ __html: AB_CSS }} />
       <div dangerouslySetInnerHTML={{ __html: SPRITE }} style={{ display: "none" }} />
