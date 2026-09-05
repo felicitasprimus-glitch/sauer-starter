@@ -852,6 +852,34 @@ export default function RezeptePage() {
     setView("ablaufplan");
   }
 
+  async function scheduleBakeNotifications(name, steps) {
+    try {
+      const LN =
+        typeof window !== "undefined" &&
+        window.Capacitor &&
+        window.Capacitor.Plugins &&
+        window.Capacitor.Plugins.LocalNotifications;
+      if (!LN) return; // nur in der installierten App
+      await LN.requestPermissions();
+      const prev = [];
+      for (let i = 1000; i < 1050; i++) prev.push({ id: i });
+      try { await LN.cancel({ notifications: prev }); } catch (e) {}
+      const now = Date.now();
+      const list = [];
+      steps.forEach((s, i) => {
+        if (s.time > now + 5000) {
+          list.push({
+            id: 1000 + i,
+            title: "🍞 " + name,
+            body: "Jetzt: " + String(s.title).slice(0, 120),
+            schedule: { at: new Date(s.time) },
+          });
+        }
+      });
+      if (list.length) await LN.schedule({ notifications: list });
+    } catch (e) {}
+  }
+
   function startAblaufplan() {
     const now = Date.now();
     let t = now;
@@ -866,6 +894,7 @@ export default function RezeptePage() {
         JSON.stringify({ name: planName, started: now, steps })
       );
     } catch (e) {}
+    scheduleBakeNotifications(planName, steps);
     router.push("/start");
   }
 
